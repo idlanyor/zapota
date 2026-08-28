@@ -1,0 +1,20 @@
+{
+  "name": "kanata-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/database/migrate.js",
+    "seed": "node scripts/seed-demo.js",
+    "client:create": "node scripts/create-client.js",
+    "test": "node --env-file=test/.env.test --test",
+    "check": "node --check src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.2.3",
+    "mysql2": "^3.15.3"
+  }
+}

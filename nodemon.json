@@ -1,0 +1,6 @@
+{
+    "watch": ["src"],
+    "ext": "js,mjs,cjs,json",
+    "ignore": ["auth_info_baileys/*", "node_modules/*", "src/commands/*"],
+    "exec": "node src/index.js"
+}

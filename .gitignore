@@ -1,0 +1,41 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+core/node_modules/
+
+# Logs & Debug
+logs/
+*.log
+gemini-network-log.json
+
+# Auth & Sessions
+auth_info_baileys/
+backup_auth/
+sessions_jadibot/
+backups/
+
+# Data & Temp
+data/
+temp/
+results/
+.cache/
+
+# Agent/IDE configs
+.codex
+.codex/
+.claude/
+.husky/_/
+AGENTS.md
+
+# Media / Dumps / Misc text
+*.mp3
+*.mp4
+*.docx
+*.txt
+*test-*
+/webui
+werewolf/

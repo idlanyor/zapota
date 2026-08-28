@@ -1,0 +1,10 @@
+; Copy to /etc/php/8.4/fpm/pool.d/kanata-env.conf and replace the secrets.
+; Keep this file owned by root with mode 600.
+[www]
+; Kanata Core (data + auth)
+env[KANATA_CORE_URL] = http://127.0.0.1:8790
+env[KANATA_CORE_CLIENT_ID] = kanata_web_dev
+env[KANATA_CORE_CLIENT_SECRET] = replace_with_kanata_core_client_secret
+; Bot webhook (adapter-only endpoints: cloudflare, settings, send-*, jadibot, finance/catat AI)
+env[KANATA_BOT_WEBHOOK_URL] = http://127.0.0.1:8787
+env[KANATA_BOT_WEBHOOK_TOKEN] = replace_with_the_same_value_as_BOT_WEBHOOK_TOKEN
