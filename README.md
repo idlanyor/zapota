@@ -194,13 +194,6 @@ npm run lint:fix
 npm run format
 ```
 
-Lint root mengabaikan dashboard dan folder `unused`. Untuk memeriksa frontend:
-
-```bash
-cd webui/web
-npm run lint
-```
-
 ## Deployment
 
 ### PM2
@@ -225,14 +218,11 @@ service membutuhkan hak administrator.
 
 ## Data sensitif dan Git
 
-Jangan membagikan atau memasukkan file berikut ke version control:
+Jangan membagikan atau memasukkan file/folder berikut ke version control:
 
-- `.env` dan `webui/.env`
-- `auth_info_baileys/` dan `sessions_jadibot/`
+- `.env` dan `core/.env`
+- `auth_info_baileys/`, `backup_auth/`, dan `sessions_jadibot/`
 - database di `data/`
-- backup, log, dan output media
+- backup, log (`logs/`), temporary (`temp/`), dan output media (`results/`)
+- folder yang di-ignore seperti `/webui`, `werewolf/`, dan `unused/`
 
-`.gitignore` saat ini juga mengabaikan seluruh `/webui`. Artinya perubahan source
-dashboard tidak akan terdeteksi Git. Jika dashboard ingin dikelola dalam repository
-yang sama, aturan tersebut perlu dipersempit agar hanya mengabaikan environment,
-dependency, dan hasil build dashboard.
