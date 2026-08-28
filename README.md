@@ -1,14 +1,14 @@
 # Kanata WhatsApp Bot
 
-Kanata adalah bot WhatsApp berbasis Baileys dengan command hot-reload, database
-SQLite/Knex, webhook HTTP + Socket.IO, dan dashboard React/Express terpisah.
+Kanata adalah bot WhatsApp multi-engine (didukung zapo.to dan Baileys) dengan command hot-reload, database
+SQLite/Knex, webhook HTTP + Socket.IO, dan Kanata Core.
 
 ## Arsitektur
 
 Project ini terdiri dari dua proses utama:
 
 1. **Bot** (`src/index.js`)
-    - Terhubung ke WhatsApp melalui Baileys.
+    - Terhubung ke WhatsApp melalui zapo.to (default) atau Baileys via adapter `src/wa/`.
     - Menyimpan data bot di SQLite melalui Knex.
     - Memuat command aktif dari `src/commands/**/*.js`.
     - Menjalankan webhook HTTP dan Socket.IO pada port `8787` secara default.
@@ -21,7 +21,7 @@ Project ini terdiri dari dua proses utama:
 Komunikasi antarkomponen:
 
 ```text
-WhatsApp ↔ Bot/Baileys ↔ SQLite (runtime bot)
+WhatsApp ↔ Bot/zapo.to (atau Baileys) ↔ SQLite (runtime bot)
                     ├─ HTTP → Kanata Core (MariaDB) — data finance, auth, identity
                     ├─ Socket.IO → Dashboard (`WEBAPP_URL` + `ACCESS_KEY`)
                     └─ Webhook  ← Dashboard (`BOT_WEBHOOK_URL` + `BOT_WEBHOOK_TOKEN`)
@@ -44,10 +44,11 @@ bot (`processAiTransaction`), hasilnya dikirim ke Core untuk disimpan.
 - `src/database/`: model, migration Knex, dan adapter kompatibilitas Mongoose.
 - `src/handlers/`: alur pesan, tombol, dan event grup.
 - `src/services/`: webhook dan integrasi layanan eksternal.
+- `src/wa/`: adapter koneksi WhatsApp (zapo.to & Baileys).
 - `webui/src/`: backend dashboard Express.
 - `webui/web/`: frontend React + Vite.
 - `php_client/`: client PHP untuk beberapa fungsi webhook.
-- `auth_info_baileys/`: credential sesi WhatsApp utama.
+- `auth_info_baileys/`: credential sesi WhatsApp Baileys.
 - `sessions_jadibot/`: credential sesi jadibot.
 - `data/`, `logs/`, `results/`, `temp/`: data dan output runtime.
 
@@ -124,9 +125,10 @@ npm run dev
 ```
 
 Saat belum ada sesi WhatsApp, QR pairing dicetak oleh handler koneksi ke terminal.
-Scan QR tersebut dari perangkat WhatsApp. Credential kemudian disimpan di
-`auth_info_baileys/`. Jika sesi berstatus logout, proses berhenti dan perlu pairing
-ulang; folder sesi tidak dihapus otomatis.
+Scan QR tersebut dari perangkat WhatsApp. Untuk transport `zapo` (default), credential
+disimpan di database SQLite auth (`ZAPO_DB_PATH`, default `./data/zapo-auth.sqlite`).
+Untuk transport `baileys`, credential disimpan di `auth_info_baileys/`. Jika sesi
+berstatus logout, proses berhenti dan perlu pairing ulang; sesi tidak dihapus otomatis.
 
 Webhook dimulai bersama bot hanya jika `BOT_WEBHOOK_TOKEN` terisi. Dokumentasi
 endpoint lengkap tersedia di `WEBHOOK_API.md`.
