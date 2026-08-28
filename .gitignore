@@ -36,6 +36,7 @@ AGENTS.md
 *.mp4
 *.docx
 *.txt
-*test-*
 /webui
 werewolf/
+unused/
+test-*
