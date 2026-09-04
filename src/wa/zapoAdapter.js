@@ -121,12 +121,14 @@ const zapoContent = async (content) => {
     return content;
 };
 
-const ensureAiRichTextEnvelope = (message) => {
+const ensureAiRichTextEnvelope = (message, options = {}) => {
+    if (options?.raw || options?.rawMessage) return message;
     const richResponse =
         message?.richResponseMessage ||
         message?.botForwardedMessage?.message?.richResponseMessage;
 
-    if (!richResponse || message?.conversation != null) return message;
+    if (!richResponse || message?.conversation != null || richResponse?.unifiedResponse)
+        return message;
 
     const fallbackText = (richResponse.submessages || [])
         .flatMap((submessage) => {
@@ -261,7 +263,7 @@ export const createZapoFacade = ({
             };
         },
         relayMessage: async (jid, message, options = {}) => {
-            const messageToSend = ensureAiRichTextEnvelope(message);
+            const messageToSend = ensureAiRichTextEnvelope(message, options);
             const result = await zapo.message.send(jid, messageToSend, {
                 id: options.messageId,
                 customNodes: options.additionalNodes ?? options.customNodes,

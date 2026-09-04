@@ -21,7 +21,7 @@ export default {
                         buttonParamsJson: JSON.stringify({
                             title: 'Buka Dashboard',
                             link: {
-                                url: 'https://api.kanata.web.id',
+                                url: 'https://kanata-api.irengcloud.com',
                             },
                             has_multiple_buttons: true,
                         }),

@@ -1,195 +1,259 @@
 # Kanata WhatsApp Bot
 
-Kanata adalah bot WhatsApp multi-engine (didukung zapo.to dan Baileys) dengan command hot-reload, database
-SQLite/Knex, webhook HTTP + Socket.IO, dan Kanata Core.
+Kanata adalah bot WhatsApp berbasis Node.js dengan plugin command, transport `zapo-js`
+atau Baileys, database SQLite/Knex, webhook HTTP + Socket.IO, dan service data
+Kanata Core berbasis MariaDB.
+
+## Status repository
+
+Komponen yang tersedia dan dilacak Git:
+
+- **Bot WhatsApp** di `src/`.
+- **Kanata Core** di `core/`.
+- **Web client PHP** di `php_client/`.
+- **161 plugin command aktif** (`src/commands/**/*.js`) pada audit 28 Agustus 2026.
+- Template deployment PM2, systemd, Nginx, dan PHP-FPM.
+
+Direktori `webui/`, `werewolf/`, dan `unused/` di-ignore dan bukan bagian source yang
+dilacak. README ini tidak menganggap komponen tersebut tersedia pada fresh clone.
 
 ## Arsitektur
 
-Project ini terdiri dari dua proses utama:
-
-1. **Bot** (`src/index.js`)
-    - Terhubung ke WhatsApp melalui zapo.to (default) atau Baileys via adapter `src/wa/`.
-    - Menyimpan data bot di SQLite melalui Knex.
-    - Memuat command aktif dari `src/commands/**/*.js`.
-    - Menjalankan webhook HTTP dan Socket.IO pada port `8787` secara default.
-    - Menjalankan scheduler grup, jadwal salat, backup, dan jadibot.
-2. **Dashboard** (`webui/src/server.js`)
-    - Backend Express dan Socket.IO pada port `3000` secara default.
-    - Menyimpan user dashboard, session, audit, dan data dashboard di MongoDB.
-    - Menyajikan frontend React hasil build dari `webui/web/dist`.
-
-Komunikasi antarkomponen:
-
 ```text
-WhatsApp ↔ Bot/zapo.to (atau Baileys) ↔ SQLite (runtime bot)
-                    ├─ HTTP → Kanata Core (MariaDB) — data finance, auth, identity
-                    ├─ Socket.IO → Dashboard (`WEBAPP_URL` + `ACCESS_KEY`)
-                    └─ Webhook  ← Dashboard (`BOT_WEBHOOK_URL` + `BOT_WEBHOOK_TOKEN`)
-                                      ↕
-                                   MongoDB
-Web PHP ── service-signature HTTP ──> Kanata Core
+WhatsApp ↔ Bot (`src/index.js`) ↔ SQLite
+              ├─ HTTP + HMAC → Kanata Core (`core/`) ↔ MariaDB
+              ├─ HTTP webhook :8787 ← integrasi eksternal / web PHP
+              └─ Socket.IO → client internal yang memakai `ACCESS_KEY`
+
+Web PHP (`php_client/`) ── HTTP + HMAC ──> Kanata Core :8790
+                       └── HTTP webhook ──> Bot :8787
 ```
 
-**Kanata Core** (`core/`) adalah service independen (Node.js + MariaDB) yang menjadi
-sumber data dan business rule: identity user (phone/JID/LID), auth web (session cookie),
-dan finance (transaksi/budget/kakeibo). Bot menjadi WhatsApp adapter, web PHP menjadi
-client. Service auth bot/PHP memakai HMAC signature (`X-Kanata-*` headers).
+### Bot
 
-Data finance di bot kini disimpan di Core, bukan SQLite. Gemini/OCR tetap berjalan di
-bot (`processAiTransaction`), hasilnya dikirim ke Core untuk disimpan.
+Entry point `src/index.js` menjalankan:
+
+- koneksi WhatsApp melalui adapter `src/wa/`;
+- migration dan akses SQLite melalui Knex;
+- pemuatan/hot-reload plugin command dari `src/commands/**/*.js`;
+- webhook HTTP + Socket.IO bila `BOT_WEBHOOK_TOKEN` tersedia;
+- scheduler grup dan jadwal salat;
+- recurring task, backup, dan layanan jadibot.
+
+Transport dipilih melalui `WA_TRANSPORT`:
+
+- `zapo`: credential disimpan di SQLite (`ZAPO_DB_PATH`);
+- `baileys`: credential utama disimpan di `auth_info_baileys/`, credential jadibot di
+  `sessions_jadibot/`.
+
+`.env.example` memilih `zapo`. Jika `WA_TRANSPORT` tidak diisi, fallback runtime di
+`src/config/settings.js` adalah `baileys`.
+
+### Kanata Core
+
+`core/` adalah service Node.js independen dan sumber data untuk:
+
+- identity phone/JID/LID;
+- user dan role;
+- session web berbasis cookie;
+- transaksi, budget, laporan, dan kakeibo.
+
+Bot dan web PHP mengakses Core dengan HMAC-SHA256 melalui header `X-Kanata-*`.
+Detail endpoint dan signature tersedia di `core/README.md`.
+
+Fitur finance bot sudah memakai Core untuk penyimpanan. Ekstraksi transaksi dari teks,
+gambar, atau audio tetap berjalan di bot dengan Gemini, lalu hasilnya disimpan ke Core.
+
+### Web client PHP
+
+`php_client/` berisi UI PHP untuk login, user, pesan, finance/kakeibo, jadibot, dan
+pengaturan. Client memakai `KANATA_CORE_URL` untuk data/auth serta
+`KANATA_BOT_WEBHOOK_URL` untuk operasi bot.
+
+## Fitur command
+
+Plugin aktif dikelompokkan dalam:
+
+- AI dan vision;
+- blog dan Cloudflare;
+- downloader media;
+- finance;
+- game dan Werewolf command adapter;
+- administrasi grup dan jadwal salat;
+- owner/admin;
+- Pterodactyl/panel;
+- RPG;
+- sticker;
+- PDF, OCR, image, audio, dan utility lain;
+- registrasi, profil, balance, voucher, dan store.
+
+Daftar command aktual berasal dari metadata plugin dan dapat dilihat melalui command
+menu bot. File `.jss` sengaja tidak dimuat oleh plugin loader.
 
 ## Struktur penting
 
-- `src/commands/`: plugin command aktif berakhiran `.js`.
-- `src/database/`: model, migration Knex, dan adapter kompatibilitas Mongoose.
-- `src/handlers/`: alur pesan, tombol, dan event grup.
-- `src/services/`: webhook dan integrasi layanan eksternal.
-- `src/wa/`: adapter koneksi WhatsApp (zapo.to & Baileys).
-- `webui/src/`: backend dashboard Express.
-- `webui/web/`: frontend React + Vite.
-- `php_client/`: client PHP untuk beberapa fungsi webhook.
-- `auth_info_baileys/`: credential sesi WhatsApp Baileys.
-- `sessions_jadibot/`: credential sesi jadibot.
-- `data/`, `logs/`, `results/`, `temp/`: data dan output runtime.
-
-File `.jss` di dalam direktori command sengaja tidak dimuat oleh plugin loader.
+```text
+src/
+├── commands/       plugin command aktif
+├── config/         konfigurasi bot dan Knex
+├── database/       adapter, model, dan migration SQLite
+├── handlers/       alur pesan, tombol, dan event grup
+├── lib/            runtime, scheduler, media, renderer, dan helper
+├── services/       Core, webhook, AI, Cloudflare, jadibot, dan integrasi lain
+├── utils/          logger, session, crypto, dan serialisasi
+└── wa/             adapter zapo-js dan Baileys
+core/               service identity, auth, user, dan finance berbasis MariaDB
+php_client/         web client PHP
+__tests__/          suite Jest tingkat aplikasi
+scripts/            utility migration dan pemeriksaan Bun
+deploy/             contoh konfigurasi Nginx dan PHP-FPM
+```
 
 ## Persyaratan
 
-- Node.js modern. Project saat ini telah diverifikasi dengan Node `v24.18.0`
-  melalui NVM.
+- Node.js modern; kondisi ini diverifikasi dengan Node `v24.18.0` dan npm `11.16.0`.
 - npm dan dependency sesuai lockfile.
+- MariaDB untuk Kanata Core.
+- PHP-FPM dan web server bila memakai `php_client/`.
 - FFmpeg untuk pemrosesan audio/video.
-- MongoDB jika dashboard digunakan.
 - Chromium beserta dependency sistem Puppeteer untuk fitur browser/screenshot.
-- Dependency native yang diperlukan `canvas`, `sharp`, dan `better-sqlite3`.
+- Build dependency native untuk `canvas`, `sharp`, `bcrypt`, dan `better-sqlite3`.
 
-Aktifkan Node dari NVM jika shell belum mengenali `node`:
+Jika memakai NVM:
 
 ```bash
 source "$HOME/.nvm/nvm.sh"
 nvm use 24
 ```
 
-## Konfigurasi environment
+## Instalasi
 
-Bot membaca `.env` di root project. Dashboard membaca `webui/.env` ketika proses
-dijalankan dari direktori `webui`.
+### 1. Bot
 
 ```bash
 cp .env.example .env
-cp webui/.env.example webui/.env
-chmod 600 .env webui/.env
-```
-
-Variabel penghubung kedua proses harus konsisten:
-
-| Bot (`.env`)        | Dashboard (`webui/.env`) | Fungsi                                      |
-| ------------------- | ------------------------ | ------------------------------------------- |
-| `ACCESS_KEY`        | `ACCESS_KEY`             | Autentikasi Socket.IO internal bot          |
-| `WEBAPP_URL`        | `PORT`                   | Alamat dashboard yang dihubungi bot         |
-| `BOT_WEBHOOK_TOKEN` | `BOT_WEBHOOK_TOKEN`      | Autentikasi webhook                         |
-| `BOT_WEBHOOK_PORT`  | `BOT_WEBHOOK_URL`        | Alamat webhook bot yang dipanggil dashboard |
-
-Dashboard mewajibkan:
-
-- `ACCESS_KEY`, minimal 16 karakter.
-- `SUPERADMIN_PASSWORD`, minimal 16 karakter.
-- `SUPERADMIN_JID`, misalnya `628123456789@s.whatsapp.net`.
-- `MONGODB_URI` yang dapat diakses.
-
-Gunakan secret acak yang berbeda untuk `ACCESS_KEY`, password superadmin, token
-webhook, dan token enkripsi. Jangan commit `.env` atau credential Baileys.
-
-`SUPERADMIN_PASSWORD` hanya dipakai ketika identity owner pertama kali dibuat atau
-ketika record lama belum memiliki hash. Mengganti nilainya di `.env` tidak otomatis
-mengganti password owner yang sudah tersimpan di MongoDB.
-
-Integrasi lain seperti Gemini, Cloudflare, Pterodactyl, SMM, iLovePDF, dan blog
-bersifat feature-specific. Lihat komentar pada `.env.example` untuk variabelnya.
-
-## Instalasi dan menjalankan bot
-
-Dengan lockfile yang tersedia, gunakan `npm ci` agar instalasi reproducible:
-
-```bash
 npm ci
 npm run db:migrate
+```
+
+Isi minimal sesuai fitur yang dipakai. Bot dasar memerlukan konfigurasi owner dan
+transport. Finance memerlukan koneksi Kanata Core. Integrasi lain hanya memerlukan
+secret ketika command terkait digunakan.
+
+Variabel utama:
+
+| Variabel | Default/contoh | Fungsi |
+| --- | --- | --- |
+| `WA_TRANSPORT` | `zapo` di `.env.example` | `zapo` atau `baileys` |
+| `ZAPO_DB_PATH` | `./data/zapo-auth.sqlite` | database auth zapo-js |
+| `SQLITE_PATH` | `./data/bot.db` | database runtime bot |
+| `BOT_PREFIX` | `.` | prefix command |
+| `OWNER_NUMBER`, `OWNER_LID` | lihat `.env.example` | identity owner |
+| `BOT_WEBHOOK_PORT` | `8787` | port webhook bot |
+| `BOT_WEBHOOK_TOKEN` | wajib agar webhook aktif | bearer token webhook |
+| `BOT_WEBHOOK_ALLOWLIST` | kosong | allowlist IP opsional |
+| `KANATA_CORE_URL` | `http://127.0.0.1:8790` | endpoint Core |
+| `KANATA_CORE_CLIENT_ID` | — | ID client HMAC bot |
+| `KANATA_CORE_CLIENT_SECRET` | — | secret client HMAC bot |
+| `GEMINI_API_KEY` | — | AI finance/fitur Gemini |
+| `ACCESS_KEY` | — | autentikasi Socket.IO internal |
+
+`.env.example` juga mendokumentasikan Cloudflare, Pterodactyl, SMM, blog, Alice,
+Ireng, Pinterest, Telegram, iLovePDF, dan konfigurasi AI lain.
+
+### 2. Kanata Core
+
+```bash
+cp core/.env.example core/.env
+npm --prefix core ci
+npm --prefix core run migrate
+```
+
+Buat database MariaDB lebih dulu. `CORE_MASTER_KEY` harus berupa 64 karakter hex:
+
+```bash
+openssl rand -hex 32
+```
+
+Buat client HMAC untuk bot setelah Core terkonfigurasi:
+
+```bash
+npm --prefix core run client:create
+```
+
+Masukkan ID dan secret yang dihasilkan ke `.env` bot sebagai
+`KANATA_CORE_CLIENT_ID` dan `KANATA_CORE_CLIENT_SECRET`. Jangan mengganti
+`CORE_MASTER_KEY` tanpa proses rotasi secret.
+
+## Menjalankan
+
+Jalankan Core dan bot pada terminal terpisah:
+
+```bash
+npm --prefix core start
 npm start
 ```
 
-Untuk development dengan restart otomatis:
+Mode development:
 
 ```bash
+npm --prefix core run dev
 npm run dev
 ```
 
-Saat belum ada sesi WhatsApp, QR pairing dicetak oleh handler koneksi ke terminal.
-Scan QR tersebut dari perangkat WhatsApp. Untuk transport `zapo` (default), credential
-disimpan di database SQLite auth (`ZAPO_DB_PATH`, default `./data/zapo-auth.sqlite`).
-Untuk transport `baileys`, credential disimpan di `auth_info_baileys/`. Jika sesi
-berstatus logout, proses berhenti dan perlu pairing ulang; sesi tidak dihapus otomatis.
+`nodemon` memantau `src/` tetapi mengabaikan `src/commands/` karena plugin command
+memiliki mekanisme reload sendiri.
 
-Webhook dimulai bersama bot hanya jika `BOT_WEBHOOK_TOKEN` terisi. Dokumentasi
-endpoint lengkap tersedia di `WEBHOOK_API.md`.
-
-## Menjalankan dashboard
-
-### Production/local build
-
-```bash
-cd webui
-npm ci
-cd web
-npm ci
-npm run build
-cd ..
-npm start
-```
-
-Backend akan terhubung ke MongoDB, memastikan identity owner tersedia, lalu
-menyajikan frontend dari `webui/web/dist`.
-
-### Development
-
-Install dependency backend dan frontend terlebih dahulu, lalu dari `webui/`:
-
-```bash
-npm run dev
-```
-
-Perintah ini menjalankan backend dengan `node --watch` dan Vite secara bersamaan.
-Frontend development tersedia di port `5173`, sedangkan API dashboard menggunakan
-port `3000` secara default.
+Saat belum ada sesi WhatsApp, adapter menampilkan proses pairing di terminal. Webhook
+bot hanya dimulai jika `BOT_WEBHOOK_TOKEN` terisi. Dokumentasi endpoint tersedia di
+`WEBHOOK_API.md`.
 
 ## Database dan migration
 
-Bot menggunakan SQLite dengan lokasi default `data/bot.db`. Lokasi dapat diubah
-melalui `SQLITE_PATH`.
+### Bot: SQLite + Knex
+
+Database default berada di `data/bot.db` dan dapat diubah dengan `SQLITE_PATH`.
+Migration mencakup user, transaksi legacy, server, budget, grup, polling, settings,
+voucher, RPG, AFK, dan progress RPG.
 
 ```bash
 npm run db:migrate
 npm run db:rollback
 ```
 
-Dashboard menggunakan MongoDB dan tidak memakai migration Knex milik bot.
+### Core: MariaDB
+
+```bash
+npm --prefix core run migrate
+```
+
+Core tidak memakai migration Knex milik bot. Konfigurasi koneksi berada di
+`core/.env` melalui `DATABASE_URL`.
 
 ## Test dan kualitas kode
 
 ```bash
 npm test
+npm --prefix core test
 npm run lint
 ```
 
-`npm test` menjalankan suite Jest lalu suite adapter SQLite berbasis `node:test`.
-Keduanya juga dapat dijalankan secara terpisah:
+`npm test` menjalankan Jest lalu tiga suite `node:test` untuk adapter SQLite, pencarian
+YouTube, dan parser API Utama. Audit 28 Agustus 2026 menghasilkan:
+
+- bot: **22 suite Jest / 151 test** dan **25 test Node**, semua lulus;
+- Core: **13 test**, semua lulus;
+- JavaScript yang dilacak Git: lint lulus.
+
+Pada working tree audit, `npm run lint` penuh gagal pada 63 error di direktori lokal
+`werewolf/` yang di-ignore dan tidak dilacak. Fresh clone tidak memuat direktori itu.
+Untuk memeriksa hanya JavaScript yang dilacak:
 
 ```bash
-npm run test:jest
-npm run test:adapter
+git ls-files '*.js' -z | xargs -0 npx eslint --quiet
 ```
 
-Perintah berikut mengubah file, bukan sekadar memeriksa:
+Perintah berikut mengubah file:
 
 ```bash
 npm run lint:fix
@@ -204,27 +268,49 @@ npm run format
 npm run pm2
 ```
 
-Konfigurasi berada di `ecosystem.config.js`, menjalankan satu instance bot dan
-menulis output ke `logs/pm2-out.log` serta `logs/pm2-err.log`.
+`ecosystem.config.js` menjalankan dua proses:
+
+- `kanata-bot` dari `src/index.js`, batas restart memory 2 GB;
+- `kanata-core` dari `core/src/server.js`, batas restart memory 1 GB.
+
+Log ditulis ke `logs/pm2-*.log` dan `logs/core-*.log`.
 
 ### systemd
 
-Template `kanata-bot.service` saat ini menunjuk ke:
+`kanata-bot.service` hanya menjalankan bot dan saat ini menunjuk ke:
 
-- project: `/home/roy/mybot`
-- Node: `/home/roy/.nvm/versions/node/v24.18.0/bin/node`
-- user: `roy`
+- project: `/home/roy/mybot`;
+- Node: `/home/roy/.nvm/versions/node/v24.18.0/bin/node`;
+- user: `roy`.
 
-Sesuaikan nilai tersebut jika lokasi deployment berubah. Instalasi atau restart
-service membutuhkan hak administrator.
+Sesuaikan semua path/user sebelum memasang service. Core memerlukan unit terpisah atau
+PM2.
+
+### Nginx dan PHP-FPM
+
+Contoh deployment web PHP berada di:
+
+- `deploy/nginx/kanata.irengcloud.com.conf`;
+- `deploy/php-fpm/kanata.conf.example`.
+
+Tinjau domain, path, socket PHP-FPM, TLS, dan environment sebelum dipakai.
 
 ## Data sensitif dan Git
 
-Jangan membagikan atau memasukkan file/folder berikut ke version control:
+Jangan commit atau bagikan:
 
-- `.env` dan `core/.env`
-- `auth_info_baileys/`, `backup_auth/`, dan `sessions_jadibot/`
-- database di `data/`
-- backup, log (`logs/`), temporary (`temp/`), dan output media (`results/`)
-- folder yang di-ignore seperti `/webui`, `werewolf/`, dan `unused/`
+- `.env`, `core/.env`, dan secret HMAC;
+- `auth_info_baileys/`, `backup_auth/`, `sessions_jadibot/`, dan `backups/`;
+- database di `data/`;
+- log, temp, cache, backup, dan output media;
+- credential atau dump dari integrasi eksternal.
 
+`.gitignore` juga mengecualikan `webui/`, `werewolf/`, dan `unused/`; keberadaan lokal
+folder tersebut bukan bagian distribusi repository.
+
+## Dokumentasi terkait
+
+- `WEBHOOK_API.md`: endpoint webhook bot.
+- `core/README.md`: endpoint, auth, dan operasi Kanata Core.
+- `PRD_RPG.md`: spesifikasi fitur RPG.
+- `PRD_Werewolf.md`: spesifikasi integrasi Werewolf.

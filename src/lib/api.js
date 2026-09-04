@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://api.kanata.web.id';
+const BASE_URL = 'https://kanata-api.irengcloud.com';
 
 /**
  * Performs a GET request.

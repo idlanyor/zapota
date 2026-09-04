@@ -24,8 +24,8 @@ export default {
                         name: 'cta_url',
                         buttonParamsJson: JSON.stringify({
                             display_text: 'Visit API',
-                            url: 'https://api.kanata.web.id',
-                            merchant_url: 'https://api.kanata.web.id',
+                            url: 'https://kanata-api.irengcloud.com',
+                            merchant_url: 'https://kanata-api.irengcloud.com',
                         }),
                     },
                     {

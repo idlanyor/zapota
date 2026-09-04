@@ -14,7 +14,7 @@ export default {
 
         try {
             // logger.info(`[DEBUG] Fetching audio API for: ${text}`);
-            const data = await fetchAPI('https://api.kanata.web.id/youtube2/download-audio', {
+            const data = await fetchAPI('https://kanata-api.irengcloud.com/youtube2/download-audio', {
                 url: text,
             });
 
