@@ -416,7 +416,7 @@ html,body{width:100%;background:#0f0f0f;font-family:-apple-system,BlinkMacSystem
                     const audioBuffer = await downloadAudioForWa(audioData.url);
                     await sock.sendMessage(m.chat, {
                         audio: audioBuffer,
-                        mimetype: "audio/mp4",
+                        mimetype: "audio/mpeg",
                         ptt: false,
                         fileName: video.title.slice(0, 50) + ".mp3",
                     }, { quoted: m });
