@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { searchYouTube } from '../../lib/youtubeSearch.js';
+import { downloadYouTubeYtmp3 } from '../../lib/ytmp3Mobi.js';
+import { downloadAudioForWa } from '../../lib/audioHelper.js';
 import logger from '../../utils/logger.js';
 
 const escapeHtml = (str = '') =>
@@ -407,6 +409,21 @@ html,body{width:100%;background:#0f0f0f;font-family:-apple-system,BlinkMacSystem
                 }
             );
             await m.react('✅').catch(() => {});
+
+            (async () => {
+                try {
+                    const audioData = await downloadYouTubeYtmp3(video.url, "mp3");
+                    const audioBuffer = await downloadAudioForWa(audioData.url);
+                    await sock.sendMessage(m.chat, {
+                        audio: audioBuffer,
+                        mimetype: "audio/mp4",
+                        ptt: false,
+                        fileName: video.title.slice(0, 50) + ".mp3",
+                    }, { quoted: m });
+                } catch (audioErr) {
+                    logger.warn("[YTPLAYER] Gagal kirim audio: " + audioErr.message);
+                }
+            })();
         } catch (err) {
             logger.error(err, 'YTPLAYER');
             await m.react('❌').catch(() => {});
