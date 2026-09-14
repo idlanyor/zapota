@@ -2,7 +2,6 @@ import { randomBytes } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { createMediaProcessor } from '@zapo-js/media-utils';
 import { createSqliteStore } from '@zapo-js/store-sqlite';
 import { createNoopLogger, createStore, WaClient } from 'zapo-js';
 import { attachGroupMetadataPatch } from '../lib/groupMetadataPatch.js';
@@ -566,6 +565,7 @@ export const createZapoAdapter = async ({
         providers: PROVIDERS,
         cacheProviders: CACHE_PROVIDERS,
     });
+    const { createMediaProcessor } = await import('@zapo-js/media-utils');
     const zapo = new WaClient(
         {
             store,

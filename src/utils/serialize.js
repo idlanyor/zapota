@@ -150,9 +150,19 @@ export const serialize = (m, sock) => {
                 : false;
             m.quoted.sender = decodeJid(contextInfo.participant || contextInfo.remoteJid || m.chat);
 
-            const botJid = decodeJid(sock.user.id);
-            const botLid = sock.user.lid ? decodeJid(sock.user.lid) : botJid;
-            m.quoted.fromMe = m.quoted.sender === botJid || m.quoted.sender === botLid;
+            const botJid = decodeJid(sock.user?.id);
+            const botLid = sock.user?.lid ? decodeJid(sock.user.lid) : null;
+            const botNum = botJid ? botJid.split('@')[0].split(':')[0] : null;
+            const botLidNum = botLid ? botLid.split('@')[0].split(':')[0] : null;
+            const quotedSenderNum = m.quoted.sender ? m.quoted.sender.split('@')[0].split(':')[0] : null;
+            const contextFromMe = contextInfo.isFromMe ?? contextInfo.fromMe ?? false;
+
+            m.quoted.fromMe =
+                Boolean(contextFromMe) ||
+                m.quoted.sender === botJid ||
+                (botLid && m.quoted.sender === botLid) ||
+                (botNum && quotedSenderNum === botNum) ||
+                (botLidNum && quotedSenderNum === botLidNum);
 
             m.quoted.text =
                 m.quoted.conversation ||

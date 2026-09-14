@@ -1,4 +1,3 @@
-import { Jimp, JimpMime } from 'jimp';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
@@ -48,6 +47,7 @@ export const getWerewolfImage = async (url, width = 640, height = 360) => {
         cache.set(
             key,
             (async () => {
+                const { Jimp, JimpMime } = await import('jimp');
                 const image = await Jimp.read(await fetchImage(url));
                 image.resize({ w: width, h: height });
                 return image.getBuffer(JimpMime.jpeg, { quality: 82 });

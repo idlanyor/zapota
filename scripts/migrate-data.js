@@ -22,7 +22,7 @@ if (!fs.existsSync(path.dirname(dbPath))) {
 }
 
 const knex = knexFactory({
-    client: 'better-sqlite3',
+    client: 'sqlite3',
     connection: {
         filename: dbPath,
     },

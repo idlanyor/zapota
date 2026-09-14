@@ -1,5 +1,10 @@
-import puppeteer from 'puppeteer';
 import logger from '../utils/logger.js';
+
+let _puppeteer;
+const getPuppeteer = async () => {
+    if (!_puppeteer) ({ default: _puppeteer } = await import('puppeteer'));
+    return _puppeteer;
+};
 
 let browserInstance = null;
 let pageCounter = 0;
@@ -47,6 +52,7 @@ export const getBrowser = async () => {
     }
 
     logger.info('Launching a new global Puppeteer browser instance...', 'BROWSER');
+    const puppeteer = await getPuppeteer();
     browserInstance = await puppeteer.launch(launchOptions);
     pageCounter = 0;
     return browserInstance;

@@ -1,5 +1,10 @@
-import { createCanvas, loadImage } from 'canvas';
 import { fileURLToPath } from 'node:url';
+
+let _canvas;
+const getCanvas = async () => {
+    if (!_canvas) _canvas = await import('canvas');
+    return _canvas;
+};
 
 const WIDTH = 1200;
 const HEIGHT = 760;
@@ -104,6 +109,7 @@ export const renderKtp = async ({
     bintangKorupsi,
     avatarBuffer = null,
 }) => {
+    const { createCanvas, loadImage } = await getCanvas();
     const canvas = createCanvas(WIDTH, HEIGHT);
     const ctx = canvas.getContext('2d');
 

@@ -1,18 +1,13 @@
 import { disconnectReason as DisconnectReason } from '../wa/reasons.js';
-import qrcode from 'qrcode-terminal';
 import cron from 'node-cron';
-import axios from 'axios';
-import fsExtra from 'fs-extra';
 import { messageHandler, clearSettingsCache } from '../handlers/messageHandler.js';
 import { groupParticipantsUpdate, handleMessagesUpdate } from '../handlers/groupHandler.js';
 import logger from '../utils/logger.js';
-import { sendBackupToOwner } from './backup.js';
 import Server from '../database/models/Server.js';
 import Group from '../database/models/Group.js';
 import { botSocket } from './socket.js';
 import { cleanupCaches } from '../handlers/messageFlow.js';
 import Poll from '../database/models/Poll.js';
-import { cleanupChatHistories } from '../lib/ai.js';
 
 const safeAck = (ack, payload) => {
     if (typeof ack === 'function') ack(payload);
@@ -121,7 +116,9 @@ export const registerSocketEvents = ({
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            qrcode.generate(qr, { small: true });
+            import('qrcode-terminal').then(({ default: qrcode }) => {
+                qrcode.generate(qr, { small: true });
+            });
         }
 
         if (connection === 'close') {
@@ -192,6 +189,7 @@ const scheduleBackup = (sock) => {
         '0 0 * * *',
         async () => {
             logger.info('Running automated database backup...');
+            const { sendBackupToOwner } = await import('./backup.js');
             await sendBackupToOwner(sock);
         },
         { scheduled: true, timezone: 'Asia/Jakarta' }
@@ -210,6 +208,7 @@ const scheduleAutoSuspend = (sock) => {
                 });
                 if (expiredServers.length === 0) return;
 
+                const { default: axios } = await import('axios');
                 const ptero = axios.create({
                     baseURL: `${process.env.PTERO_URL}/api/application`,
                     headers: {
@@ -277,6 +276,7 @@ const scheduleCacheCleanup = () => {
         '*/10 * * * *',
         async () => {
             try {
+                const { cleanupChatHistories } = await import('../lib/ai.js');
                 const chatCleaned = cleanupChatHistories();
                 const cacheCleaned = cleanupCaches();
                 // Shim DB tidak mendukung TTL index — poll >7 hari dihapus manual.

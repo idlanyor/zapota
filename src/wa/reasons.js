@@ -1,3 +1,21 @@
-import { DisconnectReason } from 'baileys';
-
-export const disconnectReason = DisconnectReason;
+export const disconnectReason = Object.freeze({
+    connectionClosed: 428,
+    connectionLost: 408,
+    connectionReplaced: 440,
+    timedOut: 408,
+    loggedOut: 401,
+    badSession: 500,
+    restartRequired: 515,
+    multideviceMismatch: 411,
+    forbidden: 403,
+    unavailableService: 503,
+    401: 'loggedOut',
+    403: 'forbidden',
+    408: 'timedOut',
+    411: 'multideviceMismatch',
+    428: 'connectionClosed',
+    440: 'connectionReplaced',
+    500: 'badSession',
+    503: 'unavailableService',
+    515: 'restartRequired',
+});

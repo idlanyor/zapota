@@ -1,5 +1,4 @@
 import { jidNormalizedUser } from '../wa/helpers.js';
-import { decryptPollVote } from 'baileys';
 import { createHash } from 'crypto';
 import { decodeJid } from '../utils/serialize.js';
 import { settings } from '../config/settings.js';
@@ -15,6 +14,7 @@ import {
     removeAfk,
     formatAfkDuration,
 } from '../services/afkService.js';
+import logger from '../utils/logger.js';
 
 initAfkCache().catch(() => {});
 
@@ -213,6 +213,7 @@ const handlePollUpdate = async (sock, m) => {
 
             let vote;
             try {
+                const { decryptPollVote } = await import('baileys');
                 vote = decryptPollVote(pollUpdate.vote, {
                     pollCreatorJid,
                     pollMsgId: pollId,
@@ -225,6 +226,7 @@ const handlePollUpdate = async (sock, m) => {
                     pollCreatorJid === meLid &&
                     meLid !== meJid
                 ) {
+                    const { decryptPollVote } = await import('baileys');
                     vote = decryptPollVote(pollUpdate.vote, {
                         pollCreatorJid: meJid,
                         pollMsgId: pollId,
@@ -407,16 +409,59 @@ export const handleOwnerAgentTrigger = async (sock, m, isOwner) => {
     const botLid = sock.user?.lid ? decodeJid(sock.user.lid) : null;
     const mentioned = (m.mentionedJid || []).map((jid) => decodeJid(jid) || jid);
     const isBotMentioned = mentioned.some((jid) => jid === botJid || (botLid && jid === botLid));
-    if (!isBotMentioned) return false;
+
+    const botNum = botJid ? botJid.split('@')[0].split(':')[0] : null;
+    const botLidNum = botLid ? botLid.split('@')[0].split(':')[0] : null;
+    const quotedSenderNum = m.quoted?.sender ? m.quoted.sender.split('@')[0].split(':')[0] : null;
+
+    const isReplyingBot = Boolean(
+        m.quoted && (
+            m.quoted.fromMe ||
+            m.quoted.sender === botJid ||
+            (botLid && m.quoted.sender === botLid) ||
+            (botNum && quotedSenderNum === botNum) ||
+            (botLidNum && quotedSenderNum === botLidNum)
+        )
+    );
+
+    if (!isBotMentioned && !isReplyingBot) return false;
+
+    // Bersihkan mention bot dari text prompt agar prompt bersih
+    if (botNum) {
+        m.body = m.body.replace(new RegExp(`@${botNum}`, 'g'), '').trim();
+    }
+    if (botLidNum) {
+        m.body = m.body.replace(new RegExp(`@${botLidNum}`, 'g'), '').trim();
+    }
+
+    logger.agent({
+        phase: 'PROMPT',
+        room: m.isGroup ? m.metadata?.subject || m.chat : 'Private',
+        sender: m.pushName || m.sender?.split('@')[0] || 'Owner',
+        action: m.body,
+    });
 
     await m.react('🤔');
     try {
-        const { runOwnerAgent } = await import('../services/ownerAgent.js');
-        const response = await runOwnerAgent(sock, m);
+        const { generateAIResponse } = await import('../lib/ai.js');
+        const response = await generateAIResponse({
+            sock,
+            m,
+            prompt: m.body,
+            chatId: m.chat,
+            isOwner: true,
+        });
         await m.reply(response);
         await m.react('✅');
     } catch (error) {
-        console.error('Owner Agent Error:', error);
+        logger.agent({
+            phase: 'FAIL',
+            room: m.isGroup ? m.metadata?.subject || m.chat : 'Private',
+            sender: m.pushName || m.sender?.split('@')[0] || 'Owner',
+            action: m.body,
+            result: error.message,
+        });
+        logger.error(error, 'Owner Agent Error');
         await m.react('❌');
         await m.reply(`❌ Owner Agent error: ${error.message}`);
     }

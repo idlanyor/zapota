@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 const dbPath = process.env.SQLITE_PATH || path.resolve(__dirname, '../../data/bot.db');
 
 const config = {
-    client: 'better-sqlite3',
+    client: 'sqlite3',
     connection: {
         filename: dbPath,
     },

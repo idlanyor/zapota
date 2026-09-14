@@ -1,5 +1,9 @@
 import axios from 'axios';
-import { loadImage } from 'canvas';
+let _canvasLoadImage;
+const getLoadImage = async () => {
+    if (!_canvasLoadImage) ({ loadImage: _canvasLoadImage } = await import('canvas'));
+    return _canvasLoadImage;
+};
 import emojiRegex from 'emoji-regex';
 import fs from 'fs/promises';
 import path from 'path';
@@ -36,6 +40,7 @@ const loadColoredEmoji = async (emoji) => {
                 await fs.mkdir(EMOJI_CACHE_DIR, { recursive: true });
                 await fs.writeFile(cachePath, buffer);
             }
+            const loadImage = await getLoadImage();
             const image = await loadImage(buffer);
             emojiImages.set(code, image);
             return image;

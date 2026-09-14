@@ -1,6 +1,5 @@
 import { getOtakudesuSchedule } from '../../lib/otakudesuScraper.js';
 import { getAnimasuSchedule } from '../../lib/animasuScraper.js';
-import moment from 'moment';
 
 const dayNamesIndonesian = {
     1: 'Senin',
@@ -64,7 +63,7 @@ export default {
             const siteArg = parts.find((p) => p === '1' || p === '2');
             const dayPart = parts.find((p) => DAY_INPUTS.includes(p.replace(/[^a-z]/g, '')));
 
-            const todayName = dayNamesIndonesian[moment().utcOffset('+07:00').day()];
+            const todayName = dayNamesIndonesian[new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })).getDay()];
             const todayKey = dayKey(todayName);
             const dayFilter = dayPart ? dayKey(dayPart) : showAll ? null : todayKey;
             const dayLabel = dayPart

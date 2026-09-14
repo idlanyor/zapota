@@ -1,4 +1,3 @@
-import { createCanvas } from 'canvas';
 import { decodeJid } from '../../utils/serialize.js';
 import { sessionManager } from '../../utils/session.js';
 
@@ -60,7 +59,8 @@ const shortPlayerLabel = (jid, displayName = '') => {
     return `@${number.length > 13 ? `${number.slice(0, 5)}...${number.slice(-5)}` : number}`;
 };
 
-const renderBoardImage = (game, status = '') => {
+const renderBoardImage = async (game, status = '') => {
+    const { createCanvas } = await import('canvas');
     const width = 900;
     const height = 1100;
     const canvas = createCanvas(width, height);
@@ -260,7 +260,7 @@ const sendBoard = async (sock, m, game, footer = '', status = '') => {
         return await sock.sendMessage(
             m.chat,
             {
-                image: renderBoardImage(game, status),
+                image: await renderBoardImage(game, status),
                 caption: renderCaption(game, footer),
                 mentions,
             },
@@ -278,7 +278,7 @@ const finishGame = async (sock, m, game, result, imageStatus) => {
         await sock.sendMessage(
             m.chat,
             {
-                image: renderBoardImage(game, imageStatus),
+                image: await renderBoardImage(game, imageStatus),
                 caption: result,
                 mentions,
             },

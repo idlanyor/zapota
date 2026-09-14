@@ -1,4 +1,3 @@
-import PDFDocument from 'pdfkit';
 
 const M = 50;
 const PAGE_W = 595.28;
@@ -159,7 +158,8 @@ const ensureRoom = (doc, needed) => {
     if (doc.y + needed > PAGE_H - M) doc.addPage();
 };
 
-const render = (blocks) => {
+const render = async (blocks) => {
+    const { default: PDFDocument } = await import('pdfkit');
     const doc = new PDFDocument({ size: 'A4', margin: M, info: { Title: 'mdpdf' } });
     const chunks = [];
     doc.on('data', (c) => chunks.push(c));

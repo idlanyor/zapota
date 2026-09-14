@@ -1,10 +1,25 @@
 import { commands } from './commands.js';
 import { executeBotCommand, runShellTool } from '../services/ownerAgent.js';
+import {
+    listPlugins,
+    readPlugin,
+    savePlugin,
+    deletePlugin,
+    togglePlugin,
+    installPackage,
+    uninstallPackage,
+    gitStatus,
+    gitDiff,
+    gitCommit,
+    gitRollback,
+    validateCodeSnippet,
+} from '../services/selfManagementService.js';
+import logger from '../utils/logger.js';
 
 const CHAT_HISTORY_TTL_MS = 30 * 60 * 1000;
 const MAX_CHAT_HISTORY_SIZE = 15;
 const MAX_TOTAL_CHATS = 100;
-const MAX_TOOL_ITERATIONS = 8;
+const MAX_TOOL_ITERATIONS = 20;
 const chatHistories = new Map();
 
 const getApiConfig = () => {
@@ -223,12 +238,19 @@ const commandCatalog = (isOwner) => {
         .join('\n');
 };
 
-const buildSystemInstruction = (customSystemInstruction, isOwner) => {
+const buildSystemInstruction = (customSystemInstruction, isOwner, m = null) => {
     const persona = customSystemInstruction
         ? customSystemInstruction
         : `Kamu adalah KanataBot, asisten AI yang cerdas. Selalu jawab dalam Bahasa Indonesia kecuali diminta lain. Jangan gunakan emoji kecuali pengguna memintanya.`;
 
+    const chatContext = m?.isGroup
+        ? `Kamu sedang diajak bicara di sebuah GRUP WhatsApp "${m.metadata?.subject || 'Grup'}". ${isOwner ? 'Pengirim pesan saat ini adalah OWNER bot (kenali dia sebagai Owner/pemilikmu).' : 'Pengirim pesan saat ini BUKAN Owner.'}`
+        : `Kamu sedang diajak bicara di PRIVATE CHAT. ${isOwner ? 'Pengguna saat ini adalah OWNER bot.' : 'Pengguna saat ini BUKAN Owner.'}`;
+
     return `${persona}
+
+Konteks Percakapan:
+${chatContext}
 
 Waktu saat ini: ${new Date().toLocaleString('id-ID', {
         timeZone: 'Asia/Jakarta',
@@ -239,7 +261,8 @@ Waktu saat ini: ${new Date().toLocaleString('id-ID', {
 Gunakan format WhatsApp: *tebal*, _miring_, \`kode\`, dan blok kode tiga backtick. Jangan gunakan markdown double-asterisk.
 Kamu dapat menjalankan command bot yang relevan melalui run_bot_command. Gunakan nama command tanpa prefix dan jangan mengarang nama command.
 Setelah tool selesai, baca hasil tool secara harfiah. Jika hasil menyatakan media atau output sudah dikirim, katakan bahwa output sudah dikirim dan jangan menyebutnya masih diproses atau akan segera dikirim.
-${isOwner ? 'Pengguna ini adalah Owner dan kamu juga dapat memakai run_shell bila memang diperlukan.' : 'Pengguna ini bukan Owner. Kamu tidak memiliki akses shell atau command khusus Owner.'}
+${isOwner ? `Pengguna ini adalah OWNER bot dan memiliki akses penuh ke fitur Self-Management (plugin_list, plugin_read, plugin_write, plugin_delete, plugin_toggle, plugin_test, pkg_install, pkg_uninstall, git_status, git_diff, git_commit, git_rollback) serta run_shell bila diperlukan.
+Bila Owner meminta bantuan membuat/memperbaiki fitur, baca kodenya dengan plugin_read, perbaiki, tulis dengan plugin_write, dan bila perlu install library dengan pkg_install atau simpan dengan git_commit.` : 'Pengguna ini bukan Owner. Kamu tidak memiliki akses shell atau command khusus Owner.'}
 
 Command yang tersedia:
 ${commandCatalog(isOwner)}`;
@@ -263,18 +286,151 @@ const buildTools = (isOwner) => {
     ];
 
     if (isOwner) {
-        availableTools.push({
-            name: 'run_shell',
-            description:
-                'Jalankan command shell pada server bot. Command destruktif akan ditahan untuk konfirmasi manual.',
-            input_schema: {
-                type: 'object',
-                properties: {
-                    command: { type: 'string', description: 'Command shell yang akan dijalankan' },
+        availableTools.push(
+            {
+                name: 'run_shell',
+                description:
+                    'Jalankan command shell pada server bot. Command destruktif akan ditahan untuk konfirmasi manual.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        command: { type: 'string', description: 'Command shell yang akan dijalankan' },
+                    },
+                    required: ['command'],
                 },
-                required: ['command'],
             },
-        });
+            {
+                name: 'plugin_list',
+                description: 'Daftar semua plugin bot yang terpasang beserta kategori dan status aktif/nonaktifnya.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        category: { type: 'string', description: 'Filter kategori (opsional)' },
+                    },
+                },
+            },
+            {
+                name: 'plugin_read',
+                description: 'Membaca kode sumber lengkap dari sebuah file plugin/command.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string', description: 'Nama plugin/command yang ingin dibaca' },
+                    },
+                    required: ['name'],
+                },
+            },
+            {
+                name: 'plugin_write',
+                description: 'Membuat atau memperbarui file plugin bot. Kode akan divalidasi syntax dan auto-rollback jika gagal diimpor.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string', description: 'Nama plugin/command (huruf kecil tanpa spasi, misal "gempa" atau "remind")' },
+                        category: { type: 'string', description: 'Kategori folder di src/commands/ (contoh: "tools", "info", "general", "ai", "downloader")' },
+                        code: { type: 'string', description: 'Kode lengkap JavaScript (ES Module) untuk plugin' },
+                    },
+                    required: ['name', 'category', 'code'],
+                },
+            },
+            {
+                name: 'plugin_delete',
+                description: 'Menghapus plugin dari bot dengan auto-backup.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string', description: 'Nama plugin yang ingin dihapus' },
+                    },
+                    required: ['name'],
+                },
+            },
+            {
+                name: 'plugin_toggle',
+                description: 'Mengaktifkan (enable) atau menonaktifkan (disable) suatu plugin bot.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string', description: 'Nama plugin' },
+                        enable: { type: 'boolean', description: 'True untuk aktifkan, False untuk nonaktifkan' },
+                    },
+                    required: ['name', 'enable'],
+                },
+            },
+            {
+                name: 'plugin_test',
+                description: 'Uji syntax string kode JavaScript sebelum disimpan.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        code: { type: 'string', description: 'Kode JavaScript yang ingin diuji' },
+                    },
+                    required: ['code'],
+                },
+            },
+            {
+                name: 'pkg_install',
+                description: 'Install npm package / library ke dalam bot.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        packageName: { type: 'string', description: 'Nama package npm (bisa include versi)' },
+                        dev: { type: 'boolean', description: 'Simpan sebagai devDependencies jika true' },
+                    },
+                    required: ['packageName'],
+                },
+            },
+            {
+                name: 'pkg_uninstall',
+                description: 'Uninstall/hapus package dari dependencies bot.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        packageName: { type: 'string', description: 'Nama package npm yang ingin dihapus' },
+                    },
+                    required: ['packageName'],
+                },
+            },
+            {
+                name: 'git_status',
+                description: 'Melihat status file yang berubah pada git repository bot.',
+                input_schema: {
+                    type: 'object',
+                    properties: {},
+                },
+            },
+            {
+                name: 'git_diff',
+                description: 'Melihat diff perubahan kode git repository.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        target: { type: 'string', description: 'Target file (opsional)' },
+                    },
+                },
+            },
+            {
+                name: 'git_commit',
+                description: 'Melakukan git add dan git commit untuk menyimpan perubahan bot.',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string', description: 'Pesan commit' },
+                        files: { type: 'string', description: 'File spesifik atau "." untuk semua (default ".")' },
+                    },
+                    required: ['message'],
+                },
+            },
+            {
+                name: 'git_rollback',
+                description: 'Mengembalikan perubahan kode di src/commands ke commit git sebelumnya (HEAD).',
+                input_schema: {
+                    type: 'object',
+                    properties: {
+                        target: { type: 'string', description: 'Target commit atau branch (default "HEAD")' },
+                    },
+                },
+            }
+        );
     }
 
     return availableTools;
@@ -323,7 +479,7 @@ export const generateAIResponse = async ({
             {
                 model: process.env.AI_AGENT_MODEL || 'Kanata',
                 max_tokens: 4096,
-                system: buildSystemInstruction(customSystemInstruction, isOwner),
+                system: buildSystemInstruction(customSystemInstruction, isOwner, m),
                 tools: buildTools(isOwner),
                 messages,
             },
@@ -358,9 +514,89 @@ export const generateAIResponse = async ({
                 );
             } else if (toolUse.name === 'run_shell' && isOwner) {
                 result = await runShellTool(m, toolUse.input.command);
+            } else if (toolUse.name === 'plugin_list' && isOwner) {
+                const list = listPlugins();
+                const filtered = toolUse.input?.category
+                    ? list.filter((p) => p.category.toLowerCase() === toolUse.input.category.toLowerCase())
+                    : list;
+                result = `Total ${filtered.length} plugin:\n` +
+                    filtered.map((p) => `- ${p.name} [${p.category}] ${p.disabled ? '(NONAKTIF)' : '(AKTIF)'}`).join('\n');
+            } else if (toolUse.name === 'plugin_read' && isOwner) {
+                try {
+                    const data = readPlugin(toolUse.input.name);
+                    result = `File: ${data.filePath}\nStatus: ${data.isDisabled ? 'NONAKTIF' : 'AKTIF'}\n\n${data.content}`;
+                } catch (e) {
+                    result = `Gagal membaca plugin: ${e.message}`;
+                }
+            } else if (toolUse.name === 'plugin_write' && isOwner) {
+                const saveRes = await savePlugin({
+                    name: toolUse.input.name,
+                    category: toolUse.input.category,
+                    code: toolUse.input.code,
+                });
+                if (saveRes.success) {
+                    result = `Berhasil menyimpan plugin "${toolUse.input.name}" di "${saveRes.filePath}". Plugin otomatis aktif dan terdaftar di bot runtime.`;
+                } else {
+                    result = `Gagal menyimpan plugin: ${saveRes.error}${saveRes.rolledBack ? ' (Otomatis di-rollback/dibatalkan)' : ''}`;
+                }
+            } else if (toolUse.name === 'plugin_delete' && isOwner) {
+                try {
+                    const delRes = await deletePlugin(toolUse.input.name);
+                    result = `Plugin "${toolUse.input.name}" berhasil dihapus. Backup tersimpan di: ${delRes.backupPath}`;
+                } catch (e) {
+                    result = `Gagal menghapus plugin: ${e.message}`;
+                }
+            } else if (toolUse.name === 'plugin_toggle' && isOwner) {
+                try {
+                    const togRes = await togglePlugin(toolUse.input.name, toolUse.input.enable);
+                    result = `Toggle plugin berhasil: ${togRes.message || (togRes.enabled ? 'Aktif' : 'Nonaktif')}`;
+                } catch (e) {
+                    result = `Gagal toggle plugin: ${e.message}`;
+                }
+            } else if (toolUse.name === 'plugin_test' && isOwner) {
+                const valRes = await validateCodeSnippet(toolUse.input.code);
+                result = valRes.valid ? 'Syntax valid, tidak ada error.' : `Syntax Error: ${valRes.error}`;
+            } else if (toolUse.name === 'pkg_install' && isOwner) {
+                try {
+                    const pkgRes = await installPackage(toolUse.input.packageName, toolUse.input.dev);
+                    result = `Package berhasil diinstall via ${pkgRes.manager}:\n${pkgRes.output || 'Selesai.'}`;
+                } catch (e) {
+                    result = `Gagal install package: ${e.message}`;
+                }
+            } else if (toolUse.name === 'pkg_uninstall' && isOwner) {
+                try {
+                    const unRes = await uninstallPackage(toolUse.input.packageName);
+                    result = `Package berhasil diuninstall via ${unRes.manager}:\n${unRes.output || 'Selesai.'}`;
+                } catch (e) {
+                    result = `Gagal uninstall package: ${e.message}`;
+                }
+            } else if (toolUse.name === 'git_status' && isOwner) {
+                result = await gitStatus();
+            } else if (toolUse.name === 'git_diff' && isOwner) {
+                result = await gitDiff(toolUse.input?.target || '');
+            } else if (toolUse.name === 'git_commit' && isOwner) {
+                try {
+                    result = await gitCommit(toolUse.input.message, toolUse.input.files || '.');
+                } catch (e) {
+                    result = `Gagal commit git: ${e.message}`;
+                }
+            } else if (toolUse.name === 'git_rollback' && isOwner) {
+                try {
+                    result = await gitRollback(toolUse.input?.target || 'HEAD');
+                } catch (e) {
+                    result = `Gagal rollback git: ${e.message}`;
+                }
             } else {
                 result = 'Tool tidak tersedia untuk pengguna ini.';
             }
+
+            logger.agent({
+                phase: 'TOOL',
+                room: m?.isGroup ? m.metadata?.subject || m.chat : 'Private',
+                sender: m?.pushName || m?.sender?.split('@')[0] || '',
+                action: `${toolUse.name}(${JSON.stringify(toolUse.input || {}).slice(0, 50)})`,
+                result: String(result).replace(/\n/g, ' ').slice(0, 60),
+            });
 
             toolResults.push({
                 type: 'tool_result',
@@ -372,7 +608,37 @@ export const generateAIResponse = async ({
         messages.push({ role: 'user', content: toolResults });
     }
 
-    if (!finalText) finalText = 'AI berhenti setelah terlalu banyak iterasi tool.';
+    if (!finalText) {
+        // Jika batas iterasi tercapai saat masih memanggil tool, minta AI menyimpulkan temuan
+        try {
+            messages.push({
+                role: 'user',
+                content: [{ type: 'text', text: 'Berdasarkan semua langkah pengecekan dan investigasi di atas, berikan kesimpulan temuan dan solusinya kepada Owner sekarang.' }],
+            });
+            const summaryRes = await createStreamingMessage({
+                model: process.env.AI_AGENT_MODEL || 'Kanata',
+                max_tokens: 4096,
+                system: buildSystemInstruction(customSystemInstruction, isOwner, m),
+                messages,
+            });
+            finalText = summaryRes.content
+                ?.filter((b) => b.type === 'text')
+                .map((b) => b.text)
+                .join('\n')
+                .replace(/<think>[\s\S]*?<\/think>/gi, '')
+                .trim() || 'AI telah menyelesaikan pemeriksaan.';
+        } catch {
+            finalText = 'AI telah menyelesaikan langkah pemeriksaan namun mencapai batas waktu/iterasi.';
+        }
+    }
+
+    logger.agent({
+        phase: 'DONE',
+        room: m?.isGroup ? m.metadata?.subject || m.chat : 'Private',
+        sender: m?.pushName || m?.sender?.split('@')[0] || '',
+        action: 'Response Generated',
+        result: finalText.replace(/\n/g, ' ').slice(0, 80),
+    });
 
     if (chatId) {
         const storedPrompt = imageBuffer ? `[Gambar terlampir]\n${prompt || ''}`.trim() : prompt;

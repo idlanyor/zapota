@@ -2,6 +2,7 @@ export const apps = [
     {
         name: 'kanata-bot',
         script: './src/index.js',
+        interpreter: '/home/roy/.bun/bin/bun',
         instances: 1,
         exec_mode: 'fork',
         autorestart: true,

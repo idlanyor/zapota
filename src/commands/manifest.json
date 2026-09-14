@@ -1,0 +1,2788 @@
+[
+  {
+    "file": "src/commands/ai/ai.js",
+    "index": 0,
+    "name": "ai",
+    "aliases": [
+      "gemini",
+      "gmn",
+      "ask",
+      "claude",
+      "kanata"
+    ],
+    "description": "AI Assistant (Claude-compatible) dengan tool command dan shell khusus Owner",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/ai/ds.js",
+    "index": 0,
+    "name": "ds",
+    "aliases": [
+      "deepseek",
+      "dseeker"
+    ],
+    "description": "Tanya DeepSeek AI dengan Web Search & Tool Suite IrengCloud (.ds <pertanyaan>)",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/ai/glm.js",
+    "index": 0,
+    "name": "glm",
+    "aliases": [
+      "glm5",
+      "glmai"
+    ],
+    "description": "Tanya GLM 5.3 Flash AI (Teks & Vision)",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/ai/jmail.js",
+    "index": 0,
+    "name": "jmail",
+    "aliases": [
+      "jemini"
+    ],
+    "description": "Ask Jemini AI (Jmail World Archive AI)",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/ai/ninerouter.js",
+    "index": 0,
+    "name": "ninerouter",
+    "aliases": [
+      "router",
+      "9router"
+    ],
+    "description": "9Router Manager Dashboard (Stats, Usage, Providers, Combos, Keys, Chat)",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/ai/resetai.js",
+    "index": 0,
+    "name": "resetai",
+    "aliases": [
+      "forget",
+      "clearai"
+    ],
+    "description": "Clear AI conversation history",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/ai/translate.js",
+    "index": 0,
+    "name": "translate",
+    "aliases": [
+      "terjemahkan",
+      "tl",
+      "trans",
+      "tr"
+    ],
+    "description": "AI-powered translate (kanata). Reply teks atau inline: .translate <teks> atau --from <source> <teks>",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/ai/vision.js",
+    "index": 0,
+    "name": "vision",
+    "aliases": [
+      "vis",
+      "kanatavision"
+    ],
+    "description": "Analisis gambar menggunakan Elysia Vision API Gateway. Bisa set model kustom.",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/ai/vision2.js",
+    "index": 0,
+    "name": "vision2",
+    "aliases": [
+      "vis2",
+      "dsvision",
+      "deepseekvision"
+    ],
+    "description": "Analisis gambar menggunakan DeepSeek Vision AI (.vision2 <prompt>)",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/blog/createpost.js",
+    "index": 0,
+    "name": "createpost",
+    "aliases": [
+      "postblog",
+      "addpost"
+    ],
+    "description": "Buat postingan blog baru dari WhatsApp",
+    "category": "Blog",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/blog/deletepost.js",
+    "index": 0,
+    "name": "deletepost",
+    "aliases": [
+      "delpost",
+      "removepost"
+    ],
+    "description": "Hapus postingan blog berdasarkan ID atau Nomor",
+    "category": "Blog",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/blog/editpost.js",
+    "index": 0,
+    "name": "editpost",
+    "aliases": [
+      "updatepost"
+    ],
+    "description": "Edit postingan blog",
+    "category": "Blog",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/blog/listposts.js",
+    "index": 0,
+    "name": "listposts",
+    "aliases": [
+      "listblog",
+      "allposts"
+    ],
+    "description": "Lihat semua daftar postingan blog",
+    "category": "Blog",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/adddns.js",
+    "index": 0,
+    "name": "adddns",
+    "aliases": [
+      "subdomain",
+      "dns"
+    ],
+    "description": "Add DNS Record to Cloudflare (Interactive)",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/cloudflare/cf.js",
+    "index": 0,
+    "name": "cf",
+    "aliases": [
+      "cfban",
+      "cfunban",
+      "cfwhitelist",
+      "cflist",
+      "cfasn",
+      "cfasnban",
+      "cfasnunban",
+      "cfasnlist"
+    ],
+    "description": "Cloudflare Account Firewall Management",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/cfasn.js",
+    "index": 0,
+    "name": "cfasn",
+    "aliases": [
+      "cfasnban",
+      "cfasnunban",
+      "cfasnlist"
+    ],
+    "description": "Manage Cloudflare AS number rules (ban/unban/list)",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/cfban.js",
+    "index": 0,
+    "name": "cfban",
+    "aliases": [],
+    "description": "Block IP in Cloudflare",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/cflist.js",
+    "index": 0,
+    "name": "cflist",
+    "aliases": [],
+    "description": "List Cloudflare Access Rules",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/cftest.js",
+    "index": 0,
+    "name": "cftest",
+    "aliases": [
+      "cfcheck",
+      "cft"
+    ],
+    "description": "Menguji konektivitas API Cloudflare",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/cfunban.js",
+    "index": 0,
+    "name": "cfunban",
+    "aliases": [],
+    "description": "Unban IP in Cloudflare",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/cfwhitelist.js",
+    "index": 0,
+    "name": "cfwhitelist",
+    "aliases": [],
+    "description": "Whitelist IP in Cloudflare",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/cfzones.js",
+    "index": 0,
+    "name": "cfzones",
+    "aliases": [
+      "listzones",
+      "cfz"
+    ],
+    "description": "Mengambil daftar domain dari Cloudflare",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/cloudflare/listdns.js",
+    "index": 0,
+    "name": "listdns",
+    "aliases": [],
+    "description": "List DNS Records for a domain",
+    "category": "Cloudflare",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/facebook.js",
+    "index": 0,
+    "name": "fb",
+    "aliases": [
+      "fbdl",
+      "facebook"
+    ],
+    "description": "Download video Facebook via API Utama",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/fb2.js",
+    "index": 0,
+    "name": "fb2",
+    "aliases": [
+      "facebook2",
+      "fbdl2"
+    ],
+    "description": "Download Facebook video via Ammaricano API",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/gitclone.js",
+    "index": 0,
+    "name": "gitclone",
+    "aliases": [
+      "git",
+      "github"
+    ],
+    "description": "Clone a GitHub repository and send it as a ZIP file",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/instagram.js",
+    "index": 0,
+    "name": "ig",
+    "aliases": [
+      "igdl",
+      "instagram"
+    ],
+    "description": "Download media Instagram via API Utama",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/jadwalanime.js",
+    "index": 0,
+    "name": "jadwalanime",
+    "aliases": [
+      "jadwal"
+    ],
+    "description": "Jadwal rilis anime. 1=otakudesu 2=animasu. \"all\"=semua hari.",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/mediafire.js",
+    "index": 0,
+    "name": "mediafire",
+    "aliases": [
+      "mf"
+    ],
+    "description": "Download file MediaFire via API Utama",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/pindl.js",
+    "index": 0,
+    "name": "pindl",
+    "aliases": [
+      "pinterestdl",
+      "pindownload",
+      "pinvid"
+    ],
+    "description": "Download video/gambar dari Pinterest URL",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/pinterest.js",
+    "index": 0,
+    "name": "pinterest",
+    "aliases": [
+      "pin",
+      "pinter"
+    ],
+    "description": "Cari gambar dari Pinterest dengan tampilan Carousel",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/play.js",
+    "index": 0,
+    "name": "play",
+    "aliases": [
+      "p"
+    ],
+    "description": "Search and play audio from YouTube via YTmp3",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/playv.js",
+    "index": 0,
+    "name": "playv",
+    "aliases": [
+      "playvideo",
+      "pv"
+    ],
+    "description": "Cari dan mainkan video YouTube via YTmp3",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/reddit.js",
+    "index": 0,
+    "name": "reddit",
+    "aliases": [
+      "redditdl"
+    ],
+    "description": "Download Reddit video",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/spotify.js",
+    "index": 0,
+    "name": "spotify",
+    "aliases": [
+      "spotdl",
+      "spotifydl",
+      "spdl"
+    ],
+    "description": "Download audio MP3 dari tautan Spotify",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/threads.js",
+    "index": 0,
+    "name": "threads",
+    "aliases": [
+      "threadsdl"
+    ],
+    "description": "Download media Threads via API Utama",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/tiktok.js",
+    "index": 0,
+    "name": "tt",
+    "aliases": [
+      "ttdl",
+      "tiktok",
+      "ttmp3",
+      "ttaudio"
+    ],
+    "description": "Download TikTok via API Utama",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/xdl.js",
+    "index": 0,
+    "name": "xdl",
+    "aliases": [
+      "twdl",
+      "twitterdl"
+    ],
+    "description": "Download media Twitter/X via API Utama",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/ytmp3.js",
+    "index": 0,
+    "name": "ytmp3",
+    "aliases": [
+      "ytaudio",
+      "yta"
+    ],
+    "description": "Download YouTube audio",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/ytmp4.js",
+    "index": 0,
+    "name": "ytmp4",
+    "aliases": [
+      "ytvideo",
+      "ytdl"
+    ],
+    "description": "Download YouTube video (via y2mate / savetube)",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/yts.js",
+    "index": 0,
+    "name": "yts",
+    "aliases": [
+      "ytsearch"
+    ],
+    "description": "Cari Video dari YouTube",
+    "category": "Downloader",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/finance/catat.js",
+    "index": 0,
+    "name": "catat",
+    "aliases": [
+      "transaksi",
+      "bill"
+    ],
+    "description": "Catat transaksi otomatis via suara/teks (Gemini 2.5 Flash)",
+    "category": "Finance",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/finance/hapus.js",
+    "index": 0,
+    "name": "hapus",
+    "aliases": [
+      "delete",
+      "batal",
+      "undo"
+    ],
+    "description": "Hapus transaksi yang salah input",
+    "category": "Finance",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/finance/integrate.js",
+    "index": 0,
+    "name": "integrate",
+    "aliases": [
+      "webauth",
+      "weblogin"
+    ],
+    "description": "Generate atau atur password untuk login ke Dashboard Web",
+    "category": "Finance",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/finance/laporan.js",
+    "index": 0,
+    "name": "laporan",
+    "aliases": [
+      "report",
+      "listtx"
+    ],
+    "description": "Lihat laporan transaksi keuangan (Bulanan/Harian)",
+    "category": "Finance",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 0,
+    "name": "tekateki",
+    "aliases": [
+      "tekateki"
+    ],
+    "description": "Bermain game tekateki",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 1,
+    "name": "tebakkalimat",
+    "aliases": [
+      "tkalimat"
+    ],
+    "description": "Bermain game tebakkalimat",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 2,
+    "name": "caklontong",
+    "aliases": [
+      "caklontong"
+    ],
+    "description": "Bermain game caklontong",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 3,
+    "name": "susunkata",
+    "aliases": [
+      "susunkata"
+    ],
+    "description": "Bermain game susunkata",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 4,
+    "name": "asahotak",
+    "aliases": [
+      "asahotak"
+    ],
+    "description": "Bermain game asahotak",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 5,
+    "name": "tebaklirik",
+    "aliases": [
+      "tlirik"
+    ],
+    "description": "Bermain game tebaklirik",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 6,
+    "name": "maths",
+    "aliases": [
+      "maths"
+    ],
+    "description": "Bermain game maths",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 7,
+    "name": "tebakkata",
+    "aliases": [
+      "tkata"
+    ],
+    "description": "Bermain game tebakkata",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 8,
+    "name": "tebakkimia",
+    "aliases": [
+      "tkimia"
+    ],
+    "description": "Bermain game tebakkimia",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 9,
+    "name": "siapakahaku",
+    "aliases": [
+      "siapakahaku"
+    ],
+    "description": "Bermain game siapakahaku",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 10,
+    "name": "tebakjkt",
+    "aliases": [
+      "tjkt"
+    ],
+    "description": "Bermain game tebakjkt",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 11,
+    "name": "tebakwarna",
+    "aliases": [
+      "twarna"
+    ],
+    "description": "Bermain game tebakwarna",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 12,
+    "name": "tebakbendera",
+    "aliases": [
+      "tbendera"
+    ],
+    "description": "Bermain game tebakbendera",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 13,
+    "name": "tebakkartun",
+    "aliases": [
+      "tkartun"
+    ],
+    "description": "Bermain game tebakkartun",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 14,
+    "name": "tebakgame",
+    "aliases": [
+      "tgame"
+    ],
+    "description": "Bermain game tebakgame",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 15,
+    "name": "karakter-freefire",
+    "aliases": [
+      "karakter-freefire"
+    ],
+    "description": "Bermain game karakter-freefire",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 16,
+    "name": "tebakgambar",
+    "aliases": [
+      "tgambar"
+    ],
+    "description": "Bermain game tebakgambar",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 17,
+    "name": "tebaklagu",
+    "aliases": [
+      "tlagu"
+    ],
+    "description": "Bermain game tebaklagu",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/allgames.js",
+    "index": 18,
+    "name": "tebakheroml",
+    "aliases": [
+      "theroml"
+    ],
+    "description": "Bermain game tebakheroml",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/cerdascermat.js",
+    "index": 0,
+    "name": "cerdascermat",
+    "aliases": [
+      "ccsd",
+      "cc"
+    ],
+    "description": "Bermain game Cerdas Cermat (Pilihan Ganda)",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/family100.js",
+    "index": 0,
+    "name": "family100",
+    "aliases": [
+      "f100",
+      "family"
+    ],
+    "description": "Bermain game Family 100 bersama-sama",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/gameutils.js",
+    "index": 0,
+    "name": "nyerah",
+    "aliases": [
+      "surrender",
+      "giveup"
+    ],
+    "description": "Menyerah dari game yang sedang berlangsung",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/games/gameutils.js",
+    "index": 1,
+    "name": "clue",
+    "aliases": [
+      "hint",
+      "bantuan"
+    ],
+    "description": "Minta bantuan clue untuk game yang sedang berlangsung",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/games/millionaire.js",
+    "index": 0,
+    "name": "millionaire",
+    "aliases": [
+      "miliarder",
+      "kuismiliarder",
+      "wwtbam"
+    ],
+    "description": "Game Kuis Who Wants to Be a Millionaire 15 Level Bahasa Indonesia",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/tictactoe.js",
+    "index": 0,
+    "name": "tictactoe",
+    "aliases": [
+      "ttt",
+      "xo"
+    ],
+    "description": "Tic-Tac-Toe multiplayer dengan lobby maksimal 2 pemain",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": true
+  },
+  {
+    "file": "src/commands/games/tictactoe2.js",
+    "index": 0,
+    "name": "tictactoe2",
+    "aliases": [
+      "ttt2",
+      "tic2"
+    ],
+    "description": "Game Tic Tac Toe interaktif berbasis Meta AI HTML Canvas",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/games/werewolf.js",
+    "index": 0,
+    "name": "ww",
+    "aliases": [],
+    "description": "Werewolf multiplayer untuk grup WhatsApp",
+    "category": "Games",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/general/afk.js",
+    "index": 0,
+    "name": "afk",
+    "aliases": [
+      "setafk",
+      "away"
+    ],
+    "description": "Mengaktifkan status AFK (Away From Keyboard)",
+    "category": "General",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/general/claim.js",
+    "index": 0,
+    "name": "claim",
+    "aliases": [
+      "redeem"
+    ],
+    "description": "Claim a voucher code",
+    "category": "Finance",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/general/createwg.js",
+    "index": 0,
+    "name": "createwg",
+    "aliases": [
+      "registerwg",
+      "reqwg",
+      "wgcreate"
+    ],
+    "description": "Minta akses WireGuard Sakura (butuh konfirmasi owner)",
+    "category": "General",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/add.js",
+    "index": 0,
+    "name": "add",
+    "aliases": [],
+    "description": "Add a member to the group",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/del.js",
+    "index": 0,
+    "name": "del",
+    "aliases": [
+      "delete"
+    ],
+    "description": "Delete a message",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/demote.js",
+    "index": 0,
+    "name": "demote",
+    "aliases": [
+      "dm"
+    ],
+    "description": "Demote an admin to member",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/group.js",
+    "index": 0,
+    "name": "group",
+    "aliases": [],
+    "description": "Manage group settings (open/close)",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/groupstatus.js",
+    "index": 0,
+    "name": "groupstatus",
+    "aliases": [
+      "swgc",
+      "upswgc"
+    ],
+    "description": "Kirim status teks/media ke grup (Full Media Support)",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/hidetag.js",
+    "index": 0,
+    "name": "hidetag",
+    "aliases": [
+      "ht",
+      "tagall"
+    ],
+    "description": "Tag all members in the group",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/kick.js",
+    "index": 0,
+    "name": "kick",
+    "aliases": [],
+    "description": "Kick a member from the group",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/promote.js",
+    "index": 0,
+    "name": "promote",
+    "aliases": [
+      "pm"
+    ],
+    "description": "Promote a member to admin",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/requests.js",
+    "index": 0,
+    "name": "listpending",
+    "aliases": [
+      "pending",
+      "listreq"
+    ],
+    "description": "Liat daftar calon member yang nunggu approval admin",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/requests.js",
+    "index": 1,
+    "name": "approve",
+    "aliases": [
+      "acc"
+    ],
+    "description": "Terima permintaan join member baru via nomor/JID",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/requests.js",
+    "index": 2,
+    "name": "reject",
+    "aliases": [
+      "tolak"
+    ],
+    "description": "Tolak permintaan join member baru via nomor/JID",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/schedule.js",
+    "index": 0,
+    "name": "schedule",
+    "aliases": [
+      "jadwal",
+      "autoschedule"
+    ],
+    "description": "Lihat jadwal auto open/close grup",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/setclose.js",
+    "index": 0,
+    "name": "setclose",
+    "aliases": [],
+    "description": "Atur auto close grup",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/setopen.js",
+    "index": 0,
+    "name": "setopen",
+    "aliases": [],
+    "description": "Atur auto open grup",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/setoption.js",
+    "index": 0,
+    "name": "settings",
+    "aliases": [
+      "setopt",
+      "option"
+    ],
+    "description": "Atur opsi fitur grup (Antilink, Antitoxic, dll)",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/setwelcome.js",
+    "index": 0,
+    "name": "setwelcome",
+    "aliases": [
+      "setw"
+    ],
+    "description": "Atur pesan welcome kustom",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/setwelcome.js",
+    "index": 1,
+    "name": "setleave",
+    "aliases": [
+      "setl"
+    ],
+    "description": "Atur pesan leave kustom",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/setwelcome.js",
+    "index": 2,
+    "name": "setwelcomebg",
+    "aliases": [
+      "setwbg"
+    ],
+    "description": "Atur background gambar welcome (URL gambar)",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/sholat.js",
+    "index": 0,
+    "name": "sholat",
+    "aliases": [
+      "prayer",
+      "adzan"
+    ],
+    "description": "Manage group prayer time reminders",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/group/stalkgc.js",
+    "index": 0,
+    "name": "stalkgc",
+    "aliases": [
+      "gcstalk",
+      "stalkgroup"
+    ],
+    "description": "Cek info grup dari link invite WhatsApp",
+    "category": "Group",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/info/is.js",
+    "index": 0,
+    "name": "is",
+    "aliases": [
+      "system",
+      "status",
+      "botstat"
+    ],
+    "description": "Menampilkan informasi sistem bot",
+    "category": "Info",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/info/menu.js",
+    "index": 0,
+    "name": "menu",
+    "aliases": [
+      "help",
+      "cmd"
+    ],
+    "description": "Show available commands in text format",
+    "category": "Info",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/info/owner.js",
+    "index": 0,
+    "name": "owner",
+    "aliases": [
+      "developer",
+      "creator"
+    ],
+    "description": "Menampilkan kontak owner bot",
+    "category": "Info",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/info/ping.js",
+    "index": 0,
+    "name": "ping",
+    "aliases": [
+      "p",
+      "stats"
+    ],
+    "description": "Check bot status and performance.",
+    "category": "Info",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/islamic/utama.js",
+    "index": 0,
+    "name": "hadits",
+    "aliases": [
+      "hadis"
+    ],
+    "description": "Cari atau baca hadits 9 imam",
+    "category": "Islamic",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/islamic/utama.js",
+    "index": 1,
+    "name": "jadwalsholat",
+    "aliases": [
+      "jadwalshalat"
+    ],
+    "description": "Lihat jadwal sholat berdasarkan kota",
+    "category": "Islamic",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/islamic/utama.js",
+    "index": 2,
+    "name": "khutbah",
+    "aliases": [],
+    "description": "Daftar atau baca khutbah MUI",
+    "category": "Islamic",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/islamic/utama.js",
+    "index": 3,
+    "name": "wirid",
+    "aliases": [],
+    "description": "Akses koleksi wirid dari API Utama",
+    "category": "Islamic",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/islamic/utama.js",
+    "index": 4,
+    "name": "doa",
+    "aliases": [],
+    "description": "Akses koleksi doa dari API Utama",
+    "category": "Islamic",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/islamic/utama.js",
+    "index": 5,
+    "name": "aksara",
+    "aliases": [
+      "aksarajawa"
+    ],
+    "description": "Transliterasi Latin dan Aksara Jawa",
+    "category": "Culture",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/accwg.js",
+    "index": 0,
+    "name": "accwg",
+    "aliases": [
+      "approvewg",
+      "wgacc"
+    ],
+    "description": "ACC Pendaftaran WireGuard Sakura (Khusus Owner)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/addbalance.js",
+    "index": 0,
+    "name": "addbalance",
+    "aliases": [
+      "addbal",
+      "topup"
+    ],
+    "description": "Add balance to a user via Ptero Email (Owner only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/ai-setting.js",
+    "index": 0,
+    "name": "aisetting",
+    "aliases": [
+      "aiconfig",
+      "pvaichat"
+    ],
+    "description": "Manage Auto-AI Mode for Private Chat (Owner Only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/backup.js",
+    "index": 0,
+    "name": "backup",
+    "aliases": [],
+    "description": "Manual Database Backup (Owner only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/ceknews.js",
+    "index": 0,
+    "name": "ceknews",
+    "aliases": [],
+    "description": "Cek metadata newsletter via link",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/cfset.js",
+    "index": 0,
+    "name": "cfset",
+    "aliases": [
+      "setcf"
+    ],
+    "description": "Konfigurasi Cloudflare API",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/debugm.js",
+    "index": 0,
+    "name": "debugm",
+    "aliases": [
+      "debugmsg",
+      "mstruct"
+    ],
+    "description": "Debug message object structure",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/delsrv.js",
+    "index": 0,
+    "name": "delsrv",
+    "aliases": [
+      "deleteserver",
+      "hapusserver"
+    ],
+    "description": "Delete a server from Panel and Database (Owner only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/eval.js",
+    "index": 0,
+    "name": "eval",
+    "aliases": [
+      "exec",
+      "x",
+      ">"
+    ],
+    "description": "Evaluate JavaScript code or execute shell commands (Owner Only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/getplugin.js",
+    "index": 0,
+    "name": "getplugin",
+    "aliases": [
+      "gp"
+    ],
+    "description": "Tampilkan source plugin menggunakan AI Rich code",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/inspect_m.js",
+    "index": 0,
+    "name": "inspect-m",
+    "aliases": [
+      "debugm",
+      "checkm"
+    ],
+    "description": "Debug message object (m) to console",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/inspect.js",
+    "index": 0,
+    "name": "inspect",
+    "aliases": [
+      "m",
+      "debug-m"
+    ],
+    "description": "Mengintip isi objek m (Serialized Message)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/invadmin.js",
+    "index": 0,
+    "name": "invadmin",
+    "aliases": [
+      "admininvite"
+    ],
+    "description": "Undang admin ke Saluran/Newsletter (WA Beta Feature)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/lib.js",
+    "index": 0,
+    "name": "lib",
+    "aliases": [
+      "npm",
+      "package",
+      "pkg",
+      "devsync"
+    ],
+    "description": "Manajemen library/package & git synchronization bot (Owner Only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/listsrv.js",
+    "index": 0,
+    "name": "listsrv",
+    "aliases": [
+      "listserver"
+    ],
+    "description": "List all servers and their owners (Owner only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/mode.js",
+    "index": 0,
+    "name": "mode",
+    "aliases": [
+      "botmode"
+    ],
+    "description": "Ubah mode respon bot (Public/Self/Group)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/mustjoin.js",
+    "index": 0,
+    "name": "mustjoin",
+    "aliases": [
+      "mj",
+      "joincheck"
+    ],
+    "description": "Toggle wajib gabung grup untuk chat pribadi",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/owner-management.js",
+    "index": 0,
+    "name": "addowner",
+    "aliases": [
+      "ao"
+    ],
+    "description": "Menambahkan owner baru",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/owner-management.js",
+    "index": 1,
+    "name": "delowner",
+    "aliases": [
+      "do"
+    ],
+    "description": "Menghapus owner",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/owner-management.js",
+    "index": 2,
+    "name": "listowner",
+    "aliases": [
+      "lo",
+      "ownerlist"
+    ],
+    "description": "Menampilkan daftar owner",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/plugin.js",
+    "index": 0,
+    "name": "plugin",
+    "aliases": [
+      "plug",
+      "pl"
+    ],
+    "description": "Manajemen plugin bot: list, get, toggle, delete, save, reload (Owner Only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/promochannel.js",
+    "index": 0,
+    "name": "promochannel",
+    "aliases": [
+      "pc",
+      "promosi"
+    ],
+    "description": "Kirim pesan dengan label diteruskan dari Saluran",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/puser.js",
+    "index": 0,
+    "name": "puser",
+    "aliases": [
+      "ptero-user"
+    ],
+    "description": "Manage Pterodactyl Users (CRUD)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/rejectwg.js",
+    "index": 0,
+    "name": "rejectwg",
+    "aliases": [
+      "denywg",
+      "wgreject"
+    ],
+    "description": "Tolak Pendaftaran WireGuard Sakura (Khusus Owner)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/reloadenv.js",
+    "index": 0,
+    "name": "reloadenv",
+    "aliases": [],
+    "description": "Reload environment variables from .env file (Owner Only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/setexpired.js",
+    "index": 0,
+    "name": "setexpired",
+    "aliases": [
+      "setexp",
+      "setmasaaktif"
+    ],
+    "description": "Set, list, or sync server expiration (Owner only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/status-config.js",
+    "index": 0,
+    "name": "autoread",
+    "aliases": [
+      "readstatus"
+    ],
+    "description": "On/Off auto view status orang lain",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/testbutton.js",
+    "index": 0,
+    "name": "testbutton",
+    "aliases": [
+      "buttondemo",
+      "demobutton"
+    ],
+    "description": "Kirim pesan test interactive button (khusus owner)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/toggle.js",
+    "index": 0,
+    "name": "toggle",
+    "aliases": [
+      "disable",
+      "enable",
+      "listdisable"
+    ],
+    "description": "Disable or Enable a command",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/owner/voucher.js",
+    "index": 0,
+    "name": "voucher",
+    "aliases": [
+      "genvoucher"
+    ],
+    "description": "Generate voucher code (Owner only)",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/panel/bind.js",
+    "index": 0,
+    "name": "bind",
+    "aliases": [],
+    "description": "Bind your existing Pterodactyl account to your WhatsApp number",
+    "category": "Panel",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/panel/ireng.js",
+    "index": 0,
+    "name": "ireng",
+    "aliases": [
+      "irengvps",
+      "irengbot"
+    ],
+    "description": "Manage your ireng.uk hosting account, servers, invoices, and tickets",
+    "category": "Panel",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/panel/mysrv.js",
+    "index": 0,
+    "name": "mysrv",
+    "aliases": [
+      "listsrv",
+      "vpsku"
+    ],
+    "description": "List your Pterodactyl servers",
+    "category": "Panel",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/panel/panelmanager.js",
+    "index": 0,
+    "name": "panel",
+    "aliases": [
+      "managepanel"
+    ],
+    "description": "Manage your panel (start/stop/restart/status)",
+    "category": "Panel",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/achievement.js",
+    "index": 0,
+    "name": "achievement",
+    "aliases": [
+      "achievements",
+      "prestasi",
+      "gelar"
+    ],
+    "description": "Melihat achievement dan memasang gelar karakter",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/gacharpg.js",
+    "index": 0,
+    "name": "gacharpg",
+    "aliases": [
+      "gacha",
+      "pull",
+      "kotakberkah"
+    ],
+    "description": "Buka Kotak Rezeki Nomplok RPG dengan animasi gacha interaktif",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/healing.js",
+    "index": 0,
+    "name": "healing",
+    "aliases": [
+      "warkop",
+      "rs",
+      "puskesmas",
+      "ngopi",
+      "berobat"
+    ],
+    "description": "Memulihkan HP dan Kewarasan melalui Warkop, Rumah Sakit, atau Liburan",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/kerja.js",
+    "index": 0,
+    "name": "kerja",
+    "aliases": [
+      "cariloker",
+      "lamar",
+      "resign",
+      "sogok_ordal",
+      "loker"
+    ],
+    "description": "Bekerja mencari nafkah atau mencari lowongan pekerjaan baru",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/kopdes.js",
+    "index": 0,
+    "name": "kopdes",
+    "aliases": [
+      "toko",
+      "minimarket",
+      "beli",
+      "belikopdes"
+    ],
+    "description": "Belanja kebutuhan pokok di Minimarket Kopdes Merah Putih",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/korupsi.js",
+    "index": 0,
+    "name": "sunat_dana",
+    "aliases": [
+      "korupsi",
+      "markup",
+      "tilap"
+    ],
+    "description": "Mengambil jalur pintas korupsi anggaran untuk profesi tertentu (High Risk High Reward)",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/mbg.js",
+    "index": 0,
+    "name": "klaim_mbg",
+    "aliases": [
+      "mbg",
+      "makangratis",
+      "makangizigratis"
+    ],
+    "description": "Mengantre Program Makan Bergizi Gratis (MBG) 2026",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/misi.js",
+    "index": 0,
+    "name": "misi",
+    "aliases": [
+      "misiharian",
+      "daily",
+      "klaimmisi"
+    ],
+    "description": "Melihat dan mengambil hadiah misi harian RPG",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/ngutang.js",
+    "index": 0,
+    "name": "ngutang",
+    "aliases": [
+      "pinjol",
+      "tagihan",
+      "bayar_tagihan",
+      "bayartagihan",
+      "bayarhutang"
+    ],
+    "description": "Mengajukan pinjaman dana darurat atau membayar tagihan pinjol/kosan",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/profil.js",
+    "index": 0,
+    "name": "profil",
+    "aliases": [
+      "profilrpg",
+      "status",
+      "ktp",
+      "rpg"
+    ],
+    "description": "Melihat status karakter RPG kehidupan Indonesia 2026",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/status2.js",
+    "index": 0,
+    "name": "status2",
+    "aliases": [
+      "rpgstats",
+      "stat2",
+      "profil2"
+    ],
+    "description": "Tampilkan kartu status RPG interaktif (Meta AI Canvas)",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/rpg/tas.js",
+    "index": 0,
+    "name": "tas",
+    "aliases": [
+      "inventory",
+      "inv",
+      "pakai",
+      "use",
+      "equip"
+    ],
+    "description": "Melihat isi tas dan menggunakan/memakai barang",
+    "category": "RPG",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/sticker/brat.js",
+    "index": 0,
+    "name": "brat",
+    "aliases": [
+      "bratstiker"
+    ],
+    "description": "Create a brat style sticker (Local)",
+    "category": "Sticker",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/sticker/bratvid.js",
+    "index": 0,
+    "name": "bratvid",
+    "aliases": [
+      "bratvideo"
+    ],
+    "description": "Create a brat typing sticker (Local)",
+    "category": "Sticker",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/sticker/smeme.js",
+    "index": 0,
+    "name": "smeme",
+    "aliases": [
+      "stickermeme"
+    ],
+    "description": "Create a sticker with top and bottom text",
+    "category": "Sticker",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/sticker/sticker.js",
+    "index": 0,
+    "name": "sticker",
+    "aliases": [
+      "s",
+      "stiker"
+    ],
+    "description": "Convert image/video to sticker",
+    "category": "Sticker",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/sticker/stickerwm.js",
+    "index": 0,
+    "name": "stickerwm",
+    "aliases": [
+      "swm",
+      "wm"
+    ],
+    "description": "Beri watermark pada sticker (Reply sticker/gambar)",
+    "category": "Sticker",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/sticker/svt.js",
+    "index": 0,
+    "name": "svt",
+    "aliases": [
+      "stickervideotransparan",
+      "sgreen"
+    ],
+    "description": "Buat stiker video transparan (Hapus background warna)",
+    "category": "Sticker",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/sticker/telestick.js",
+    "index": 0,
+    "name": "telestick",
+    "aliases": [
+      "tgsticker",
+      "tgs"
+    ],
+    "description": "Import Stickers from Telegram Pack",
+    "category": "Sticker",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/alice.js",
+    "index": 0,
+    "name": "alice",
+    "aliases": [
+      "vpsalice",
+      "ephemera"
+    ],
+    "description": "Manage Alice Ephemera VPS",
+    "category": "AI",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/carbon.js",
+    "index": 0,
+    "name": "carbon",
+    "aliases": [
+      "carbonize",
+      "codeimg"
+    ],
+    "description": "Create a beautiful image of your code using Carbon",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/cekbank.js",
+    "index": 0,
+    "name": "cekbank",
+    "aliases": [
+      "validatebank",
+      "cekewallet"
+    ],
+    "description": "Validate bank account or e-wallet number",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/compresspdf.js",
+    "index": 0,
+    "name": "compresspdf",
+    "aliases": [
+      "cpdf"
+    ],
+    "description": "Kompres PDF. Reply PDF: .compresspdf [low|recommended|extreme]",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/curl.js",
+    "index": 0,
+    "name": "curl",
+    "aliases": [
+      "curl"
+    ],
+    "description": "Execute a curl command. Supports -X, -H, -d, --data-raw.",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/ffstalk.js",
+    "index": 0,
+    "name": "ffstalk",
+    "aliases": [
+      "ffinfo",
+      "freefirestalk",
+      "stalkff"
+    ],
+    "description": "Cek data akun Free Fire berdasarkan UID",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/get.js",
+    "index": 0,
+    "name": "get",
+    "aliases": [
+      "get"
+    ],
+    "description": "Make a GET request to a URL",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/imgedit.js",
+    "index": 0,
+    "name": "imgedit",
+    "aliases": [
+      "editimg",
+      "nano-banana",
+      "aiimgedit"
+    ],
+    "description": "Edit gambar via Nano Banana API dengan prompt",
+    "category": "tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/lirik.js",
+    "index": 0,
+    "name": "lirik",
+    "aliases": [
+      "lyrics",
+      "lyric"
+    ],
+    "description": "Cari lirik lagu via API Utama",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/mdpdf.js",
+    "index": 0,
+    "name": "mdpdf",
+    "aliases": [
+      "md2pdf",
+      "textopdf",
+      "txt2pdf"
+    ],
+    "description": "Ubah teks/markdown jadi PDF. .mdpdf <teks> atau reply pesan. Support heading, bold, italic, list, code, quote.",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/mergepdf.js",
+    "index": 0,
+    "name": "mergepdf",
+    "aliases": [],
+    "description": "Gabung beberapa PDF. Kirim/reply PDF dgn .mergepdf, lalu .mergepdf done",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/ocr.js",
+    "index": 0,
+    "name": "read",
+    "aliases": [
+      "ocr"
+    ],
+    "description": "Extract text from image (OCR)",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/pdf2img.js",
+    "index": 0,
+    "name": "pdf2img",
+    "aliases": [
+      "pdftoimg",
+      "pdftojpg"
+    ],
+    "description": "Convert PDF to Image (JPG) via iLovePDF",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/post.js",
+    "index": 0,
+    "name": "post",
+    "aliases": [
+      "post"
+    ],
+    "description": "Make a POST request to a URL. Usage: !post <url> | <body>",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/rename.js",
+    "index": 0,
+    "name": "rename",
+    "aliases": [],
+    "description": "Rename dokumen. Reply dokumen: .rename <nama_baru>",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/rvo.js",
+    "index": 0,
+    "name": "rvo",
+    "aliases": [
+      "readviewonce",
+      "lihat"
+    ],
+    "description": "Ambil/Download media dari pesan View Once (Sekali Lihat)",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/smm.js",
+    "index": 0,
+    "name": "smm",
+    "aliases": [],
+    "description": "SMM Panel (IG & TikTok Services) - Owner Only",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/speedtest.js",
+    "index": 0,
+    "name": "speedtest",
+    "aliases": [
+      "speed"
+    ],
+    "description": "Tes kecepatan internet server bot.",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/ssweb.js",
+    "index": 0,
+    "name": "ssweb",
+    "aliases": [
+      "ssweb",
+      "screenshot",
+      "webss"
+    ],
+    "description": "Take a screenshot of a website",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/tesowner.js",
+    "index": 0,
+    "name": "tesowner",
+    "aliases": [
+      "whoami",
+      "debugsender"
+    ],
+    "description": "Debug sender JID/LID and owner status",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/tiktokscan.js",
+    "index": 0,
+    "name": "tiktokscan",
+    "aliases": [
+      "ttscan"
+    ],
+    "description": "Scan all video links from a TikTok profile (Owner Only)",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/toimg.js",
+    "index": 0,
+    "name": "toimg",
+    "aliases": [
+      "toimage",
+      "img"
+    ],
+    "description": "Convert sticker to image",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/tomp3.js",
+    "index": 0,
+    "name": "tomp3",
+    "aliases": [
+      "tomp3audio",
+      "extractaudio"
+    ],
+    "description": "Convert Video/Audio to MP3",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/topdf.js",
+    "index": 0,
+    "name": "topdf",
+    "aliases": [],
+    "description": "Convert image or document to PDF via iLovePDF",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/tourl.js",
+    "index": 0,
+    "name": "tourl",
+    "aliases": [
+      "upload",
+      "toimageurl"
+    ],
+    "description": "Upload media (image, video, audio, sticker, document) to get a public URL",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/tovn.js",
+    "index": 0,
+    "name": "tovn",
+    "aliases": [
+      "tovoicenote",
+      "mp3tovn"
+    ],
+    "description": "Convert Audio/Video to Voice Note (VN)",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/upscale.js",
+    "index": 0,
+    "name": "upscale",
+    "aliases": [
+      "hd",
+      "uphd",
+      "imgup"
+    ],
+    "description": "Upscale gambar via iLoveIMG (tanpa API Key, 2x atau 4x)",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/web2pdf.js",
+    "index": 0,
+    "name": "web2pdf",
+    "aliases": [
+      "web2pdf",
+      "web2md",
+      "webpdf",
+      "webmd"
+    ],
+    "description": "Convert web page to PDF or Markdown document",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/xiykyk.js",
+    "index": 0,
+    "name": "xiykyk",
+    "aliases": [
+      "xanohimitahananonamaewobokutachiwamadashiranai"
+    ],
+    "description": "Private command for search and download.",
+    "category": "Hidden",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/users/balance.js",
+    "index": 0,
+    "name": "balance",
+    "aliases": [
+      "bal",
+      "salda",
+      "saldo"
+    ],
+    "description": "Check your current balance",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/users/profile.js",
+    "index": 0,
+    "name": "profile",
+    "aliases": [
+      "me",
+      "akun"
+    ],
+    "description": "View or edit your Pterodactyl profile",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/users/rebind.js",
+    "index": 0,
+    "name": "rebind",
+    "aliases": [
+      "bindpn",
+      "updateno"
+    ],
+    "description": "Sinkronisasi nomor WhatsApp ke database",
+    "category": "Users",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/users/register.js",
+    "index": 0,
+    "name": "register",
+    "aliases": [
+      "daftar"
+    ],
+    "description": "Register a new Pterodactyl account",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/carousel.js",
+    "index": 0,
+    "name": "carousel",
+    "aliases": [
+      "testcarousel",
+      "cr"
+    ],
+    "description": "Tes fitur Meta AI Native Carousel (kartu video/reels swipe)",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/deliver.js",
+    "index": 0,
+    "name": "deliver",
+    "aliases": [
+      "kirimvps",
+      "sendvps",
+      "orderdone"
+    ],
+    "description": "Send VPS details via PDF (No Emojis). Usage: .deliver <product> | <price> | <ip> | <user> | <pass> | <region> | <due_date>",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/interactivedebug.js",
+    "index": 0,
+    "name": "interactivedebug",
+    "aliases": [
+      "idebug",
+      "debuginteractive"
+    ],
+    "description": "Kirim interactive message minimal untuk debug render client",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/invoice.js",
+    "index": 0,
+    "name": "invoice",
+    "aliases": [
+      "inv",
+      "bill",
+      "tagihan"
+    ],
+    "description": "Create a PDF invoice instantly. Usage: .invoice <item> | <price> | <customer_name> | <qty>",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/listdemo.js",
+    "index": 0,
+    "name": "listdemo",
+    "aliases": [
+      "demolist",
+      "testlist"
+    ],
+    "description": "Demo list message klasik dan interactive single_select",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/lxc.js",
+    "index": 0,
+    "name": "lxc",
+    "aliases": [
+      "proxmox",
+      "node"
+    ],
+    "description": "Manage Proxmox LXC containers from cloud.kanata.web.id",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/order3.js",
+    "index": 0,
+    "name": "order3",
+    "aliases": [
+      "manualorder"
+    ],
+    "description": "Order products manually via admin",
+    "category": "Utility",
+    "buttonPrefix": "order3",
+    "hasHandleButton": true,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/renew.js",
+    "index": 0,
+    "name": "renew",
+    "aliases": [
+      "perpanjang",
+      "extend",
+      "tagih"
+    ],
+    "description": "Send Renewal Invoice (No Credentials). Usage: .renew <product/IP> | <price> | <customer> | <next_due_date>",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/store.js",
+    "index": 0,
+    "name": "store",
+    "aliases": [
+      "buy",
+      "ptero"
+    ],
+    "description": "Pterodactyl VPS Store",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/testrich.js",
+    "index": 0,
+    "name": "testrich",
+    "aliases": [],
+    "description": "Explore AI Rich Responses (Table & Code)",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/testtable.js",
+    "index": 0,
+    "name": "testtable",
+    "aliases": [],
+    "description": "Uji coba rich table via precise botForwardedMessage",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/vnote.js",
+    "index": 0,
+    "name": "vnote",
+    "aliases": [],
+    "description": "Mengirim Video Note (Circular Video)",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/vote.js",
+    "index": 0,
+    "name": "vote",
+    "aliases": [
+      "poll"
+    ],
+    "description": "Membuat pesan voting/poll",
+    "category": "Utility",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/utility/webview.js",
+    "index": 0,
+    "name": "webview",
+    "aliases": [],
+    "description": "Tes tombol Webview (Eksperimental)",
+    "category": "Info",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  }
+]

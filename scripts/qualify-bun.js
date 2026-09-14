@@ -2,16 +2,21 @@ import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import bcrypt from 'bcrypt';
-import Database from 'better-sqlite3';
+import sqlite3 from 'sqlite3';
 import sharp from 'sharp';
 
 const execFileAsync = promisify(execFile);
 
-const db = new Database(':memory:');
-db.exec('CREATE TABLE checks (value TEXT NOT NULL)');
-db.prepare('INSERT INTO checks VALUES (?)').run('ok');
-assert.equal(db.prepare('SELECT value FROM checks').get().value, 'ok');
-db.close();
+const db = new sqlite3.Database(':memory:');
+db.serialize(() => {
+    db.run('CREATE TABLE checks (value TEXT NOT NULL)');
+    db.run('INSERT INTO checks VALUES (?)', ['ok']);
+});
+const checkVal = await new Promise((resolve, reject) =>
+    db.get('SELECT value FROM checks', (err, row) => (err ? reject(err) : resolve(row?.value)))
+);
+assert.equal(checkVal, 'ok');
+await new Promise((resolve) => db.close(resolve));
 
 const hash = await bcrypt.hash('bun-runtime-check', 4);
 assert(await bcrypt.compare('bun-runtime-check', hash));

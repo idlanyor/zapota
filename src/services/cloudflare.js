@@ -1,5 +1,10 @@
 import axios from 'axios';
-import { getCachedSettings } from '../handlers/messageFlow.js';
+
+/** Lazily import getCachedSettings to avoid pulling handlers/messageFlow at boot. */
+const getCachedSettings = async () => {
+    const { getCachedSettings: get } = await import('../handlers/messageFlow.js');
+    return get();
+};
 
 const getHeaders = async () => {
     const settings = await getCachedSettings();

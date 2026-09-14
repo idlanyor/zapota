@@ -23,12 +23,12 @@ import { defineModel, createSchema } from '../adapter.js';
 
 /**
  * Build a fresh in-memory Knex for each test so the tables are isolated.
- * `better-sqlite3` opens a new connection per `:memory:` handle, so we
+ * `sqlite3` opens a new connection per `:memory:` handle, so we
  * must re-create the Knex wrapper (and drop any previous one) per test.
  */
 const freshKnex = () => {
     const k = knexFactory({
-        client: 'better-sqlite3',
+        client: 'sqlite3',
         connection: { filename: ':memory:' },
         useNullAsDefault: true,
     });
@@ -342,7 +342,7 @@ test('on-disk SQLite file works via tmpdir', async () => {
         `adapter-test-${Date.now()}-${Math.random().toString(36).slice(2)}.sqlite`
     );
     const knex = knexFactory({
-        client: 'better-sqlite3',
+        client: 'sqlite3',
         connection: { filename: tmp },
         useNullAsDefault: true,
     });

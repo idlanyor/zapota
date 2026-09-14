@@ -3,6 +3,30 @@ import path from 'path';
 import axios from 'axios';
 import logger from '../../utils/logger.js';
 
+function detectMimeFromUrl(url) {
+    const ext = path.extname(new URL(url).pathname).toLowerCase().replace('.', '');
+    const map = {
+        mp4: 'video/mp4',
+        mkv: 'video/mp4',
+        webm: 'video/webm',
+        mov: 'video/quicktime',
+        mp3: 'audio/mpeg',
+        m4a: 'audio/mp4',
+        ogg: 'audio/ogg; codecs=opus',
+        opus: 'audio/ogg; codecs=opus',
+        wav: 'audio/wav',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        gif: 'image/gif',
+        pdf: 'application/pdf',
+        json: 'application/json',
+        txt: 'text/plain',
+    };
+    return map[ext] || '';
+}
+
 export default {
     name: 'get',
     aliases: ['get'],
@@ -24,16 +48,25 @@ export default {
 
         try {
             const response = await axios.get(url, {
-                timeout: 600000, // 10 minutes timeout for 1GB stream download
-                maxContentLength: 1073741824, // 1GB limit
-                maxBodyLength: 1073741824, // 1GB limit
+                timeout: 600000,
+                maxContentLength: 1073741824,
+                maxBodyLength: 1073741824,
                 responseType: 'stream',
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 },
             });
 
-            const contentType = response.headers['content-type'] || '';
+            const rawContentType = response.headers['content-type'] || '';
+            let mime = rawContentType.split(';')[0].trim().toLowerCase();
+
+            if (!mime || mime === 'application/octet-stream' || mime === 'binary/octet-stream') {
+                const detected = detectMimeFromUrl(url);
+                if (detected) mime = detected;
+            }
+
+            if (mime === 'audio/mp3') mime = 'audio/mpeg';
+
             const writer = fs.createWriteStream(tempFilePath);
             response.data.pipe(writer);
 
@@ -43,63 +76,67 @@ export default {
             });
 
             const stats = fs.statSync(tempFilePath);
-            logger.info(`[DEBUG] GET ${url} - Type: ${contentType} - Size: ${stats.size} bytes`);
+            logger.info(`[DEBUG] GET ${url} - Type: ${mime} (raw: ${rawContentType}) - Size: ${stats.size} bytes`);
 
-            if (contentType.includes('image')) {
+            const statusCaption = `Status: ${response.status} ${response.statusText}`;
+
+            if (mime.startsWith('image/')) {
                 await sock.sendMessage(
                     m.chat,
-                    { image: fs.readFileSync(tempFilePath), caption: `Status: ${response.status} ${response.statusText}` },
+                    { image: fs.readFileSync(tempFilePath), caption: statusCaption },
                     { quoted: m }
                 );
-            } else if (contentType.includes('video')) {
+            } else if (mime.startsWith('video/')) {
                 await sock.sendMessage(
                     m.chat,
                     {
                         video: fs.readFileSync(tempFilePath),
-                        caption: `Status: ${response.status} ${response.statusText}`,
-                        mimetype: contentType,
+                        caption: statusCaption,
+                        mimetype: mime,
                     },
                     { quoted: m }
                 );
-            } else if (contentType.includes('audio')) {
+            } else if (mime.startsWith('audio/')) {
                 await sock.sendMessage(
                     m.chat,
-                    { audio: fs.readFileSync(tempFilePath), mimetype: contentType },
+                    {
+                        audio: fs.readFileSync(tempFilePath),
+                        mimetype: mime,
+                        ptt: false,
+                    },
                     { quoted: m }
                 );
-            } else if (contentType.includes('application/json') || (contentType.includes('text') && stats.size < 10 * 1024 * 1024)) {
+            } else if (mime === 'application/json' || (mime.startsWith('text/') && stats.size < 10 * 1024 * 1024)) {
                 const textData = fs.readFileSync(tempFilePath, 'utf-8');
                 let result = textData;
                 try {
-                    const json = JSON.parse(textData);
-                    result = JSON.stringify(json, null, 2);
-                } catch (e) {
+                    result = JSON.stringify(JSON.parse(textData), null, 2);
+                } catch {
                     result = textData;
                 }
                 try {
                     await m.reply(` *Response:* \n${result}`);
-                } catch (sendErr) {
+                } catch {
                     await sock.sendMessage(
                         m.chat,
                         {
-                            document: { url: tempFilePath },
+                            document: fs.readFileSync(tempFilePath),
                             mimetype: 'text/plain',
                             fileName: 'get-response.txt',
-                            caption: `Status: ${response.status} ${response.statusText}`,
+                            caption: statusCaption,
                         },
                         { quoted: m }
                     );
                 }
             } else {
-                // Send as document via stream
-                const ext = contentType.split('/')[1]?.split(';')[0] || 'bin';
+                const ext = mime.split('/')[1] || path.extname(new URL(url).pathname).replace('.', '') || 'bin';
                 await sock.sendMessage(
                     m.chat,
                     {
-                        document: fs.createReadStream(tempFilePath),
-                        mimetype: contentType || 'application/octet-stream',
+                        document: fs.readFileSync(tempFilePath),
+                        mimetype: mime || 'application/octet-stream',
                         fileName: `response.${ext}`,
-                        caption: `Status: ${response.status} ${response.statusText}\nUkuran: ${(stats.size / (1024 * 1024)).toFixed(2)} MB`,
+                        caption: `${statusCaption}\nUkuran: ${(stats.size / (1024 * 1024)).toFixed(2)} MB`,
                     },
                     { quoted: m }
                 );
@@ -113,7 +150,7 @@ export default {
             if (fs.existsSync(tempFilePath)) {
                 try {
                     fs.unlinkSync(tempFilePath);
-                } catch (e) {}
+                } catch {}
             }
         }
     },

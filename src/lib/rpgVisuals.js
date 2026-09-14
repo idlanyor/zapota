@@ -1,8 +1,18 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { prepareWAMessageMedia } from 'baileys';
-import sharp from 'sharp';
+
+let _sharp;
+const getSharp = async () => {
+    if (!_sharp) ({ default: _sharp } = await import('sharp'));
+    return _sharp;
+};
+
+let _prepareWAMessageMedia;
+const getPrepareWAMessageMedia = async () => {
+    if (!_prepareWAMessageMedia) ({ prepareWAMessageMedia: _prepareWAMessageMedia } = await import('baileys'));
+    return _prepareWAMessageMedia;
+};
 
 const KANATA_SITE_URL = 'https://kanata.irengcloud.com';
 
@@ -81,13 +91,14 @@ export const getRpgThumbnail = async (sceneKey) => {
         thumbnailCache.set(
             sceneKey,
             readFile(config.path)
-                .then((image) =>
-                    sharp(image)
+                .then(async (image) => {
+                    const sharp = await getSharp();
+                    return sharp(image)
                         .flatten({ background: '#ffffff' })
                         .resize(600, 400, { fit: 'cover' })
                         .jpeg({ quality: 78, mozjpeg: true })
-                        .toBuffer()
-                )
+                        .toBuffer();
+                })
                 .catch(() => null)
         );
     }
@@ -152,6 +163,7 @@ export const getRpgHeaderImage = async (sock, sceneKey) => {
                 };
             }
             if (typeof sock.waUploadToServer === 'function') {
+                const prepareWAMessageMedia = await getPrepareWAMessageMedia();
                 const media = await prepareWAMessageMedia(
                     { image: thumbnail },
                     { upload: sock.waUploadToServer }

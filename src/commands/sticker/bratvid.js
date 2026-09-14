@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { settings } from '../../config/settings.js';
-import { createCanvas } from 'canvas';
 import {
     drawRichText,
     preloadColoredEmojis,
@@ -28,6 +27,7 @@ export default {
             await m.react('⏳');
             await preloadColoredEmojis(text);
 
+            const { createCanvas } = await import('canvas');
             const words = text.split(/\s+/);
             const tempDir = path.resolve(`./temp_brat_${Date.now()}`);
             if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);

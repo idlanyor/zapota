@@ -3,9 +3,14 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import axios from 'axios';
-import ffmpeg from 'fluent-ffmpeg';
 import webpMux from 'node-webpmux';
 import sharp from 'sharp';
+
+let _ffmpeg;
+const getFfmpeg = async () => {
+    if (!_ffmpeg) ({ default: _ffmpeg } = await import('fluent-ffmpeg'));
+    return _ffmpeg;
+};
 
 const { Image } = webpMux;
 
@@ -40,6 +45,7 @@ const videoToWebp = async (buffer, quality) => {
 
     try {
         await writeFile(input, buffer);
+        const ffmpeg = await getFfmpeg();
         await new Promise((resolve, reject) => {
             ffmpeg(input)
                 .noAudio()

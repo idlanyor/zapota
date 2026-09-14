@@ -13,6 +13,10 @@ import {
     handleAutoAiPrivate,
     handleOwnerAgentTrigger,
 } from './messageFlow.js';
+const handleDsChat = async (...args) => {
+    const { handleDsChat: handler } = await import('../commands/ai/ds.js');
+    return handler(...args);
+};
 import { handleButtons } from './buttonHandler.js';
 import { sessionManager } from '../utils/session.js';
 import NodeCache from 'node-cache';
@@ -216,6 +220,45 @@ export const messageHandler = async (sock, m) => {
                         .sendMessage(ownerJid, { text: errorMsg, mentions: [m.sender] })
                         .catch(() => {});
                     m.reply(` Terjadi kesalahan. Detail error telah dikirim ke Owner.`);
+                }
+            }
+        } else if (m.body && !m.key.fromMe && !isOwner) {
+            // Trigger DeepSeek jika bot di-tag atau pesan bot di-reply (hanya untuk non-owner)
+            const { botJid, botLid } = getBotIdentity(sock);
+            const mentioned = (m.mentionedJid || []).map((jid) => decodeJid(jid) || jid);
+            const isBotMentioned = mentioned.some(
+                (jid) => jid === botJid || (botLid && jid === botLid)
+            );
+            const botNum = botJid ? botJid.split('@')[0].split(':')[0] : null;
+            const botLidNum = botLid ? botLid.split('@')[0].split(':')[0] : null;
+            const quotedSenderNum = m.quoted?.sender ? m.quoted.sender.split('@')[0].split(':')[0] : null;
+
+            const isReplyingBot = Boolean(
+                m.quoted && (
+                    m.quoted.fromMe ||
+                    m.quoted.sender === botJid ||
+                    (botLid && m.quoted.sender === botLid) ||
+                    (botNum && quotedSenderNum === botNum) ||
+                    (botLidNum && quotedSenderNum === botLidNum)
+                )
+            );
+
+            if (isBotMentioned || isReplyingBot) {
+                // Bersihkan mention bot dari body prompt agar prompt bersih
+                let cleanPrompt = m.body;
+                if (botJid) {
+                    const botNum = botJid.split('@')[0];
+                    cleanPrompt = cleanPrompt.replace(new RegExp(`@${botNum}`, 'g'), '');
+                }
+                if (botLid) {
+                    const botLidNum = botLid.split('@')[0];
+                    cleanPrompt = cleanPrompt.replace(new RegExp(`@${botLidNum}`, 'g'), '');
+                }
+                cleanPrompt = cleanPrompt.trim();
+
+                if (cleanPrompt) {
+                    await handleDsChat(sock, m, cleanPrompt);
+                    return;
                 }
             }
         }

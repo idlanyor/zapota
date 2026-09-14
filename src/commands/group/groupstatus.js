@@ -1,5 +1,4 @@
 import { PassThrough } from 'node:stream';
-import ffmpeg from 'fluent-ffmpeg';
 
 export default {
     name: 'groupstatus',
@@ -93,6 +92,7 @@ export default {
  * Helpers for Audio
  */
 async function toVN(inputBuffer) {
+    const { default: ffmpeg } = await import('fluent-ffmpeg');
     return new Promise((resolve, reject) => {
         const inStream = new PassThrough();
         const outStream = new PassThrough();

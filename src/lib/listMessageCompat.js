@@ -1,4 +1,9 @@
-import { generateWAMessageFromContent, prepareWAMessageMedia, proto } from 'baileys';
+let baileysPromise;
+const getBaileys = async () => {
+    baileysPromise ??= import('baileys');
+    const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = await baileysPromise;
+    return { generateWAMessageFromContent, prepareWAMessageMedia, proto };
+};
 
 const buildRelayOptions = (messageId, options = {}) => {
     const relayOptions = { ...options };
@@ -91,6 +96,7 @@ const buildAdditionalNodes = (jid, message) => {
 };
 
 const buildHeaderMedia = async (sock, payload = {}) => {
+    const { prepareWAMessageMedia } = await getBaileys();
     if (payload.image) {
         return await prepareWAMessageMedia(
             {
@@ -187,6 +193,7 @@ const buildInteractiveListMessage = async (sock, payload = {}) => {
 };
 
 const buildWileysStyleContent = async (sock, payload = {}) => {
+    const { prepareWAMessageMedia, proto } = await getBaileys();
     if (payload.interactiveButtons) {
         let mediaMessage = {};
         if (payload.__preparedMedia) {
@@ -286,6 +293,7 @@ const buildWileysStyleContent = async (sock, payload = {}) => {
 };
 
 const relayContent = async (sock, jid, content, options = {}) => {
+    const { generateWAMessageFromContent } = await getBaileys();
     const normalizedContent =
         content?.interactiveButtons || content?.sections
             ? await buildWileysStyleContent(sock, content)

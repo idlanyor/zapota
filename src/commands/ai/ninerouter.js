@@ -22,11 +22,14 @@ async function getAdminToken() {
         throw new Error(`Login failed (${res.status}): ${txt}`);
     }
 
-    const cookies = res.headers.get('set-cookie');
     let token = null;
-    if (cookies) {
-        const match = cookies.match(/auth_token=([^;]+)/);
-        if (match) token = match[1];
+    const cookieHeaders = res.headers.getSetCookie ? res.headers.getSetCookie() : [res.headers.get('set-cookie')].filter(Boolean);
+    for (const c of cookieHeaders) {
+        const match = c.match(/auth_token=([^;]+)/);
+        if (match) {
+            token = match[1];
+            break;
+        }
     }
 
     if (!token) {
@@ -103,24 +106,37 @@ export default {
 
             if (sub === 'providers' || sub === 'prov') {
                 const provs = await fetchAdmin('/api/providers');
-                const list = Array.isArray(provs) ? provs : provs.providers || [];
+                const list = provs.connections || provs.providers || (Array.isArray(provs) ? provs : []);
 
                 if (list.length === 0) return m.reply('*9Router:* Tidak ada provider terpasang.');
 
                 let out = `*9ROUTER PROVIDERS (${list.length})*\n\n`;
                 list.forEach((p, idx) => {
-                    const status = p.status === 'active' || p.enabled !== false ? 'AKTIF' : 'NONAKTIF';
-                    const name = p.name || p.id || p.provider;
-                    const type = p.type || p.model || 'direct';
-                    out += `${idx + 1}. *${name}* [${status}]\n   Type: \`${type}\`\n`;
+                    let status = 'ONLINE';
+                    if (p.isActive === false) {
+                        status = 'OFF';
+                    } else if (p.testStatus === 'unavailable') {
+                        status = 'UNAVAILABLE';
+                    } else if (p.testStatus === 'error') {
+                        status = 'ERROR';
+                    } else if (p.testStatus === 'active') {
+                        status = 'ONLINE';
+                    } else {
+                        status = (p.testStatus || 'UNKNOWN').toUpperCase();
+                    }
+
+                    const name = p.name || p.provider || p.id;
+                    const prov = p.provider || 'unknown';
+                    const auth = p.authType || 'apikey';
+                    out += `${idx + 1}. *${name}* [${status}]\n   Provider: \`${prov}\` | Auth: \`${auth}\`\n`;
                 });
 
                 return m.reply(out.trim());
             }
 
             if (sub === 'combos' || sub === 'combo') {
-                const combos = await fetchAdmin('/api/combos');
-                const list = Array.isArray(combos) ? combos : combos.combos || [];
+                const data = await fetchAdmin('/api/combos');
+                const list = data.combos || (Array.isArray(data) ? data : []);
 
                 if (list.length === 0) return m.reply('*9Router:* Tidak ada combo router terpasang.');
 
@@ -135,15 +151,16 @@ export default {
             }
 
             if (sub === 'keys' || sub === 'key') {
-                const keys = await fetchAdmin('/api/keys');
-                const list = Array.isArray(keys) ? keys : keys.keys || [];
+                const data = await fetchAdmin('/api/keys');
+                const list = data.keys || (Array.isArray(data) ? data : []);
 
                 let out = `*9ROUTER API KEYS (${list.length})*\n\n`;
                 list.forEach((k, idx) => {
                     const name = k.name || `Key #${idx + 1}`;
                     const prefix = k.key ? `${k.key.substring(0, 10)}...` : (k.prefix || 'sk-***');
-                    const enabled = k.enabled !== false ? 'AKTIF' : 'NONAKTIF';
-                    out += `${idx + 1}. *${name}* [${enabled}]\n   Key: \`${prefix}\`\n`;
+                    const enabled = k.isActive !== false ? 'AKTIF' : 'NONAKTIF';
+                    const models = Array.isArray(k.models) && k.models.length > 0 ? k.models.join(', ') : 'all';
+                    out += `${idx + 1}. *${name}* [${enabled}]\n   Key: \`${prefix}\` | Models: \`${models}\`\n`;
                 });
 
                 return m.reply(out.trim());
@@ -192,11 +209,11 @@ export default {
             help += `• \`.router providers\` : Daftar provider & status\n`;
             help += `• \`.router combos\` : Routing chain fallback\n`;
             help += `• \`.router keys\` : Daftar API keys\n`;
-            help += `• \`.router ask <teks>\` : Test chat inference\n`;
+            help += `• \`.router ask <prompt>\` : Test chat model\n`;
 
             return m.reply(help.trim());
         } catch (err) {
-            return m.reply(`*Error 9Router Manager:* ${err.message}`);
+            return m.reply(`*9Router Error:* ${err.message}`);
         }
     },
 };

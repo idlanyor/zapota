@@ -42,9 +42,9 @@ export default [
                 return m.reply('Tidak ada game yang sedang berlangsung di chat ini.');
             }
 
-            if (session.data.commandName === 'cerdascermat') {
+            if (session.data.commandName === 'cerdascermat' || session.data.commandName === 'millionaire') {
                 return m.reply(
-                    'Game cerdas cermat tidak memiliki clue! Silakan tebak A, B, C, atau D 🤔'
+                    'Game pilihan ganda tidak memiliki clue! Silakan gunakan bantuan *5050*, *call*, atau *poll* jika tersedia 🤔'
                 );
             }
 

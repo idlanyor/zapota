@@ -15,11 +15,17 @@ export default {
             `TEL;type=CELL;type=VOICE;waid=${cleanNumber}:+${cleanNumber}\n` +
             'END:VCARD';
 
-        await sock.sendMessage(m.chat, {
-            contacts: {
-                displayName: ownerName,
-                contacts: [{ vcard }],
-            },
-        }, { quoted: m });
+        try {
+            await sock.sendMessage(m.chat, {
+                contacts: {
+                    displayName: ownerName,
+                    contacts: [{ vcard }],
+                },
+            }, { quoted: m });
+        } catch {
+            await sock.sendMessage(m.chat, {
+                text: `*Owner Bot*\n\nNama: *${ownerName}*\nWhatsApp: https://wa.me/${cleanNumber} (+${cleanNumber})`,
+            }, { quoted: m });
+        }
     },
 };

@@ -1,8 +1,8 @@
-import puppeteer from 'puppeteer';
 import logger from '../../utils/logger.js';
 import { settings } from '../../config/settings.js';
 
 const getTikTokProfileVideos = async (username) => {
+    const { default: puppeteer } = await import('puppeteer');
     const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],

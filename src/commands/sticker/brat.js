@@ -1,6 +1,5 @@
 import { Sticker, StickerTypes } from '../../lib/stickerFormatter.js';
 import { settings } from '../../config/settings.js';
-import { createCanvas } from 'canvas';
 import {
     drawRichText,
     preloadColoredEmojis,
@@ -21,7 +20,8 @@ export default {
             await m.react('⏳');
             await preloadColoredEmojis(text);
 
-            // 1. Create Canvas
+            // 1. Create Canvas — lazy import to avoid pulling canvas(+24MB) at boot
+            const { createCanvas } = await import('canvas');
             const size = 512;
             const canvas = createCanvas(size, size);
             const ctx = canvas.getContext('2d');

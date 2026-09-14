@@ -1,5 +1,11 @@
 import crypto from 'node:crypto';
-import { generateWAMessageContent, generateWAMessageFromContent } from 'baileys';
+
+let baileysStatusPromise;
+const getBaileysStatusFns = async () => {
+    baileysStatusPromise ??= import('baileys');
+    const { generateWAMessageContent, generateWAMessageFromContent } = await baileysStatusPromise;
+    return { generateWAMessageContent, generateWAMessageFromContent };
+};
 
 const MEDIA_KEYS = ['image', 'video', 'audio', 'document', 'sticker'];
 
@@ -56,6 +62,7 @@ const buildMessageContent = async (sock, content = {}) => {
         );
     }
 
+    const { generateWAMessageContent } = await getBaileysStatusFns();
     return await generateWAMessageContent(normalized, generationOptions);
 };
 
@@ -63,6 +70,7 @@ const relayGroupStatus = async (sock, groupJid, content, options = {}) => {
     const builtContent = await buildMessageContent(sock, content);
     const messageSecret = crypto.randomBytes(32);
 
+    const { generateWAMessageFromContent } = await getBaileysStatusFns();
     const msg = generateWAMessageFromContent(
         groupJid,
         {

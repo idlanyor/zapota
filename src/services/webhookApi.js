@@ -7,7 +7,6 @@ import * as financeService from './financeService.js';
 import { jadibotService } from './jadibotService.js';
 import User from '../database/models/User.js';
 import Settings from '../database/models/Settings.js';
-import bcrypt from 'bcrypt';
 import { settings } from '../config/settings.js';
 import * as cloudflare from './cloudflare.js';
 import { getCachedSettings } from '../handlers/messageFlow.js';
@@ -140,6 +139,7 @@ const checkRateLimit = (key) => {
 
 export const startWebhookApi = ({ getSocket }) => {
     const port = Number(process.env.BOT_WEBHOOK_PORT || DEFAULT_PORT);
+    const host = process.env.BOT_WEBHOOK_HOST || '127.0.0.1';
     const token = process.env.BOT_WEBHOOK_TOKEN;
     const allowList = (process.env.BOT_WEBHOOK_ALLOWLIST || '')
         .split(',')
@@ -625,8 +625,8 @@ export const startWebhookApi = ({ getSocket }) => {
         logger.debug('Dashboard client connected via WebSocket', 'WEBHOOK');
     });
 
-    server.listen(port, () => {
-        logger.success(`Listen :${port}`, 'WEBHOOK');
+    server.listen(port, host, () => {
+        logger.success(`Listen ${host}:${port}`, 'WEBHOOK');
     });
 
     server.on('error', (err) => {

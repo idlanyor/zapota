@@ -1,19 +1,17 @@
 import axios from 'axios';
+import FormData from 'form-data';
 import { settings } from '../../config/settings.js';
-import { uploadBufferToKanata } from '../../lib/mediaUpload.js';
 
 export default {
     name: 'imgedit',
-    aliases: ['nano-banana', 'editimg', 'aiimgedit'],
+    aliases: ['editimg', 'nano-banana', 'aiimgedit'],
     description: 'Edit gambar via Nano Banana API dengan prompt',
-    category: 'Tools',
+    category: 'tools',
     execute: async (sock, m, args, text) => {
         try {
             const prompt = (text || args?.join(' ') || '').trim();
             if (!prompt) {
-                return m.reply(
-                    `Reply gambar/sticker dengan prompt.\nContoh: *${settings.prefix}imgedit ubah jadi gaya anime*`
-                );
+                return m.reply(`Reply gambar/sticker dengan prompt.\nContoh: *${settings.prefix}editimg add stylish glasses*`);
             }
 
             const quoted = m.quoted ? m.quoted : m;
@@ -21,49 +19,53 @@ export default {
             const mime = msg.mimetype || '';
 
             if (!/^image\//i.test(mime) && !/sticker/i.test(mime)) {
-                return m.reply(
-                    `Reply gambar/sticker dengan prompt.\nContoh: *${settings.prefix}imgedit ubah jadi gaya anime*`
-                );
+                return m.reply(`Reply gambar/sticker dengan prompt.\nContoh: *${settings.prefix}editimg add stylish glasses*`);
             }
 
             await m.react('⏳');
             const mediaBuffer = await m.downloadMediaMessage(quoted);
             if (!mediaBuffer || !mediaBuffer.length) {
-                return m.reply('Gagal membaca media. Coba kirim ulang gambarnya.');
+                return m.reply('Gagal membaca media.');
             }
 
-            const ext = mime.split('/')[1]?.split(';')[0] || 'jpg';
-            const filename = msg.fileName || msg.filename || `imgedit_${Date.now()}.${ext}`;
-
-            const { url: imageUrl } = await uploadBufferToKanata(mediaBuffer, {
-                filename,
-                mimeType: mime || 'image/jpeg',
-                timeout: 60000,
+            const form = new FormData();
+            form.append('file', mediaBuffer, {
+                filename: 'image.jpg',
+                contentType: 'image/jpeg',
             });
+            form.append('prompt', prompt);
+            form.append('output_format', 'jpg');
+            form.append('generator_slug', 'ai-image-editor');
 
-            await m.react('⚙️');
-            const editRes = await axios.get('https://chocomilk.amira.us.kg/v1/i2i/nano-banana', {
-                params: {
-                    prompt,
-                    image: imageUrl,
+            const res = await axios.post('https://ibbo.ai/api/nano-banana-lite-image-to-image', form, {
+                headers: {
+                    ...form.getHeaders(),
+                    'Origin': 'https://banana-nano.ai',
+                    'Referer': 'https://banana-nano.ai/ai-image-editor',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 },
-                timeout: 120000,
+                timeout: 90000,
             });
 
-            const taskId = editRes.data?.data?.taskId;
-            if (!taskId) {
-                throw new Error(editRes.data?.error || 'Response imgedit tidak valid.');
+            const data = res.data;
+            const resultUrl = data?.data?.image_url;
+
+            if (!data?.success || !resultUrl) {
+                throw new Error(data?.message || data?._raw || 'Gagal memproses gambar dari API.');
             }
 
             const caption = [
-                '*Image Edit Requested*',
-                '',
-                `Prompt: ${prompt}`,
-                `Task ID: ${taskId}`,
-            ].join('\n');
+                `*NanoBanana Image Edit*`,
+                `Prompt: _${prompt}_`,
+                data.data.model ? `Model: ${data.data.model}` : '',
+                data.data.free_usage?.remaining !== undefined ? `Free remaining: ${data.data.free_usage.remaining}` : '',
+            ].filter(Boolean).join('\n');
 
             await m.react('✅');
-            return m.reply(caption);
+            return sock.sendMessage(m.chat, {
+                image: { url: resultUrl },
+                caption: caption,
+            }, { quoted: m });
         } catch (error) {
             console.error('[imgedit] error:', error);
             await m.react('❌');

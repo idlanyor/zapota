@@ -1,5 +1,4 @@
 import cron from 'node-cron';
-import moment from 'moment';
 import Group from '../database/models/Group.js';
 import { get } from './api.js';
 import logger from '../utils/logger.js';
@@ -9,8 +8,11 @@ const scheduleCache = {};
 
 const PRAYER_NAMES = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'];
 
+const getWibDate = () => new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+const getWibTime = () => new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(11, 16);
+
 const fetchSchedule = async (cityId) => {
-    const today = moment().utcOffset(7).format('YYYY-MM-DD');
+    const today = getWibDate();
 
     // Return cached if valid for today
     if (scheduleCache[cityId] && scheduleCache[cityId].date === today) {
@@ -46,9 +48,8 @@ export const startPrayerScheduler = (sock) => {
         '* * * * *',
         async () => {
             try {
-                const now = moment().utcOffset(7);
-                const currentTime = now.format('HH:mm');
-                const todayDate = now.format('YYYY-MM-DD');
+                const currentTime = getWibTime();
+                const todayDate = getWibDate();
 
                 // Find all groups with reminder enabled
                 const groups = await Group.find({ prayerReminder: true });

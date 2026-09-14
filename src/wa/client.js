@@ -1,8 +1,20 @@
 import fs from 'fs';
 import path from 'path';
 import { settings } from '../config/settings.js';
-import { createBaileysAdapter } from './baileysAdapter.js';
-import { createZapoAdapter } from './zapoAdapter.js';
+
+let baileysAdapterPromise;
+const getBaileysAdapter = async () => {
+    baileysAdapterPromise ??= import('./baileysAdapter.js');
+    const { createBaileysAdapter } = await baileysAdapterPromise;
+    return createBaileysAdapter;
+};
+
+let zapoAdapterPromise;
+const getZapoAdapter = async () => {
+    zapoAdapterPromise ??= import('./zapoAdapter.js');
+    const { createZapoAdapter } = await zapoAdapterPromise;
+    return createZapoAdapter;
+};
 
 /**
  * Satu pintu pembuatan koneksi WhatsApp.
@@ -12,6 +24,7 @@ export const createTransport = async ({ sessionId = 'default' } = {}) => {
     const transport = settings.transport === 'zapo' ? 'zapo' : 'baileys';
 
     if (transport === 'baileys') {
+        const createBaileysAdapter = await getBaileysAdapter();
         if (sessionId !== 'default') {
             return createBaileysAdapter({
                 authFolder: path.join('sessions_jadibot', sessionId),
@@ -27,5 +40,6 @@ export const createTransport = async ({ sessionId = 'default' } = {}) => {
 
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
+    const createZapoAdapter = await getZapoAdapter();
     return createZapoAdapter({ storePath: dbPath, sessionId });
 };

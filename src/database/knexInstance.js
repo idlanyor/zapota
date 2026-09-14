@@ -34,10 +34,10 @@ export const buildKnexConfig = (overrides = {}) => {
     const useMemory = process.env.SQLITE_MEMORY === '1' || sqlitePath === ':memory:';
 
     cachedConfig = {
-        client: 'better-sqlite3',
+        client: 'sqlite3',
         connection: useMemory ? ':memory:' : { filename: sqlitePath },
         useNullAsDefault: true,
-        // Foreign-key enforcement is on by default in better-sqlite3,
+        // Foreign-key enforcement: sqlite3 driver needs it via pragma,
         // but we keep migrations consolidated.
         pool: { min: 1, max: 1 },
     };
