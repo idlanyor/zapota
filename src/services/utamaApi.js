@@ -19,7 +19,7 @@ export async function utamaGet(path, params = {}) {
     }
 }
 
-const URL_KEYS = /^(url|urls|media|medias|download|download_url|direct_url|video|videos|video_url|video_hd|video_hd_url|audio|audios|audio_url|image|images|image_url|photo|photos|src|hd|sd)$/i;
+const URL_KEYS = /^(url|urls|media|medias|media_url|media_urls|download|downloads|download_url|download_urls|direct_url|video|videos|video_url|video_urls|video_hd|video_hd_url|audio|audios|audio_url|audio_urls|image|images|image_url|image_urls|photo|photos|src|link|links|hd|sd)$/i;
 
 const normalizeMediaKey = (key) => key.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
 
