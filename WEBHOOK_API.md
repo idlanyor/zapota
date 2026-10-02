@@ -134,6 +134,78 @@ Respons sukses kedua endpoint:
 }
 ```
 
+## GoBiz / QRIS Dinamis
+
+### Generate QRIS Dinamis
+
+`POST /api/webhook/qris/generate`
+
+Endpoint ini menghasilkan payload Dynamic QRIS standar ASPI EMVCo dari merchant GoBiz (`IrengCloud by Antidonasi`), URL gambar QR siap scan, dan opsi langsung mengirimkannya ke nomor WhatsApp pelanggan.
+
+| Field     | Tipe   | Wajib | Keterangan                                                                                             |
+| --------- | ------ | ----- | ------------------------------------------------------------------------------------------------------ |
+| `amount`  | number | Ya    | Nominal tagihan dalam Rupiah (bilangan bulat positif).                                                 |
+| `sendTo`  | string | Tidak | Nomor WhatsApp / JID penerima tagihan. Jika diisi, bot akan otomatis mengirimkan QRIS & teks tagihan. |
+| `caption` | string | Tidak | Kustomisasi teks pesan WhatsApp jika `sendTo` diisi.                                                   |
+
+Contoh Request:
+
+```bash
+curl -X POST http://localhost:8787/api/webhook/qris/generate \
+  -H 'Authorization: Bearer YOUR_WEBHOOK_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "amount": 25000,
+    "sendTo": "628123456789",
+    "caption": "Tagihan Kopi Susu Rp 25.000, silakan scan ya!"
+  }'
+```
+
+Respons sukses:
+
+```json
+{
+    "ok": true,
+    "data": {
+        "amount": 25000,
+        "qris_string": "00020101021226610014COM.GO-JEK.WWW...",
+        "qr_image_url": "https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=...",
+        "sent": true,
+        "messageId": "BAE5D8..."
+    }
+}
+```
+
+### Callback Notifikasi Pembayaran Sukses
+
+`POST /api/webhook/payment/callback`
+
+Endpoint publik ini dapat dipasang sebagai Webhook URL di Payment Gateway (Midtrans, GoBiz/GoPay, Toko Online, atau sistem kasir). Begitu ada pembayaran QRIS lunas, sistem akan otomatis:
+1. Mengirim notifikasi **uang masuk** ke WhatsApp Owner (`settings.ownerNumber`).
+2. Mengirim **struk lunas** otomatis ke WhatsApp pembeli (jika `customer_phone` atau `sendTo` dikirimkan).
+
+| Field                | Tipe   | Wajib | Keterangan                                                              |
+| -------------------- | ------ | ----- | ----------------------------------------------------------------------- |
+| `transaction_status` | string | Ya    | Status transaksi (`settlement`, `capture`, `success`, `paid`).          |
+| `gross_amount`       | number | Ya    | Nominal pembayaran.                                                     |
+| `order_id`           | string | Ya    | ID referensi pesanan.                                                   |
+| `customer_phone`     | string | Tidak | Nomor WhatsApp pelanggan untuk menerima struk pembayaran otomatis.      |
+| `payment_type`       | string | Tidak | Tipe pembayaran (default: `qris`).                                      |
+
+Contoh Request:
+
+```bash
+curl -X POST http://localhost:8787/api/webhook/payment/callback \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "order_id": "INV-2026-001",
+    "gross_amount": 25000,
+    "transaction_status": "settlement",
+    "payment_type": "qris",
+    "customer_phone": "628123456789"
+  }'
+```
+
 ## Finance
 
 ### Laporan transaksi

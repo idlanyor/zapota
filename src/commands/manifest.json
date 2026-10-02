@@ -2343,6 +2343,21 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/tools/qris.js",
+    "index": 0,
+    "name": "qris",
+    "aliases": [
+      "qrisdinamis",
+      "tagihan",
+      "invoice"
+    ],
+    "description": "Generate Dynamic QRIS GoBiz / GoPay toko IrengCloud dengan nominal tertentu",
+    "category": "Tools",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/tools/rename.js",
     "index": 0,
     "name": "rename",

@@ -12,6 +12,7 @@ import * as cloudflare from './cloudflare.js';
 import { getCachedSettings } from '../handlers/messageFlow.js';
 import { decodeJid } from '\.\./utils/serialize\.js';
 import { coreRequest } from './kanataCore.js';
+import * as qrisService from './qrisService.js';
 
 const DEFAULT_PORT = 8787;
 const MAX_BODY_BYTES = 1 * 1024 * 1024; // Increased to 1MB for image/audio data
@@ -160,6 +161,156 @@ export const startWebhookApi = ({ getSocket }) => {
 
         if (method === 'GET' && pathname === '/health') {
             return respond(res, 200, { ok: true, service: 'webhook-api' });
+        }
+
+        // Public Payment Gateway Callback Endpoint (Midtrans / GoBiz / Custom Notification)
+        if (pathname === '/api/webhook/payment/callback' && method === 'POST') {
+            try {
+                const body = await readJsonBody(req);
+                logger.info(`Received Payment Callback: ${JSON.stringify(body)}`, 'WEBHOOK');
+
+                // Extract transaction details from payment payload (GoBiz Native Event, Midtrans, MacroDroid, or custom)
+                const isGobizEvent = !!body.header?.event_name;
+                const gobizTx = body.body?.transaction || {};
+                
+                const eventName = body.header?.event_name || '';
+
+                // Support MacroDroid / Push Notification forwarders
+                const textContent = typeof body === 'string' 
+                    ? body 
+                    : `${body.title || ''} ${body.text || body.message || body.notif_text || body.notif_body || (typeof body.body === 'string' ? body.body : '') || ''}`;
+                
+                let extractedAmount = 0;
+                if (textContent) {
+                    // Match "Rp 25.000", "Rp25,000", "Rp. 50.000", or "sebesar 50000"
+                    const rpMatch = textContent.match(/(?:Rp\.?|sebesar)\s*([0-9]{1,3}(?:[.,][0-9]{3})*|[0-9]+)/i);
+                    if (rpMatch) {
+                        const cleanNum = rpMatch[1].replace(/[.,]/g, '');
+                        extractedAmount = parseInt(cleanNum, 10) || 0;
+                    }
+                }
+
+                const rawAmount =
+                    gobizTx.gross_amount ||
+                    body.gross_amount ||
+                    body.amount ||
+                    body.settlement_amount ||
+                    extractedAmount ||
+                    0;
+                const amount = Math.round(Number(rawAmount));
+
+                // 1. Cek apakah ada invoice di invoiceStore (misal dibuat dari .qris atau API)
+                let invoice = null;
+                const explicitOrderId = gobizTx.order_id || body.order_id || body.transaction_id || gobizTx.id || body.id;
+                if (explicitOrderId) {
+                    invoice = qrisService.markInvoiceSettled(explicitOrderId);
+                }
+                if (!invoice && amount > 0) {
+                    invoice = qrisService.markInvoiceSettledByAmount(amount);
+                }
+
+                const orderId = explicitOrderId || (invoice ? invoice.orderId : `MACRO-${Date.now().toString().slice(-6)}`);
+
+                const status = (
+                    gobizTx.status ||
+                    body.transaction_status ||
+                    body.status ||
+                    (eventName === 'payment.transaction.settlement' ? 'settlement' : '')
+                ).toLowerCase();
+
+                const isNotificationPayment =
+                    textContent &&
+                    /(pembayaran|berhasil|diterima|sukses|settlement|gopay|qris|paid)/i.test(textContent);
+
+                const paymentType = (
+                    gobizTx.payment_type ||
+                    body.payment_type ||
+                    (/(gopay)/i.test(textContent) ? 'GOPAY' : 'QRIS')
+                ).toUpperCase();
+
+                const settlementTime =
+                    gobizTx.settlement_at ||
+                    body.settlement_time ||
+                    body.transaction_time ||
+                    new Date().toLocaleString('id-ID');
+
+                const targetCustomer = body.customer_phone || body.sendTo;
+
+                const isSuccess =
+                    eventName === 'payment.transaction.settlement' ||
+                    status === 'settlement' ||
+                    status === 'capture' ||
+                    status === 'success' ||
+                    status === 'paid' ||
+                    Boolean(isNotificationPayment && amount > 0);
+
+                const sock = getSocket();
+                if (sock) {
+                    const ownerJid = decodeJid(settings.ownerNumber);
+
+                    if (isSuccess) {
+                        const notifOwner =
+                            `*「 NOTIFIKASI PEMBAYARAN SUKSES 」* 🎉\n\n` +
+                            `🏪 *Merchant:* IrengCloud by Antidonasi\n` +
+                            `💰 *Nominal:* *Rp ${amount.toLocaleString('id-ID')}*\n` +
+                            `🔖 *Order ID:* \`${orderId}\`\n` +
+                            `💳 *Metode:* ${paymentType.toUpperCase()}\n` +
+                            `📅 *Waktu:* ${settlementTime}\n\n` +
+                            `_Pembayaran telah berhasil diverifikasi sistem!_`;
+
+                        // 1. Cek apakah ada invoice di invoiceStore (misal dibuat dari .qris atau API)
+                        const invoice = qrisService.markInvoiceSettled(orderId);
+
+                        // 2. Kirim notifikasi ke WhatsApp Owner
+                        if (ownerJid) {
+                            await sock.sendMessage(ownerJid, { text: notifOwner });
+                        }
+
+                        // 3. Jika invoice dibuat dari room chat (.qris di grup/personal chat), kirim konfirmasi lunas ke room tsb
+                        if (invoice && invoice.chatId && invoice.chatId !== ownerJid) {
+                            const notifChat =
+                                `*「 PEMBAYARAN TERKONFIRMASI LUNAS 」* ✅\n\n` +
+                                `Invoice \`${orderId}\` telah berhasil dibayar!\n` +
+                                `💰 *Nominal:* Rp ${amount.toLocaleString('id-ID')}\n` +
+                                `💳 *Metode:* ${paymentType.toUpperCase()}\n` +
+                                `📅 *Waktu:* ${settlementTime}\n\n` +
+                                `_Terima kasih telah melakukan transaksi._`;
+
+                            await sock.sendMessage(invoice.chatId, { text: notifChat });
+                        }
+
+                        // 4. Jika ada nomor pembeli/customer, kirim struk ke pembeli
+                        if (targetCustomer) {
+                            const customerJid = normalizeJid(targetCustomer);
+                            if (customerJid !== ownerJid && (!invoice || customerJid !== invoice.chatId)) {
+                                const notifCustomer =
+                                    `*「 STRUK PEMBAYARAN 」* ✅\n\n` +
+                                    `Halo! Terima kasih, pembayaran Anda telah kami terima:\n\n` +
+                                    `🏪 *Merchant:* IrengCloud by Antidonasi\n` +
+                                    `💰 *Total Bayar:* *Rp ${amount.toLocaleString('id-ID')}*\n` +
+                                    `🔖 *Order ID:* \`${orderId}\`\n` +
+                                    `💳 *Metode:* QRIS\n` +
+                                    `📅 *Waktu:* ${settlementTime}\n\n` +
+                                    `_Pesanan Anda sedang segera diproses._`;
+
+                                await sock.sendMessage(customerJid, { text: notifCustomer });
+                            }
+                        }
+                    } else {
+                        // Notifikasi status lain (expire, pending, cancel) jika dibutuhkan
+                        logger.info(`Payment status ${status} for ${orderId}`, 'WEBHOOK');
+                    }
+                }
+
+                return respond(res, 200, {
+                    ok: true,
+                    message: 'Payment notification processed successfully',
+                    data: { orderId, status, amount },
+                });
+            } catch (err) {
+                logger.error(`Error processing payment callback: ${err.message}`, 'WEBHOOK');
+                return respond(res, 500, { ok: false, error: err.message });
+            }
         }
 
         const ip = getClientIp(req);
@@ -433,6 +584,62 @@ export const startWebhookApi = ({ getSocket }) => {
                     });
                 }
                 return respond(res, 200, { ok: true, data: { to, messageId: result?.key?.id } });
+            }
+
+            // GoBiz / QRIS Endpoints
+            if (pathname === '/api/webhook/qris/generate' && method === 'POST') {
+                const body = await readJsonBody(req);
+                const { amount, sendTo, caption } = body;
+                if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+                    return respond(res, 400, {
+                        ok: false,
+                        error: 'Invalid payload. Required: positive numeric amount',
+                    });
+                }
+
+                try {
+                    const qrisString = qrisService.generateDynamicQris(Number(amount));
+                    const qrImageUrl = qrisService.getQrImageUrl(qrisString);
+
+                    let sendResult = null;
+                    if (sendTo) {
+                        const sock = getSocket();
+                        if (sock) {
+                            const targetJid = normalizeJid(sendTo);
+                            const textCaption =
+                                caption ||
+                                `*TAGIHAN PEMBAYARAN QRIS*\n\n` +
+                                `💰 Nominal: *Rp ${Number(amount).toLocaleString('id-ID')}*\n` +
+                                `🏪 Merchant: *IrengCloud by Antidonasi*\n\n` +
+                                `Silakan scan QRIS di atas melalui GoPay, BCA, Dana, OVO, ShopeePay, atau m-Banking Anda.`;
+
+                            const imageResponse = await fetch(qrImageUrl, {
+                                signal: AbortSignal.timeout(10_000),
+                            });
+                            if (imageResponse.ok) {
+                                const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+                                sendResult = await sock.sendMessage(targetJid, {
+                                    image: imageBuffer,
+                                    caption: textCaption,
+                                    mimetype: 'image/png',
+                                });
+                            }
+                        }
+                    }
+
+                    return respond(res, 200, {
+                        ok: true,
+                        data: {
+                            amount: Number(amount),
+                            qris_string: qrisString,
+                            qr_image_url: qrImageUrl,
+                            sent: !!sendResult,
+                            messageId: sendResult?.key?.id || null,
+                        },
+                    });
+                } catch (err) {
+                    return respond(res, 500, { ok: false, error: err.message });
+                }
             }
 
             // Finance API Endpoints
