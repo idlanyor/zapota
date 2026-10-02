@@ -63,3 +63,8 @@ export const resolveUser = async (value) => {
     const res = await coreRequest('GET', `/v1/identities/resolve?value=${encodeURIComponent(value)}`);
     return res.ok ? res.data : null;
 };
+
+export const attachIdentity = async ({ userId, value, isPrimary = false, claim = true }) => {
+    const res = await coreRequest('POST', '/v1/identities/attach', { userId, value, isPrimary, claim });
+    return res.ok ? res.data : null;
+};

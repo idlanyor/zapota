@@ -2581,7 +2581,7 @@
       "bindpn",
       "updateno"
     ],
-    "description": "Sinkronisasi nomor WhatsApp ke database",
+    "description": "Sinkronisasi nomor WhatsApp ke database dan web dashboard",
     "category": "Users",
     "buttonPrefix": "",
     "hasHandleButton": false,

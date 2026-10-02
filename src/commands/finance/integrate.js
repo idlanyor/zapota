@@ -1,5 +1,6 @@
 import logger from '../../utils/logger.js';
-import { ensureUser, coreRequest } from '../../services/kanataCore.js';
+import { ensureUser, resolveUser, attachIdentity, coreRequest } from '../../services/kanataCore.js';
+import { resolveSenderInfo } from '../../utils/phoneLookup.js';
 
 export default {
     name: 'integrate',
@@ -9,12 +10,7 @@ export default {
     execute: async (sock, m, args) => {
         try {
             const userId = m.sender;
-            const alternateJids = [m.key?.participantAlt, m.key?.remoteJidAlt, m.chatAlt].filter(
-                Boolean
-            );
-            const canonicalJid =
-                alternateJids.find((jid) => jid.endsWith('@s.whatsapp.net')) || userId;
-            const phoneNumber = canonicalJid.split('@')[0].split(':')[0];
+            const { canonicalJid, phoneNumber } = await resolveSenderInfo(m);
             const password = args[0];
 
             if (!password) {
@@ -27,10 +23,66 @@ export default {
                 return m.reply('Password minimal harus 12 karakter.');
             }
 
-            // Pastikan user terdaftar di Kanata Core, lalu set password.
-            const user = await ensureUser({ value: userId, displayName: m.pushName || 'User' });
+            // Cari user yang sudah ada berdasarkan phone number, canonical JID, atau userId
+            let user = null;
+            if (phoneNumber && /^\d{8,15}$/.test(phoneNumber)) {
+                user = await resolveUser(phoneNumber);
+            }
+            if (!user && canonicalJid && canonicalJid.endsWith('@s.whatsapp.net')) {
+                user = await resolveUser(canonicalJid);
+            }
+            if (!user && userId) {
+                user = await resolveUser(userId);
+            }
+
+            // Jika belum ada user, buat baru di Kanata Core
+            if (!user) {
+                const primaryValue =
+                    phoneNumber && /^\d{8,15}$/.test(phoneNumber)
+                        ? phoneNumber
+                        : canonicalJid || userId;
+                user = await ensureUser({
+                    value: primaryValue,
+                    displayName: m.pushName || 'User',
+                    role: m.isOwner ? 'owner' : 'user',
+                });
+            }
             if (!user) throw new Error('Gagal mendaftarkan user ke Core');
 
+            // Sinkronkan role owner bila user adalah owner bot
+            if (m.isOwner && user.role !== 'owner') {
+                await coreRequest('PATCH', `/v1/users/${user.id}`, { role: 'owner' });
+            }
+
+            // Hubungkan semua identitas ke user ID yang sama di Kanata Core
+            const identitiesToAttach = new Set();
+            if (phoneNumber && /^\d{8,15}$/.test(phoneNumber)) {
+                identitiesToAttach.add(phoneNumber);
+            }
+            if (canonicalJid && canonicalJid.endsWith('@s.whatsapp.net')) {
+                identitiesToAttach.add(canonicalJid);
+            }
+            if (userId) {
+                identitiesToAttach.add(userId);
+            }
+            for (const alt of [m.key?.participantAlt, m.key?.remoteJidAlt, m.chatAlt].filter(Boolean)) {
+                if (typeof alt === 'string') identitiesToAttach.add(alt);
+            }
+
+            for (const ident of identitiesToAttach) {
+                try {
+                    await attachIdentity({
+                        userId: user.id,
+                        value: ident,
+                        isPrimary: ident === phoneNumber,
+                        claim: true,
+                    });
+                } catch (e) {
+                    logger.warn(`Gagal attach identity ${ident} ke user ${user.id}: ${e.message}`);
+                }
+            }
+
+            // Set password user di Kanata Core
             const res = await coreRequest('POST', `/v1/users/${user.id}/password`, { password });
             if (!res.ok) throw new Error(res.error || 'Gagal set password');
 

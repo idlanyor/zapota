@@ -38,7 +38,7 @@ export const resolveIdentity = async (value, { includePasswordHash = false } = {
     return publicUser;
 };
 
-export const attachIdentity = async ({ userId, value, isPrimary = false, verified = false }) => {
+export const attachIdentity = async ({ userId, value, isPrimary = false, verified = false, claim = false }) => {
     const identity = classifyIdentity(value);
     const trimmed = String(value).trim();
 
@@ -72,9 +72,13 @@ export const attachIdentity = async ({ userId, value, isPrimary = false, verifie
         if (!stored) throw new Error('Identity upsert did not persist');
 
         if (stored.user_id !== userId) {
-            const error = new Error('Identity already belongs to another user');
-            error.status = 409;
-            throw error;
+            if (claim) {
+                await tx('UPDATE user_identities SET user_id = ? WHERE id = ?', [userId, stored.id]);
+            } else {
+                const error = new Error('Identity already belongs to another user');
+                error.status = 409;
+                throw error;
+            }
         }
 
         if (isPrimary) {

@@ -135,9 +135,9 @@ export const handleRequest = async (request, response) => {
 
         if (request.method === 'POST' && url.pathname === '/v1/identities/attach') {
             if (!hasScope(actor, 'identities')) return json(response, 403, { ok: false, error: 'Forbidden', requestId });
-            const { userId, value, isPrimary } = requireJson(body);
+            const { userId, value, isPrimary, claim } = requireJson(body);
             if (!userId || !value) return json(response, 400, { ok: false, error: 'userId and value are required', requestId });
-            const identity = await attachIdentity({ userId, value, isPrimary: !!isPrimary, verified: true });
+            const identity = await attachIdentity({ userId, value, isPrimary: !!isPrimary, verified: true, claim: !!claim });
             await logAudit({ actorType: actor.type, actorId: actor.id, action: 'identity.attach', resourceType: 'user', resourceId: userId, metadata: { identity }, ipAddress });
             return json(response, 200, { ok: true, data: identity, requestId });
         }
