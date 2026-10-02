@@ -1584,6 +1584,19 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/owner/irengadmin.js",
+    "index": 0,
+    "name": "irengadmin",
+    "aliases": [
+      "irengmanage"
+    ],
+    "description": "Kelola IrengCloud (owner): server, user, invoice",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/owner/lib.js",
     "index": 0,
     "name": "lib",
