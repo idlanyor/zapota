@@ -322,6 +322,9 @@ const handlePollUpdate = async (sock, m) => {
 export const handleAutoAiPrivate = async (sock, m, botSettings, isOwner = false) => {
     if (!botSettings?.autoAiPrivate || m.isGroup || m.key.fromMe) return;
 
+    const prefixes = [settings.prefix, ...(settings.prefixAliases || [])].filter(Boolean);
+    if (m.body && prefixes.some((p) => m.body.trim().startsWith(p))) return;
+
     const isMedia = m.isImage;
     if (!(m.body || isMedia)) return;
 
@@ -389,8 +392,12 @@ export const handleAutoAiPrivate = async (sock, m, botSettings, isOwner = false)
     }
 };
 
-export const handleOwnerAgentTrigger = async (sock, m, isOwner) => {
+export const handleOwnerAgentTrigger = async (sock, m, isOwner, usedPrefix) => {
     if (!isOwner || !m.body) return false;
+
+    // Jangan teruskan ke AI jika pesan merupakan command berprefix (misal: .hapus, .menu)
+    const prefixes = [settings.prefix, ...(settings.prefixAliases || [])].filter(Boolean);
+    if (usedPrefix || prefixes.some((p) => m.body.trim().startsWith(p))) return false;
 
     const normalizedBody = m.body.trim().toLowerCase();
     if (['confirm', 'cancel'].includes(normalizedBody)) {

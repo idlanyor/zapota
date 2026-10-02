@@ -85,9 +85,11 @@ export const messageHandler = async (sock, m) => {
 
         m = mSerialized;
         if (!m || (!m.body && !m.mtype)) return;
+        const prefixes = [settings.prefix, ...(settings.prefixAliases || [])].filter(Boolean);
         if (m.chat?.endsWith('@newsletter')) return;
 
-        const usedPrefix = m.body ? prefixes.find((p) => m.body.startsWith(p)) : undefined;
+        const trimmedBody = (m.body || '').trim();
+        const usedPrefix = trimmedBody ? prefixes.find((p) => trimmedBody.startsWith(p)) : undefined;
         const cachedMetadata = m.isGroup ? getCachedGroupMetadata(m.chat) : null;
         m.metadata = cachedMetadata?.data || {};
 
@@ -148,7 +150,7 @@ export const messageHandler = async (sock, m) => {
         const canProceed = await checkJoinGroup(sock, m, isOwner, botSettings, buildJidCandidates);
         if (!canProceed) return;
 
-        if (await handleOwnerAgentTrigger(sock, m, isOwner)) return;
+        if (await handleOwnerAgentTrigger(sock, m, isOwner, usedPrefix)) return;
 
         if (usedPrefix) {
             const cmdName = m.body.slice(usedPrefix.length).trim().split(/\s+/)[0].toLowerCase();
@@ -222,7 +224,7 @@ export const messageHandler = async (sock, m) => {
                     m.reply(` Terjadi kesalahan. Detail error telah dikirim ke Owner.`);
                 }
             }
-        } else if (m.body && !m.key.fromMe && !isOwner) {
+        } else if (m.body && !m.key.fromMe && !isOwner && !usedPrefix) {
             // Trigger DeepSeek jika bot di-tag atau pesan bot di-reply (hanya untuk non-owner)
             const { botJid, botLid } = getBotIdentity(sock);
             const mentioned = (m.mentionedJid || []).map((jid) => decodeJid(jid) || jid);
@@ -263,7 +265,9 @@ export const messageHandler = async (sock, m) => {
             }
         }
 
-        await handleAutoAiPrivate(sock, m, botSettings, isOwner);
+        if (!usedPrefix) {
+            await handleAutoAiPrivate(sock, m, botSettings, isOwner);
+        }
     } catch (err) {
         logger.error(err, 'Error in messageHandler');
     } finally {
