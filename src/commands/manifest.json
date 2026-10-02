@@ -1759,6 +1759,21 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/owner/repost.js",
+    "index": 0,
+    "name": "repost",
+    "aliases": [
+      "fbrepost",
+      "mlleak",
+      "repostch"
+    ],
+    "description": "Lihat dan repost postingan ML Leaks Facebook ke Saluran WhatsApp",
+    "category": "Owner",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/owner/setexpired.js",
     "index": 0,
     "name": "setexpired",
