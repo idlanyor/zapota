@@ -17,6 +17,22 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/ai/aimage.js",
+    "index": 0,
+    "name": "aimage",
+    "aliases": [
+      "aiimage",
+      "text2img",
+      "txt2img",
+      "dalle"
+    ],
+    "description": "Generate gambar AI dari prompt teks",
+    "category": "ai",
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/ai/ds.js",
     "index": 0,
     "name": "ds",
