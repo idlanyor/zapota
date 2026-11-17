@@ -1,9 +1,7 @@
-import axios from 'axios';
+import { chatCompletion } from '../../services/deepseek.js';
 import { settings } from '../../config/settings.js';
 import { env } from '../../config/env.js';
 
-const DS_BASE_URL = env.DS_BASE_URL || 'http://localhost:5050';
-const DS_API_KEY = env.DS_API_KEY || 'dseeker';
 const VISION_MODEL = 'vision';
 
 /**
@@ -34,14 +32,16 @@ export default {
             if (!isImage) {
                 return m.reply(
                     `*DeepSeek Vision AI*\n\n` +
-                    `Format:\n` +
-                    `• Kirim gambar dengan caption *${settings.prefix}vision2 <pertanyaan>*\n` +
-                    `• Atau reply gambar dengan *${settings.prefix}vision2 <pertanyaan>*\n\n` +
-                    `_Contoh: ${settings.prefix}vision2 tolong jelaskan gambar ini secara detail_`
+                        `Format:\n` +
+                        `• Kirim gambar dengan caption *${settings.prefix}vision2 <pertanyaan>*\n` +
+                        `• Atau reply gambar dengan *${settings.prefix}vision2 <pertanyaan>*\n\n` +
+                        `_Contoh: ${settings.prefix}vision2 tolong jelaskan gambar ini secara detail_`
                 );
             }
 
-            const prompt = (text || m.quoted?.text || '').trim() || 'Jelaskan gambar ini secara detail dalam bahasa Indonesia.';
+            const prompt =
+                (text || m.quoted?.text || '').trim() ||
+                'Jelaskan gambar ini secara detail dalam bahasa Indonesia.';
 
             await m.react('⏳');
 
@@ -82,17 +82,7 @@ export default {
                 ],
             };
 
-            const response = await axios.post(
-                `${DS_BASE_URL.replace(/\/+$/, '')}/v1/chat/completions`,
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${DS_API_KEY}`,
-                        'Content-Type': 'application/json',
-                    },
-                    timeout: 120000,
-                }
-            );
+            const response = await chatCompletion(payload, { timeout: 120000 });
 
             const answer = response.data?.choices?.[0]?.message?.content;
             if (!answer) {
