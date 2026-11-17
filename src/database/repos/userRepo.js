@@ -5,4 +5,6 @@ export const userRepo = createRepo({
     table: 'users',
     codec: createCodec({ date: ['createdAt'] }),
     createDefaults: () => ({ createdAt: Date.now() }),
+    // Balance changes from save() are applied as deltas (see createRepo).
+    deltaColumns: ['balance'],
 });

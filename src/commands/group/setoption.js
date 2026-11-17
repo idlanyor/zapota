@@ -1,5 +1,4 @@
-import { groupRepo } from '../../database/repos/groupRepo.js';
-import { clearSettingsCache } from '../../handlers/messageHandler.js';
+import { getGroup, saveGroup } from '../../services/settingsService.js';
 
 export default {
     name: 'settings',
@@ -20,8 +19,7 @@ export default {
         const input = args[0]?.toLowerCase();
         const value = args[1]?.toLowerCase();
 
-        let groupData = await groupRepo.findOne({ jid: m.chat });
-        if (!groupData) groupData = await groupRepo.create({ jid: m.chat });
+        let groupData = await getGroup(m.chat);
 
         // Tanpa argumen / "status" → tampilkan semua opsi
         if (!input || input === 'status') {
@@ -55,9 +53,7 @@ export default {
         try {
             const newStatus = value === 'on';
             groupData[input] = newStatus;
-            await groupRepo.save(groupData);
-
-            clearSettingsCache();
+            await saveGroup(groupData);
 
             await sock.sendMessage(
                 m.chat,

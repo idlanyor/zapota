@@ -13,6 +13,7 @@ import { groupRepo } from '../repos/groupRepo.js';
 import { serverRepo } from '../repos/serverRepo.js';
 import { transactionRepo } from '../repos/transactionRepo.js';
 import { rpgPlayerRepo, rpgBillRepo, rpgProgressRepo } from '../repos/rpgRepos.js';
+import * as wallet from '../../services/walletService.js';
 
 const quiet = { info() {}, warn() {} };
 
@@ -270,4 +271,36 @@ withDb('transaction and RPG repos: defaults, timestamps, bool filters', async (k
     prog.claimedMissions.push('work');
     await rpgProgressRepo.save(prog);
     assert.deepEqual((await rpgProgressRepo.findOne({ userId: 'u' })).claimedMissions, ['work']);
+});
+
+withDb('users.balance: overlapping read-modify-save keeps both changes (delta save)', async () => {
+    await userRepo.create({ jid: 'a@s', balance: 100 });
+    // Two commands read the same user, then each changes the balance and saves.
+    const rpg = await userRepo.findOne({ jid: 'a@s' });
+    const store = await userRepo.findOne({ jid: 'a@s' });
+    rpg.balance += 30; // e.g. salary
+    store.balance -= 50; // e.g. purchase
+    await userRepo.save(store);
+    await userRepo.save(rpg);
+    assert.equal((await userRepo.findOne({ jid: 'a@s' })).balance, 80);
+    assert.equal(rpg.balance, 80, 'save() refreshes the record with the stored value');
+
+    // Saving again without changes must not re-apply the delta.
+    await userRepo.save(rpg);
+    assert.equal((await userRepo.findOne({ jid: 'a@s' })).balance, 80);
+});
+
+withDb('walletService: credit/debit are atomic and never overdraw', async (knex) => {
+    assert.equal(await wallet.credit('w@s', 100), 100); // creates the user
+    assert.deepEqual(await wallet.debit('w@s', 30), { ok: true, balance: 70 });
+    assert.deepEqual(await wallet.debit('w@s', 80), { ok: false, balance: 70 });
+
+    // Ten concurrent 20-unit purchases against a balance of 70: exactly 3 succeed.
+    const results = await Promise.all(Array.from({ length: 10 }, () => wallet.debit('w@s', 20)));
+    assert.equal(results.filter((r) => r.ok).length, 3);
+    assert.equal(await wallet.getBalance('w@s'), 10);
+
+    await assert.rejects(wallet.credit('w@s', -5), RangeError);
+    await assert.rejects(wallet.debit('w@s', 0), RangeError);
+    assert.equal((await knex('users').where({ jid: 'w@s' })).length, 1);
 });

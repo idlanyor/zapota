@@ -1,8 +1,14 @@
-import { serverRepo } from '../../database/repos/serverRepo.js';
 import { settings } from '../../config/settings.js';
 
 import { env } from '../../config/env.js';
-import { pteroApp as ptero } from '../../services/pterodactyl.js';
+import {
+    findServerRecord,
+    findServerRecordByIdOrIdentifier,
+    listServerRecords,
+    pteroApp as ptero,
+    registerServer,
+    saveServerRecord,
+} from '../../services/pterodactyl.js';
 
 export default {
     name: 'setexpired',
@@ -14,7 +20,7 @@ export default {
 
         // Fitur 1: List Server
         if (sub === 'list') {
-            const servers = await serverRepo.find({}, { orderBy: 'expiredAt' });
+            const servers = await listServerRecords({}, { orderBy: 'expiredAt' });
             if (servers.length === 0)
                 return m.reply(
                     `Belum ada data server di database bot. Gunakan ${settings.prefix}setexpired sync untuk mengambil data dari panel.`
@@ -59,7 +65,7 @@ export default {
                     const s = srvData.attributes;
 
                     // Cek apakah sudah ada di DB
-                    const exists = await serverRepo.findOne({ pteroId: s.id });
+                    const exists = await findServerRecord({ pteroId: s.id });
                     if (!exists) {
                         const owner = pteroUsers.find((u) => u.attributes.id === s.user);
                         const userJid = owner?.attributes.external_id || 'unknown';
@@ -67,7 +73,7 @@ export default {
                         const defaultExpired = new Date();
                         defaultExpired.setDate(defaultExpired.getDate() + 30); // Default 30 hari dari sekarang
 
-                        await serverRepo.create({
+                        await registerServer({
                             userId: userJid,
                             pteroId: s.id,
                             identifier: s.identifier,
@@ -114,7 +120,7 @@ export default {
 
         try {
             await m.react('⏳');
-            let srv = await serverRepo.findByPteroIdOrIdentifier(id);
+            let srv = await findServerRecordByIdOrIdentifier(id);
 
             if (!srv) {
                 let pteroSrv;
@@ -129,7 +135,7 @@ export default {
                 if (pteroSrv) {
                     const userResp = await ptero.get(`/users/${pteroSrv.user}`);
                     const userJid = userResp.data.attributes.external_id || 'unknown';
-                    srv = await serverRepo.create({
+                    srv = await registerServer({
                         userId: userJid,
                         pteroId: pteroSrv.id,
                         identifier: pteroSrv.identifier,
@@ -144,7 +150,7 @@ export default {
             } else {
                 srv.expiredAt = expiredDate;
                 srv.status = 'active';
-                await serverRepo.save(srv);
+                await saveServerRecord(srv);
             }
 
             await m.reply(

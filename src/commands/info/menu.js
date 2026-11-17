@@ -1,10 +1,10 @@
+import { getBotSettings } from '../../services/settingsService.js';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { prepareWAMessageMedia } from 'baileys';
 import sharp from 'sharp';
 import { commands } from '../../lib/commands.js';
 import { settings } from '../../config/settings.js';
-import { settingsRepo } from '../../database/repos/settingsRepo.js';
 
 const MAIN_MENU_IMAGE_PATH = fileURLToPath(
     new URL('../../assets/kanata-mascot-banner-v4-clay.png', import.meta.url)
@@ -143,7 +143,7 @@ export default {
     description: 'Show available commands in text format',
     category: 'Info',
     execute: async (sock, m, args, text) => {
-        let botSettings = await settingsRepo.get();
+        let botSettings = await getBotSettings();
         const disabledList = botSettings ? botSettings.disabledCommands : [];
 
         const uniqueCommands = Array.from(new Set(commands.values()));
@@ -296,7 +296,9 @@ export default {
 
         const selectedCat = sortedCategories.find((c) => c.toLowerCase() === inputCategory);
         if (!selectedCat) {
-            return m.reply(`Kategori *${args[0]}* tidak ditemukan.\nKetik \`${settings.prefix}menu\` untuk melihat daftar kategori.`);
+            return m.reply(
+                `Kategori *${args[0]}* tidak ditemukan.\nKetik \`${settings.prefix}menu\` untuk melihat daftar kategori.`
+            );
         }
 
         categories[selectedCat].sort((a, b) => a.name.localeCompare(b.name));

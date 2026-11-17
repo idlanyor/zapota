@@ -1,7 +1,5 @@
-import { userRepo } from '../../database/repos/userRepo.js';
-import { transactionRepo } from '../../database/repos/transactionRepo.js';
-import { serverRepo } from '../../database/repos/serverRepo.js';
-import { createPteroServer } from '../../services/pterodactyl.js';
+import { credit, debit, getBalance, recordTransaction } from '../../services/walletService.js';
+import { createPteroServer, registerServer } from '../../services/pterodactyl.js';
 import { settings } from '../../config/settings.js';
 
 const plans = [
@@ -96,29 +94,31 @@ export default {
                 );
             }
 
-            // Get user from DB
-            let user = await userRepo.findOne({ jid: m.sender });
-            if (!user) {
-                user = await userRepo.create({ jid: m.sender });
-            }
-
-            if (user.balance < plan.price) {
+            // Charge first (atomic check + debit), so concurrent purchases can't overdraw.
+            const charge = await debit(m.sender, plan.price);
+            if (!charge.ok) {
                 return m.reply(
-                    `Insufficient balance.\nYour Balance: Rp ${user.balance.toLocaleString()}\nPrice: Rp ${plan.price.toLocaleString()}\n\nPlease contact owner to topup.`
+                    `Insufficient balance.\nYour Balance: Rp ${charge.balance.toLocaleString()}\nPrice: Rp ${plan.price.toLocaleString()}\n\nPlease contact owner to topup.`
                 );
             }
 
             await m.react('⏳');
 
             try {
-                // 1. Create Server on Pterodactyl
-                const server = await createPteroServer(m.sender, plan);
+                // 1. Create Server on Pterodactyl (refund if the panel rejects it)
+                let server;
+                try {
+                    server = await createPteroServer(m.sender, plan);
+                } catch (err) {
+                    await credit(m.sender, plan.price);
+                    throw err;
+                }
 
                 // 2. Simpan ke database Server bot (Masa Aktif 30 Hari)
                 const expiredDate = new Date();
                 expiredDate.setDate(expiredDate.getDate() + 30);
 
-                await serverRepo.create({
+                await registerServer({
                     userId: m.sender,
                     pteroId: server.id,
                     identifier: server.identifier,
@@ -127,12 +127,8 @@ export default {
                     expiredAt: expiredDate,
                 });
 
-                // 3. Deduct Balance
-                user.balance -= plan.price;
-                await userRepo.save(user);
-
                 // 3. Record Transaction
-                await transactionRepo.create({
+                await recordTransaction({
                     userId: m.sender,
                     userName: m.pushName || 'User',
                     type: 'expense',
@@ -146,7 +142,7 @@ export default {
                     `Success Purchased VPS!\n\n` +
                     `Plan: ${plan.name}\n` +
                     `Price: Rp ${plan.price.toLocaleString()}\n` +
-                    `Remaining Balance: Rp ${user.balance.toLocaleString()}\n\n` +
+                    `Remaining Balance: Rp ${charge.balance.toLocaleString()}\n\n` +
                     `Server Details:\n` +
                     `ID: ${server.id}\n` +
                     `Identifier: ${server.identifier}\n` +
@@ -175,8 +171,7 @@ export default {
         storeMsg += `\nTo buy, use: ${settings.prefix}buy <id>\nExample: ${settings.prefix}buy 1`;
 
         // Add user balance info
-        const user = await userRepo.findOne({ jid: m.sender });
-        const balance = user ? user.balance : 0;
+        const balance = await getBalance(m.sender);
         storeMsg += `\n\nYour Balance: Rp ${balance.toLocaleString()}`;
 
         await m.reply(storeMsg);

@@ -35,6 +35,24 @@ export default [
         languageOptions: { globals: { ...globals.jest } },
     },
     {
+        // Commands talk to services, never to the database layer directly.
+        files: ['src/commands/**/*.js'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['**/database/**'],
+                            message:
+                                'Commands must use a service in src/services, not the database layer.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
         // Read configuration through src/config/env.js (declared + validated).
         files: ['src/**/*.js'],
         ignores: ['src/config/env.js'],

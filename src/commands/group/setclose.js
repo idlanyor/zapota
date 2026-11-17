@@ -1,5 +1,4 @@
-import { groupRepo } from '../../database/repos/groupRepo.js';
-import { clearSettingsCache } from '../../handlers/messageHandler.js';
+import { getGroup, saveGroup } from '../../services/settingsService.js';
 
 const isTime = (v) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(v || '');
 
@@ -12,13 +11,11 @@ export default {
         const input = (args[0] || '').toLowerCase();
         if (!input) return m.reply('Format: .setclose <HH:mm|on|off>');
 
-        const group =
-            (await groupRepo.findOne({ jid: m.chat })) || (await groupRepo.create({ jid: m.chat }));
+        const group = await getGroup(m.chat);
 
         if (input === 'on' || input === 'off') {
             group.autoClose = input === 'on';
-            await groupRepo.save(group);
-            clearSettingsCache();
+            await saveGroup(group);
             return m.reply(`✅ Auto close ${group.autoClose ? 'diaktifkan' : 'dinonaktifkan'}.`);
         }
 
@@ -26,8 +23,7 @@ export default {
 
         group.autoCloseTime = input;
         group.autoClose = true;
-        await groupRepo.save(group);
-        clearSettingsCache();
+        await saveGroup(group);
         return m.reply(`✅ Waktu auto close diset ke ${input} WIB dan fitur diaktifkan.`);
     },
 };

@@ -28,6 +28,17 @@ export const pteroClient = createApi('/api/client', 'PTERO_CLIENT_KEY');
 
 const ptero = pteroApp;
 
+/* ---------------------- local server records (servers) ---------------------- */
+
+export const findServerRecord = (filter) => serverRepo.findOne(filter);
+/** By Pterodactyl numeric id or short identifier. */
+export const findServerRecordByIdOrIdentifier = (id) => serverRepo.findByPteroIdOrIdentifier(id);
+export const listServerRecords = (filter = {}, opts) => serverRepo.find(filter, opts);
+export const saveServerRecord = (record) => serverRepo.save(record);
+
+/** Local record of a server sold through the bot (used for expiry/renewal). */
+export const registerServer = (record) => serverRepo.create(record);
+
 /**
  * Delete a server on the panel (a 404 counts as already deleted) and drop
  * its local record.

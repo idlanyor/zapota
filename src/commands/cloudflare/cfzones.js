@@ -1,6 +1,5 @@
+import { getBotSettings, saveBotSettings } from '../../services/settingsService.js';
 import { fetchAllZones } from '../../services/cloudflare.js';
-import { settingsRepo } from '../../database/repos/settingsRepo.js';
-import { clearSettingsCache } from '../../handlers/messageFlow.js';
 
 export default {
     name: 'cfzones',
@@ -31,11 +30,9 @@ export default {
 
             // Handle Sync
             if (args[0] === 'sync') {
-                const botSettings =
-                    (await settingsRepo.get());
+                const botSettings = await getBotSettings();
                 botSettings.cfZones = newZones;
-                await settingsRepo.save(botSettings);
-                clearSettingsCache();
+                await saveBotSettings(botSettings);
                 await m.react('✅');
                 return m.reply(`✅ Berhasil menyinkronkan ${newZones.length} domain ke database.`);
             }

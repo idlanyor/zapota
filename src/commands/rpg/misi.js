@@ -1,11 +1,11 @@
+import { saveUser } from '../../services/userService.js';
 import { addExp, getOrCreatePlayer } from '../../services/rpgService.js';
 import {
     DAILY_MISSIONS,
     getMissionState,
     getOrCreateRpgProgress,
+    saveProgress,
 } from '../../services/rpgProgressService.js';
-import { userRepo } from '../../database/repos/userRepo.js';
-import { rpgProgressRepo } from '../../database/repos/rpgRepos.js';
 
 const formatReward = (mission) =>
     `Rp ${mission.rupiah.toLocaleString('id-ID')} + ${mission.exp} EXP`;
@@ -54,14 +54,14 @@ export default {
                 const rupiah = claimable.reduce((sum, item) => sum + item.rupiah, 0);
                 const exp = claimable.reduce((sum, item) => sum + item.exp, 0);
                 user.balance = (user.balance || 0) + rupiah;
-                await userRepo.save(user);
+                await saveUser(user);
                 const { leveledUp, newLevel } = await addExp(player, exp);
 
                 progress.claimedMissions = [
                     ...(progress.claimedMissions || []),
                     ...claimable.map((item) => item.id),
                 ];
-                await rpgProgressRepo.save(progress);
+                await saveProgress(progress);
 
                 let reply =
                     `🎁 *HADIAH MISI DIAMBIL!*\n` +

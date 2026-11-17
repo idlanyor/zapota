@@ -1,5 +1,4 @@
-import { settingsRepo } from '../../database/repos/settingsRepo.js';
-import { clearSettingsCache } from '../../handlers/messageHandler.js';
+import { getBotSettings, updateBotSettings } from '../../services/settingsService.js';
 
 export default {
     name: 'mode',
@@ -8,7 +7,7 @@ export default {
     category: 'Owner',
     execute: async (sock, m, args, text) => {
         if (!args[0]) {
-            const current = await settingsRepo.get();
+            const current = await getBotSettings();
             return m.reply(
                 `Format: .mode <public/self/group>\n\n*Status Saat Ini:* ${current?.mode?.toUpperCase() || 'PUBLIC'}`
             );
@@ -22,9 +21,7 @@ export default {
         }
 
         try {
-            await settingsRepo.update({ mode: newMode });
-
-            clearSettingsCache();
+            await updateBotSettings({ mode: newMode });
 
             m.reply(` Berhasil mengubah mode bot menjadi: *${newMode.toUpperCase()}*`);
         } catch (err) {

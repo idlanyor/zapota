@@ -1,5 +1,5 @@
-import { serverRepo } from '../../database/repos/serverRepo.js';
-import { userRepo } from '../../database/repos/userRepo.js';
+import { listUsers } from '../../services/userService.js';
+import { listServerRecords } from '../../services/pterodactyl.js';
 import { settings } from '../../config/settings.js';
 
 export default {
@@ -9,7 +9,7 @@ export default {
     category: 'Owner',
     execute: async (sock, m, args, text) => {
         try {
-            const servers = await serverRepo.find();
+            const servers = await listServerRecords();
             if (servers.length === 0) {
                 return m.reply(
                     `Belum ada data server di database bot. Gunakan ${settings.prefix}setexpired sync untuk sinkronisasi.`
@@ -17,7 +17,7 @@ export default {
             }
 
             // Ambil semua user untuk mapping nama owner
-            const users = await userRepo.find();
+            const users = await listUsers();
             const userMap = users.reduce((acc, user) => {
                 acc[user.jid] = user.name || 'No Name';
                 return acc;

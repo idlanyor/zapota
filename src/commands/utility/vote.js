@@ -1,4 +1,4 @@
-import { pollRepo } from '../../database/repos/pollRepo.js';
+import { savePoll } from '../../services/pollService.js';
 
 export default {
     name: 'vote',
@@ -32,7 +32,7 @@ export default {
             pollMsg.message?.messageContextInfo?.messageSecret;
 
         if (messageSecret) {
-            await pollRepo.create({
+            await savePoll({
                 pollId: pollMsg.key.id,
                 chat: m.chat,
                 question: question,

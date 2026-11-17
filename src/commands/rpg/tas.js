@@ -1,5 +1,11 @@
-import { rpgInventoryRepo, rpgPlayerRepo } from '../../database/repos/rpgRepos.js';
-import { KOPDES_ITEMS, getOrCreatePlayer } from '../../services/rpgService.js';
+import {
+    KOPDES_ITEMS,
+    getOrCreatePlayer,
+    listItems,
+    removeItem,
+    saveItem,
+    savePlayer,
+} from '../../services/rpgService.js';
 import { sendRpgReply } from '../../lib/rpgVisuals.js';
 import { recordRpgActivity } from '../../services/rpgProgressService.js';
 
@@ -15,7 +21,7 @@ export default {
 
         try {
             const { player } = await getOrCreatePlayer(sender, m.pushName);
-            const userItems = await rpgInventoryRepo.find({ userId: sender });
+            const userItems = await listItems({ userId: sender });
 
             // Helper: Cari item di inventory berdasarkan nomor urut atau ID/nama
             const findInvItemByInput = (input) => {
@@ -56,9 +62,9 @@ export default {
                 if (invItem.category === 'konsumsi') {
                     invItem.quantity -= 1;
                     if (invItem.quantity <= 0) {
-                        await rpgInventoryRepo.remove({ id: invItem.id });
+                        await removeItem({ id: invItem.id });
                     } else {
-                        await rpgInventoryRepo.save(invItem);
+                        await saveItem(invItem);
                     }
 
                     // Terapkan efek
@@ -67,7 +73,7 @@ export default {
                     player.gizi = Math.min(100, player.gizi + (eff.gizi || 0));
                     player.kewarasan = Math.min(100, player.kewarasan + (eff.kewarasan || 0));
                     player.energi = Math.min(player.maxEnergi, player.energi + (eff.energi || 0));
-                    await rpgPlayerRepo.save(player);
+                    await savePlayer(player);
                     await recordRpgActivity(sender, 'meal');
 
                     return sendRpgReply(
@@ -95,7 +101,7 @@ export default {
                 // Handle equipment (senjata/kendaraan)
                 if (invItem.category === 'senjata' || invItem.category === 'kendaraan') {
                     invItem.isEquipped = !invItem.isEquipped;
-                    await rpgInventoryRepo.save(invItem);
+                    await saveItem(invItem);
 
                     return sendRpgReply(
                         sock,

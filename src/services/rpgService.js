@@ -1,5 +1,6 @@
-import { rpgPlayerRepo } from '../database/repos/rpgRepos.js';
+import { rpgPlayerRepo, rpgInventoryRepo, rpgBillRepo } from '../database/repos/rpgRepos.js';
 import { userRepo } from '../database/repos/userRepo.js';
+import { saveUser } from './userService.js';
 import { getOrCreateRpgProgress, recordRpgActivity } from './rpgProgressService.js';
 
 export const KOPDES_ITEMS = {
@@ -330,3 +331,21 @@ export const awardMinigameWin = async (jid, customRupiah = null, customExp = nul
         rewardLimitReached: reward.rewardLimitReached,
     };
 };
+
+/* ----------------------------- persistence API ----------------------------- */
+// Commands persist RPG state through these instead of touching repositories.
+
+export { saveUser };
+export const savePlayer = (player) => rpgPlayerRepo.save(player);
+
+export const listItems = (filter) => rpgInventoryRepo.find(filter);
+export const findItem = (filter) => rpgInventoryRepo.findOne(filter);
+export const addItem = (item) => rpgInventoryRepo.create(item);
+export const saveItem = (item) => rpgInventoryRepo.save(item);
+export const removeItem = (filter) => rpgInventoryRepo.remove(filter);
+
+export const listBills = (filter) => rpgBillRepo.find(filter);
+export const findBill = (filter) => rpgBillRepo.findOne(filter);
+export const countBills = (filter) => rpgBillRepo.count(filter);
+export const createBill = (bill) => rpgBillRepo.create(bill);
+export const saveBill = (bill) => rpgBillRepo.save(bill);

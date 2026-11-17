@@ -1,10 +1,10 @@
 import {
-    setServerPowerState,
+    findServerRecord,
     getServerResources,
     getUserServers,
+    setServerPowerState,
 } from '../../services/pterodactyl.js';
 import { settings } from '../../config/settings.js';
-import { serverRepo } from '../../database/repos/serverRepo.js';
 
 export default {
     name: 'panel',
@@ -34,7 +34,7 @@ export default {
 
             if (action === 'status' || action === 'info') {
                 const resources = await getServerResources(id);
-                const dbSrv = await serverRepo.findOne({ identifier: id });
+                const dbSrv = await findServerRecord({ identifier: id });
                 const expiredStr = dbSrv
                     ? dbSrv.expiredAt.toLocaleDateString('id-ID', {
                           day: 'numeric',

@@ -1,7 +1,6 @@
-import { getOrCreatePlayer } from '../../services/rpgService.js';
+import { saveUser } from '../../services/userService.js';
+import { getOrCreatePlayer, savePlayer } from '../../services/rpgService.js';
 import { sendRpgReply } from '../../lib/rpgVisuals.js';
-import { rpgPlayerRepo } from '../../database/repos/rpgRepos.js';
-import { userRepo } from '../../database/repos/userRepo.js';
 
 export default {
     name: 'healing',
@@ -25,12 +24,12 @@ export default {
                 }
 
                 user.balance -= cost;
-                await userRepo.save(user);
+                await saveUser(user);
 
                 player.kewarasan = Math.min(100, player.kewarasan + 20);
                 player.gizi = Math.min(100, player.gizi + 5);
                 player.energi = Math.min(player.maxEnergi, player.energi + 15);
-                await rpgPlayerRepo.save(player);
+                await savePlayer(player);
 
                 return sendRpgReply(
                     sock,
@@ -59,11 +58,11 @@ export default {
                 }
 
                 user.balance -= cost;
-                await userRepo.save(user);
+                await saveUser(user);
 
                 player.hp = player.maxHp;
                 player.kewarasan = Math.min(100, player.kewarasan + 10);
-                await rpgPlayerRepo.save(player);
+                await savePlayer(player);
 
                 return sendRpgReply(
                     sock,
@@ -87,11 +86,11 @@ export default {
                 }
 
                 user.balance -= healingCost;
-                await userRepo.save(user);
+                await saveUser(user);
 
                 player.kewarasan = 100;
                 player.energi = Math.min(player.maxEnergi, player.energi + 30);
-                await rpgPlayerRepo.save(player);
+                await savePlayer(player);
 
                 return sendRpgReply(
                     sock,

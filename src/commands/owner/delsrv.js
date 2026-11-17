@@ -1,8 +1,7 @@
-import { serverRepo } from '../../database/repos/serverRepo.js';
 import { settings } from '../../config/settings.js';
 
 import { env } from '../../config/env.js';
-import { pteroApp as ptero } from '../../services/pterodactyl.js';
+import { findServerRecordByIdOrIdentifier, pteroApp as ptero } from '../../services/pterodactyl.js';
 import { pendingServerDeletes } from '../../state/pendingServerDeletes.js';
 
 export default {
@@ -26,7 +25,7 @@ Contoh:
 
         try {
             // 1. Cari data server
-            let srv = await serverRepo.findByPteroIdOrIdentifier(id);
+            let srv = await findServerRecordByIdOrIdentifier(id);
             let pteroId = srv ? srv.pteroId : isNaN(id) ? null : id;
 
             if (!pteroId && isNaN(id)) {

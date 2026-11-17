@@ -1,6 +1,6 @@
+import { findUser, updateUser } from '../../services/userService.js';
 import { downloadMediaBuffer } from '../../wa/helpers.js';
 import { settings } from '../../config/settings.js';
-import { userRepo } from '../../database/repos/userRepo.js';
 import axios from 'axios';
 
 export default {
@@ -16,7 +16,7 @@ export default {
                 try {
                     const modelsRes = await axios.get('https://vision.kanata.web.id/models');
                     if (modelsRes.data && Array.isArray(modelsRes.data.data)) {
-                        availableModels = modelsRes.data.data.map(m => m.id);
+                        availableModels = modelsRes.data.data.map((m) => m.id);
                     }
                 } catch (err) {
                     console.error('Failed to fetch models list', err);
@@ -47,7 +47,7 @@ export default {
                     }
                 }
 
-                await userRepo.upsert({ jid: m.sender }, { visionModel: newModel });
+                await updateUser(m.sender, { visionModel: newModel });
 
                 return m.reply(`✅ Vision model berhasil diubah menjadi: *${newModel}*`);
             }
@@ -70,7 +70,7 @@ export default {
             await m.react('⏳');
 
             // Fetch selected model from DB
-            const user = await userRepo.findOne({ jid: m.sender });
+            const user = await findUser(m.sender);
             const selectedModel = user?.visionModel || 'or/openai/gpt-4o-mini';
 
             const buffer = await downloadMediaBuffer(msg, 'image', sock);
@@ -82,7 +82,7 @@ export default {
                 {
                     image: base64Image,
                     prompt: prompt,
-                    model: selectedModel
+                    model: selectedModel,
                 },
                 {
                     headers: {

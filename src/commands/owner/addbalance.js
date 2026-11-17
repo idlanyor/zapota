@@ -1,4 +1,4 @@
-import { userRepo } from '../../database/repos/userRepo.js';
+import { credit } from '../../services/walletService.js';
 import { settings } from '../../config/settings.js';
 
 import { env } from '../../config/env.js';
@@ -82,13 +82,7 @@ Email *${emailInput}* tidak ditemukan di panel Pterodactyl.`);
             }
 
             // 3. Update saldo di database bot
-            let user = await userRepo.findOne({ jid: targetJid });
-            if (!user) {
-                user = await userRepo.create({ jid: targetJid });
-            }
-
-            user.balance += amount;
-            await userRepo.save(user);
+            const user = { balance: await credit(targetJid, amount) };
 
             const userNotice =
                 `*PEMBERITAHUAN TOPUP*\n\n` +
