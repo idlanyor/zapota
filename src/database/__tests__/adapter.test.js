@@ -308,11 +308,7 @@ test('Date fields use epoch-ms storage and support range filters', async () => {
         t.increments('id').primary();
         t.bigInteger('createdAt');
     });
-    const Event = defineModel(
-        'test_dates',
-        createSchema({ createdAt: { type: Date } }),
-        { knex }
-    );
+    const Event = defineModel('test_dates', createSchema({ createdAt: { type: Date } }), { knex });
     const oldDate = new Date('2025-01-01T00:00:00.000Z');
     const newDate = new Date('2026-01-01T00:00:00.000Z');
     await Event.create([{ createdAt: oldDate }, { createdAt: newDate }]);
@@ -357,4 +353,34 @@ test('on-disk SQLite file works via tmpdir', async () => {
     assert.equal(found.name, 'persisted');
     await knex.destroy();
     fs.unlinkSync(tmp);
+});
+
+test('settings: create/findOne/save work against the real migration schema', async () => {
+    const knex = freshKnex();
+    const { up } = await import('../migrations/20260615000007_create_settings.js');
+    await up(knex);
+    const schema = createSchema({
+        id: { type: String, default: 'bot_settings', unique: true },
+        mode: { type: String, default: 'public' },
+        owners: { type: [String], default: [] },
+    });
+    const Settings = defineModel('settings', schema, { knex });
+
+    // Regression: schema default `id` must map to settingsId, not the integer PK.
+    const created = await Settings.create({ id: 'bot_settings' });
+    assert.equal(created.settingsId, 'bot_settings');
+
+    const doc = await Settings.findOne({ id: 'bot_settings' });
+    assert.equal(doc.mode, 'public');
+
+    // Regression: save() must key on settingsId (doc.id aliases it).
+    doc.mode = 'self';
+    doc.owners = ['628111'];
+    await doc.save();
+    const reloaded = await Settings.findOne({ id: 'bot_settings' });
+    assert.equal(reloaded.mode, 'self');
+    assert.deepEqual(reloaded.owners, ['628111']);
+    assert.equal(await Settings.countDocuments({}), 1);
+
+    await knex.destroy();
 });

@@ -519,7 +519,8 @@ const wrapDocument = (row, ctx) => {
                 return this;
             }
             // UPDATE — match by primary key
-            const pkCol = 'id';
+            // Settings docs expose `id` as an alias of `settingsId`, so key on that.
+            const pkCol = t === 'settings' && this.settingsId !== undefined ? 'settingsId' : 'id';
             const pk = this[pkCol];
             if (pk === undefined || pk === null) {
                 throw new Error('Cannot save() an existing document without an id');
@@ -849,9 +850,11 @@ export const defineModel = (tableName, schema = { paths: {}, options: {} }, opts
 
         async create(docs) {
             const arr = Array.isArray(docs) ? docs : [docs];
-            const mapped = arr.map((d) => _mapSettingsUpdate(d));
-            const normalized = mapped
+            // Defaults first: the Settings schema defaults `id` to 'bot_settings',
+            // which must then be mapped onto `settingsId` (the integer `id` is the PK).
+            const normalized = arr
                 .map((d) => _applyDefaults(d))
+                .map((d) => _mapSettingsUpdate(d))
                 .map((d) => serializeSchemaValues(d, schema));
             const ret = await knex(tableName).insert(normalized).returning('id');
             // Re-fetch to return full documents (matches Mongoose behavior)
