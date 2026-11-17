@@ -6,7 +6,7 @@
     "scripts": {
         "test": "npm run test:jest && npm run test:node",
         "test:jest": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-        "test:node": "node --test src/database/__tests__/adapter.test.js src/database/__tests__/migrate.test.js src/lib/__tests__/youtubeSearch.test.js src/services/__tests__/utamaApi.test.js",
+        "test:node": "node --test src/database/__tests__/adapter.test.js src/database/__tests__/migrate.test.js src/database/__tests__/repos.test.js src/lib/__tests__/youtubeSearch.test.js src/services/__tests__/utamaApi.test.js",
         "test:adapter": "node --test src/database/__tests__/adapter.test.js",
         "test:wa": "node --experimental-vm-modules node_modules/jest/bin/jest.js __tests__/waClient.test.js __tests__/zapoAdapter.test.js",
         "qualify:bun": "bun scripts/qualify-bun.js",

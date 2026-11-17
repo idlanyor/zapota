@@ -3,7 +3,7 @@ import { createHash } from 'crypto';
 import { settings } from '../config/settings.js';
 import Settings from '../database/models/Settings.js';
 import Group from '../database/models/Group.js';
-import Poll from '../database/models/Poll.js';
+import { pollRepo } from '../database/repos/pollRepo.js';
 import { getMessage } from '../lib/msgStore.js';
 import { generateAIResponse } from '../lib/ai.js';
 import NodeCache from 'node-cache';
@@ -186,7 +186,7 @@ const handlePollUpdate = async (sock, m) => {
     try {
         const pollUpdate = m.message.pollUpdateMessage;
         const pollId = pollUpdate.pollCreationMessageKey.id;
-        const pollData = await Poll.findOne({ pollId });
+        const pollData = await pollRepo.findByPollId(pollId);
         if (!pollData) return;
 
         const voterJid = jidNormalizedUser(m.sender);
@@ -302,7 +302,7 @@ const handlePollUpdate = async (sock, m) => {
                     });
                 }
 
-                await Poll.deleteOne({ pollId });
+                await pollRepo.remove(pollId);
                 return;
             }
 

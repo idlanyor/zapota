@@ -8,7 +8,7 @@ import Server from '../database/models/Server.js';
 import Group from '../database/models/Group.js';
 import { botSocket } from './socket.js';
 import { cleanupCaches } from '../handlers/messageFlow.js';
-import Poll from '../database/models/Poll.js';
+import { pollRepo } from '../database/repos/pollRepo.js';
 
 import { env } from '../config/env.js';
 const safeAck = (ack, payload) => {
@@ -295,10 +295,9 @@ const scheduleCacheCleanup = () => {
                 const { cleanupChatHistories } = await import('../lib/ai.js');
                 const chatCleaned = cleanupChatHistories();
                 const cacheCleaned = cleanupCaches();
-                // Shim DB tidak mendukung TTL index — poll >7 hari dihapus manual.
+                // Polls are only needed to decrypt votes; drop them after 7 days.
                 const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                const pollsRemoved = (await Poll.deleteMany({ createdAt: { $lt: weekAgo } }))
-                    .deletedCount;
+                const pollsRemoved = await pollRepo.removeOlderThan(weekAgo);
 
                 if (chatCleaned > 0 || cacheCleaned > 0 || pollsRemoved > 0) {
                     logger.info(
