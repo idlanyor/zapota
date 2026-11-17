@@ -1,3 +1,4 @@
+import { findUser, updateUser } from '../../services/userService.js';
 import {
     getUserLXCs,
     setLxcPowerState,
@@ -6,7 +7,6 @@ import {
     updateCloudUser,
     deleteCloudUser,
 } from '../../services/cloudApi.js';
-import { userRepo } from '../../database/repos/userRepo.js';
 import { settings } from '../../config/settings.js';
 
 export default {
@@ -24,7 +24,7 @@ export default {
             if (!email || !email.includes('@'))
                 return m.reply(`Usage: ${settings.prefix}lxc bind <email_cloud>`);
 
-            await userRepo.upsert({ jid: m.sender }, { emailCloud: email });
+            await updateUser(m.sender, { emailCloud: email });
             return m.reply(`Success! WhatsApp linked to cloud account: *${email}*`);
         }
 
@@ -126,7 +126,7 @@ export default {
         }
 
         // Fetch User Data
-        const dbUser = await userRepo.findOne({ jid: m.sender });
+        const dbUser = await findUser(m.sender);
         const emailCloud = dbUser?.emailCloud;
 
         if (!emailCloud && !isOwner) {

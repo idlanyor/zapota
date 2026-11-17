@@ -1,5 +1,4 @@
-import { settingsRepo } from '../../database/repos/settingsRepo.js';
-import { clearSettingsCache } from '../../handlers/messageHandler.js';
+import { getBotSettings, saveBotSettings } from '../../services/settingsService.js';
 
 export default [
     {
@@ -8,11 +7,9 @@ export default [
         description: 'On/Off auto view status orang lain',
         category: 'Owner',
         execute: async (sock, m, args, text) => {
-            let botSettings =
-                (await settingsRepo.get());
+            let botSettings = await getBotSettings();
             botSettings.autoStatusRead = !botSettings.autoStatusRead;
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
             m.reply(
                 ` Auto View Status berhasil ${botSettings.autoStatusRead ? '*DIAKTIFKAN*' : '*DIMATIKAN*'}`
             );

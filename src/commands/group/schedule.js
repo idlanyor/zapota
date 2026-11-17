@@ -1,4 +1,4 @@
-import { groupRepo } from '../../database/repos/groupRepo.js';
+import { getGroup } from '../../services/settingsService.js';
 
 export default {
     name: 'schedule',
@@ -9,8 +9,7 @@ export default {
         try {
             if (!m.isGroup) return m.reply('Perintah ini hanya untuk grup.');
 
-            const settings =
-                (await groupRepo.findOne({ jid: m.chat })) || (await groupRepo.create({ jid: m.chat }));
+            const settings = await getGroup(m.chat);
             const autoOpenStatus = settings.autoOpen ? '✅ Aktif' : '❌ Nonaktif';
             const autoCloseStatus = settings.autoClose ? '✅ Aktif' : '❌ Nonaktif';
 

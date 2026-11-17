@@ -190,3 +190,5 @@ export const getMissionState = (progress, mission) => ({
     complete: (progress[mission.field] || 0) >= mission.target,
     claimed: (progress.claimedMissions || []).includes(mission.id),
 });
+
+export const saveProgress = (progress) => rpgProgressRepo.save(progress);

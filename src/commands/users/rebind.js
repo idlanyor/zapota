@@ -1,4 +1,4 @@
-import { userRepo } from '../../database/repos/userRepo.js';
+import { ensureUser as ensureLocalUser, updateUser } from '../../services/userService.js';
 import { resolveSenderInfo } from '../../utils/phoneLookup.js';
 import { resolveUser, ensureUser, attachIdentity, coreRequest } from '../../services/kanataCore.js';
 import logger from '../../utils/logger.js';
@@ -20,15 +20,8 @@ export default {
 
             // 1. Update legacy User model
             try {
-                let user = await userRepo.findOne({ jid: m.sender });
-                if (!user) {
-                    user = await userRepo.create({
-                        jid: m.sender,
-                        name: m.pushName || '',
-                    });
-                }
-                user.phoneNumber = phoneNumber;
-                await userRepo.save(user);
+                await ensureLocalUser(m.sender, { name: m.pushName || '' });
+                await updateUser(m.sender, { phoneNumber });
             } catch (err) {
                 logger.warn(`Legacy User model rebind error: ${err.message}`);
             }
@@ -52,8 +45,14 @@ export default {
                         await coreRequest('PATCH', `/v1/users/${coreUser.id}`, { role: 'owner' });
                     }
 
-                    const identities = new Set([phoneNumber, canonicalJid, m.sender].filter(Boolean));
-                    for (const alt of [m.key?.participantAlt, m.key?.remoteJidAlt, m.chatAlt].filter(Boolean)) {
+                    const identities = new Set(
+                        [phoneNumber, canonicalJid, m.sender].filter(Boolean)
+                    );
+                    for (const alt of [
+                        m.key?.participantAlt,
+                        m.key?.remoteJidAlt,
+                        m.chatAlt,
+                    ].filter(Boolean)) {
                         if (typeof alt === 'string') identities.add(alt);
                     }
 

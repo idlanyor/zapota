@@ -1,5 +1,4 @@
-import { settingsRepo } from '../../database/repos/settingsRepo.js';
-import { clearSettingsCache } from '../../handlers/messageFlow.js';
+import { getBotSettings, saveBotSettings } from '../../services/settingsService.js';
 
 export default {
     name: 'mustjoin',
@@ -7,8 +6,7 @@ export default {
     description: 'Toggle wajib gabung grup untuk chat pribadi',
     category: 'Owner',
     execute: async (sock, m, args, text) => {
-        const botSettings =
-            (await settingsRepo.get());
+        const botSettings = await getBotSettings();
 
         if (!args[0]) {
             return m.reply(
@@ -25,15 +23,13 @@ export default {
 
         if (action === 'on') {
             botSettings.mustJoinGroup = true;
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
             return m.reply('✅ Fitur *Must Join Group* berhasil diaktifkan.');
         }
 
         if (action === 'off') {
             botSettings.mustJoinGroup = false;
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
             return m.reply('❌ Fitur *Must Join Group* berhasil dimatikan.');
         }
 
@@ -45,8 +41,7 @@ export default {
                 );
             }
             botSettings.groupInviteLink = link;
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
             return m.reply(`✅ Link grup berhasil diubah ke:\n${link}`);
         }
 

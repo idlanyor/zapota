@@ -1,8 +1,7 @@
 import { jidNormalizedUser } from '../wa/helpers.js';
 import { createHash } from 'crypto';
 import { settings } from '../config/settings.js';
-import { settingsRepo } from '../database/repos/settingsRepo.js';
-import { groupRepo } from '../database/repos/groupRepo.js';
+import { onSettingsCleared } from '../services/settingsService.js';
 import { pollRepo } from '../database/repos/pollRepo.js';
 import { getMessage } from '../lib/msgStore.js';
 import { generateAIResponse } from '../lib/ai.js';
@@ -14,11 +13,7 @@ import { isAddressedToBot, stripBotMentions } from '../lib/botMention.js';
 import { env } from '../config/env.js';
 initAfkCache().catch(() => {});
 
-let settingsCache = null;
-let lastCacheTime = 0;
-const groupCache = new NodeCache({ stdTTL: 300, checkperiod: 300 });
 const requiredGroupParticipantsCache = new NodeCache({ stdTTL: 300, checkperiod: 300 });
-const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes (was 1 minute)
 
 const addJidVariants = (bucket, jid) => {
     if (!jid || typeof jid !== 'string') return;
@@ -31,37 +26,14 @@ const addJidVariants = (bucket, jid) => {
     if (userPart) bucket.add(userPart);
 };
 
-export const getCachedSettings = async () => {
-    const now = Date.now();
-    if (!settingsCache || now - lastCacheTime > SETTINGS_CACHE_TTL_MS) {
-        settingsCache =
-            (await settingsRepo.get());
-        lastCacheTime = now;
-    }
-    return settingsCache;
-};
-
-export const getGroupSettings = async (jid, subject = '') => {
-    const now = Date.now();
-    const cached = groupCache.get(jid);
-    if (cached) return cached;
-
-    let data = await groupRepo.findOne({ jid });
-    if (!data) {
-        data = await groupRepo.create({ jid, name: subject || '' });
-    } else if (subject && !data.name) {
-        data = await groupRepo.updateOne({ jid }, { name: subject });
-    }
-
-    groupCache.set(jid, data);
-    return data;
-};
-
-export const clearSettingsCache = () => {
-    settingsCache = null;
-    groupCache.flushAll();
-    requiredGroupParticipantsCache.flushAll();
-};
+// Bot/group settings caches live in the settings service; re-exported here
+// for existing importers. This module only owns the participants cache.
+export {
+    getCachedSettings,
+    getGroupSettings,
+    clearSettingsCache,
+} from '../services/settingsService.js';
+onSettingsCleared(() => requiredGroupParticipantsCache.flushAll());
 
 /**
  * NodeCache menghapus entry expired lewat stdTTL/checkperiod.
@@ -261,32 +233,11 @@ const handlePollUpdate = async (sock, m) => {
                     await sock.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
 
                     try {
-                        const PTERO_URL = env.PTERO_URL;
-                        const PTERO_API_KEY = env.PTERO_API_KEY;
-                        const axios = (await import('axios')).default;
-
-                        const ptero = axios.create({
-                            baseURL: `${PTERO_URL}/api/application`,
-                            headers: {
-                                Authorization: `Bearer ${PTERO_API_KEY}`,
-                                'Content-Type': 'application/json',
-                                Accept: 'Application/vnd.pterodactyl.v1+json',
-                            },
-                        });
-
-                        try {
-                            await ptero.delete(
-                                force ? `/servers/${pteroId}/force` : `/servers/${pteroId}`
-                            );
-                        } catch (e) {
-                            if (e.response?.status !== 404) throw e;
-                        }
-
-                        const { serverRepo } = await import('../database/repos/serverRepo.js');
-                        const deletedDb = await serverRepo.remove({ pteroId });
+                        const { deleteServer } = await import('../services/pterodactyl.js');
+                        const { removedFromDb } = await deleteServer(pteroId, { force });
 
                         await sock.sendMessage(m.chat, {
-                            text: `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb > 0 ? 'Terhapus' : 'Tidak di DB'}`,
+                            text: `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${removedFromDb ? 'Terhapus' : 'Tidak di DB'}`,
                         });
                         await sock.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
                     } catch (err) {

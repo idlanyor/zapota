@@ -18,7 +18,7 @@ export default [
             'no-unused-vars': 'warn',
             'no-console': 'warn',
             eqeqeq: 'off',
-            'no-undef': 'off',
+            'no-undef': 'error',
             'no-empty': 'warn',
             'no-control-regex': 'warn',
             'no-useless-escape': 'off',
@@ -28,6 +28,28 @@ export default [
             'no-case-declarations': 'warn',
             'no-prototype-builtins': 'warn',
             'no-useless-catch': 'warn',
+        },
+    },
+    {
+        files: ['**/__tests__/**/*.js', '**/*.test.js'],
+        languageOptions: { globals: { ...globals.jest } },
+    },
+    {
+        // Commands talk to services, never to the database layer directly.
+        files: ['src/commands/**/*.js'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['**/database/**'],
+                            message:
+                                'Commands must use a service in src/services, not the database layer.',
+                        },
+                    ],
+                },
+            ],
         },
     },
     {

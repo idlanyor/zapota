@@ -1,6 +1,5 @@
+import { getBotSettings, saveBotSettings } from '../../services/settingsService.js';
 import { jidNormalizedUser } from '../../wa/helpers.js';
-import { settingsRepo } from '../../database/repos/settingsRepo.js';
-import { clearSettingsCache } from '../../handlers/messageFlow.js';
 
 export default [
     {
@@ -24,16 +23,14 @@ export default [
                 );
 
             const normalizedTarget = jidNormalizedUser(target);
-            const botSettings =
-                (await settingsRepo.get());
+            const botSettings = await getBotSettings();
 
             if (botSettings.owners.includes(normalizedTarget)) {
                 return m.reply('❌ User tersebut sudah menjadi owner.');
             }
 
             botSettings.owners.push(normalizedTarget);
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
 
             m.reply(`✅ Berhasil menambahkan @${normalizedTarget.split('@')[0]} sebagai owner.`, {
                 mentions: [normalizedTarget],
@@ -61,16 +58,14 @@ export default [
                 );
 
             const normalizedTarget = jidNormalizedUser(target);
-            const botSettings =
-                (await settingsRepo.get());
+            const botSettings = await getBotSettings();
 
             if (!botSettings.owners.includes(normalizedTarget)) {
                 return m.reply('❌ User tersebut bukan owner.');
             }
 
             botSettings.owners = botSettings.owners.filter((o) => o !== normalizedTarget);
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
 
             m.reply(`✅ Berhasil menghapus @${normalizedTarget.split('@')[0]} dari daftar owner.`, {
                 mentions: [normalizedTarget],
@@ -84,8 +79,7 @@ export default [
         category: 'Owner',
         execute: async (sock, m, args, text) => {
             const { settings } = await import('../../config/settings.js');
-            const botSettings =
-                (await settingsRepo.get());
+            const botSettings = await getBotSettings();
 
             const dbOwners = botSettings.owners || [];
 

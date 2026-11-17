@@ -1,17 +1,58 @@
 import axios from 'axios';
-
 import { env } from '../config/env.js';
-const PTERO_URL = env.PTERO_URL; // e.g., https://panel.example.com
-const PTERO_API_KEY = env.PTERO_API_KEY; // Application API Key
+import { serverRepo } from '../database/repos/serverRepo.js';
 
-const ptero = axios.create({
-    baseURL: `${PTERO_URL}/api/application`,
-    headers: {
-        Authorization: `Bearer ${PTERO_API_KEY}`,
-        'Content-Type': 'application/json',
-        Accept: 'Application/vnd.pterodactyl.v1+json',
-    },
-});
+const HEADERS = {
+    'Content-Type': 'application/json',
+    Accept: 'Application/vnd.pterodactyl.v1+json',
+};
+
+/**
+ * Axios instance for one Pterodactyl API. URL and key are read from env on
+ * every request, so `.reloadenv` takes effect without a restart.
+ */
+const createApi = (apiPath, keyVar) => {
+    const api = axios.create({ headers: HEADERS });
+    api.interceptors.request.use((config) => {
+        config.baseURL = `${env.PTERO_URL}${apiPath}`;
+        config.headers.Authorization = `Bearer ${env[keyVar]}`;
+        return config;
+    });
+    return api;
+};
+
+/** Application API (admin): users, servers, nodes. */
+export const pteroApp = createApi('/api/application', 'PTERO_API_KEY');
+/** Client API (admin account key): power actions, resources, account. */
+export const pteroClient = createApi('/api/client', 'PTERO_CLIENT_KEY');
+
+const ptero = pteroApp;
+
+/* ---------------------- local server records (servers) ---------------------- */
+
+export const findServerRecord = (filter) => serverRepo.findOne(filter);
+/** By Pterodactyl numeric id or short identifier. */
+export const findServerRecordByIdOrIdentifier = (id) => serverRepo.findByPteroIdOrIdentifier(id);
+export const listServerRecords = (filter = {}, opts) => serverRepo.find(filter, opts);
+export const saveServerRecord = (record) => serverRepo.save(record);
+
+/** Local record of a server sold through the bot (used for expiry/renewal). */
+export const registerServer = (record) => serverRepo.create(record);
+
+/**
+ * Delete a server on the panel (a 404 counts as already deleted) and drop
+ * its local record.
+ * @returns {Promise<{ removedFromDb: boolean }>}
+ */
+export const deleteServer = async (pteroId, { force = false } = {}) => {
+    try {
+        await pteroApp.delete(force ? `/servers/${pteroId}/force` : `/servers/${pteroId}`);
+    } catch (e) {
+        if (e.response?.status !== 404) throw e;
+    }
+    const removed = await serverRepo.remove({ pteroId });
+    return { removedFromDb: removed > 0 };
+};
 
 export const findPteroUserByPhone = async (phone) => {
     try {
@@ -32,14 +73,7 @@ export const findPteroUserByPhone = async (phone) => {
 
 export const getClientAccount = async () => {
     try {
-        const client = axios.create({
-            baseURL: `${PTERO_URL}/api/client`,
-            headers: {
-                Authorization: `Bearer ${env.PTERO_CLIENT_KEY}`,
-                'Content-Type': 'application/json',
-                Accept: 'Application/vnd.pterodactyl.v1+json',
-            },
-        });
+        const client = pteroClient;
         const resp = await client.get('/account');
         return resp.data.attributes;
     } catch (error) {
@@ -223,14 +257,7 @@ export const setServerPowerState = async (serverIdentifier, signal) => {
     try {
         // Power actions require the Client API
         // We use PTERO_CLIENT_KEY which should be an Admin Client API Key
-        const client = axios.create({
-            baseURL: `${PTERO_URL}/api/client`,
-            headers: {
-                Authorization: `Bearer ${env.PTERO_CLIENT_KEY}`,
-                'Content-Type': 'application/json',
-                Accept: 'Application/vnd.pterodactyl.v1+json',
-            },
-        });
+        const client = pteroClient;
 
         await client.post(`/servers/${serverIdentifier}/power`, { signal });
         return true;
@@ -242,14 +269,7 @@ export const setServerPowerState = async (serverIdentifier, signal) => {
 
 export const getServerResources = async (serverIdentifier) => {
     try {
-        const client = axios.create({
-            baseURL: `${PTERO_URL}/api/client`,
-            headers: {
-                Authorization: `Bearer ${env.PTERO_CLIENT_KEY}`,
-                'Content-Type': 'application/json',
-                Accept: 'Application/vnd.pterodactyl.v1+json',
-            },
-        });
+        const client = pteroClient;
 
         const resp = await client.get(`/servers/${serverIdentifier}/resources`);
         return resp.data.attributes;

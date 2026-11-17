@@ -16,7 +16,7 @@ import {
     parseFailReason,
     getFailReasonText,
 } from '../../lib/order3.js';
-import { userRepo } from '../../database/repos/userRepo.js';
+import { credit, debit, ensureUser, findUser } from '../../services/walletService.js';
 
 export default {
     name: 'order3',
@@ -37,19 +37,16 @@ export default {
             if (index === -1) return false;
 
             const orderData = orders[index];
-            let userProfile = (await userRepo.findOne({ jid })) || (await userRepo.create({ jid }));
-
-            if (userProfile.balance < orderData.finalPriceMyr) {
+            // Atomic check + debit: concurrent confirmations can't overdraw.
+            const charge = await debit(jid, orderData.finalPriceMyr);
+            if (!charge.ok) {
                 orders[index].status = 'CANCELLED';
                 saveOrder3Orders(orders);
                 await m.reply(
-                    `❌ *Insufficient Balance*\n\n📦 *Product:* ${orderData.productCode}\n💳 *Price:* ${formatCompactMyr(orderData.finalPriceMyr)}\n💼 *Your Balance:* ${formatCompactMyr(userProfile.balance)}`
+                    `❌ *Insufficient Balance*\n\n📦 *Product:* ${orderData.productCode}\n💳 *Price:* ${formatCompactMyr(orderData.finalPriceMyr)}\n💼 *Your Balance:* ${formatCompactMyr(charge.balance)}`
                 );
                 return true;
             }
-
-            userProfile.balance -= orderData.finalPriceMyr;
-            await userRepo.save(userProfile);
 
             orders[index].status = 'PENDING';
             orders[index].paidAt = Date.now();
@@ -158,13 +155,10 @@ export default {
                 return m.reply('Sesi alasan gagal tidak ditemukan.');
 
             const orderData = orders[index];
-            const userProfile = await userRepo.findOne({ jid: orderData.jid });
             const failReason = getFailReasonText(parsedFailReason.reasonCode);
 
-            if (userProfile) {
-                userProfile.balance += orderData.finalPriceMyr;
-                await userRepo.save(userProfile);
-            }
+            // Refund the failed order.
+            if (await findUser(orderData.jid)) await credit(orderData.jid, orderData.finalPriceMyr);
 
             orders[index].status = 'FAILED';
             orders[index].failedAt = Date.now();
@@ -187,7 +181,7 @@ export default {
         const nomor = jid.split('@')[0];
         const priceList = loadOrder3Prices();
 
-        let userProfile = (await userRepo.findOne({ jid })) || (await userRepo.create({ jid }));
+        const userProfile = await ensureUser(jid);
         const markupPercentage = getMarkupByRole(userProfile.role);
 
         if (args.length === 0) {

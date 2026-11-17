@@ -1,3 +1,4 @@
+import { chatCompletion } from '../../services/deepseek.js';
 import axios from 'axios';
 import os from 'os';
 import { execSync } from 'child_process';
@@ -5,8 +6,6 @@ import { settings } from '../../config/settings.js';
 import { resolveLocationToAdm4, searchWilayah } from '../../services/wilayahResolver.js';
 import { env } from '../../config/env.js';
 
-const DS_BASE_URL = env.DS_BASE_URL || 'http://localhost:5050';
-const DS_API_KEY = env.DS_API_KEY || 'dseeker';
 const DEFAULT_MODEL = 'deepseek-chat-instant';
 const IRENG_BASE_URL = 'https://apiku.irengcloud.com';
 
@@ -112,13 +111,15 @@ const IRENG_TOOLS = [
         type: 'function',
         function: {
             name: 'bmkg_cuaca',
-            description: 'Mendapatkan prakiraan cuaca BMKG untuk desa, kelurahan, kecamatan, kota, kabupaten, atau daerah di Indonesia',
+            description:
+                'Mendapatkan prakiraan cuaca BMKG untuk desa, kelurahan, kecamatan, kota, kabupaten, atau daerah di Indonesia',
             parameters: {
                 type: 'object',
                 properties: {
                     lokasi: {
                         type: 'string',
-                        description: 'Nama desa, kecamatan, kota atau daerah di Indonesia (contoh: "Sirandu Karangjambu Purbalingga", "Bandung", "Surabaya", "Sleman", "Makassar")',
+                        description:
+                            'Nama desa, kecamatan, kota atau daerah di Indonesia (contoh: "Sirandu Karangjambu Purbalingga", "Bandung", "Surabaya", "Sleman", "Makassar")',
                     },
                     adm4: {
                         type: 'string',
@@ -139,7 +140,8 @@ const IRENG_TOOLS = [
                 properties: {
                     kota: {
                         type: 'string',
-                        description: 'Nama kota atau kabupaten, misal: "Jakarta Pusat", "Surabaya", "Bandung"',
+                        description:
+                            'Nama kota atau kabupaten, misal: "Jakarta Pusat", "Surabaya", "Bandung"',
                     },
                     bulan: {
                         type: 'number',
@@ -158,13 +160,15 @@ const IRENG_TOOLS = [
         type: 'function',
         function: {
             name: 'hadits_search',
-            description: 'Pencarian teks lengkap Hadits 9 Imam (Bukhari, Muslim, Abu Daud, dll) dengan kata kunci',
+            description:
+                'Pencarian teks lengkap Hadits 9 Imam (Bukhari, Muslim, Abu Daud, dll) dengan kata kunci',
             parameters: {
                 type: 'object',
                 properties: {
                     q: {
                         type: 'string',
-                        description: 'Kata kunci pencarian hadits, misal: "niat", "sedekah", "shalat"',
+                        description:
+                            'Kata kunci pencarian hadits, misal: "niat", "sedekah", "shalat"',
                     },
                     limit: {
                         type: 'number',
@@ -179,13 +183,15 @@ const IRENG_TOOLS = [
         type: 'function',
         function: {
             name: 'hadits_detail',
-            description: 'Mendapatkan teks hadits lengkap (Arab & Terjemahan) berdasarkan perawi dan nomor',
+            description:
+                'Mendapatkan teks hadits lengkap (Arab & Terjemahan) berdasarkan perawi dan nomor',
             parameters: {
                 type: 'object',
                 properties: {
                     perawi: {
                         type: 'string',
-                        description: 'Nama perawi: bukhari, muslim, abudaud, tirmidzi, nasai, ibnumajah, ahmad, malik, darimi',
+                        description:
+                            'Nama perawi: bukhari, muslim, abudaud, tirmidzi, nasai, ibnumajah, ahmad, malik, darimi',
                     },
                     nomor: {
                         type: 'number',
@@ -200,7 +206,8 @@ const IRENG_TOOLS = [
         type: 'function',
         function: {
             name: 'layanan_islami',
-            description: 'Mengakses Khutbah MUI, Doa Keseharian, Wirid/Ratib/Hizib, atau Arsip NU Online',
+            description:
+                'Mengakses Khutbah MUI, Doa Keseharian, Wirid/Ratib/Hizib, atau Arsip NU Online',
             parameters: {
                 type: 'object',
                 properties: {
@@ -211,7 +218,8 @@ const IRENG_TOOLS = [
                     },
                     query: {
                         type: 'string',
-                        description: 'Kategori (misal: "ratib", "doa-keseharian") atau kata kunci pencarian',
+                        description:
+                            'Kategori (misal: "ratib", "doa-keseharian") atau kata kunci pencarian',
                     },
                 },
                 required: ['service'],
@@ -244,7 +252,8 @@ const IRENG_TOOLS = [
         type: 'function',
         function: {
             name: 'tv_jadwal',
-            description: 'Mendapatkan jadwal siaran televisi nasional saat ini atau live sepak bola',
+            description:
+                'Mendapatkan jadwal siaran televisi nasional saat ini atau live sepak bola',
             parameters: {
                 type: 'object',
                 properties: {
@@ -255,7 +264,8 @@ const IRENG_TOOLS = [
                     },
                     channel: {
                         type: 'string',
-                        description: 'Nama channel (wajib jika type="schedule", misal: "rcti", "sctv")',
+                        description:
+                            'Nama channel (wajib jika type="schedule", misal: "rcti", "sctv")',
                     },
                 },
                 required: ['type'],
@@ -305,18 +315,21 @@ const IRENG_TOOLS = [
         type: 'function',
         function: {
             name: 'checkhost_network',
-            description: 'Lookup informasi IP / Host (lokasi, ISP, ASN, hostname), ping global, atau WHOIS domain menggunakan CheckHost',
+            description:
+                'Lookup informasi IP / Host (lokasi, ISP, ASN, hostname), ping global, atau WHOIS domain menggunakan CheckHost',
             parameters: {
                 type: 'object',
                 properties: {
                     action: {
                         type: 'string',
                         enum: ['ip_info', 'ping', 'whois'],
-                        description: 'Tindakan: "ip_info" untuk info IP/lokasi/ISP, "ping" untuk ping latency, "whois" untuk info domain',
+                        description:
+                            'Tindakan: "ip_info" untuk info IP/lokasi/ISP, "ping" untuk ping latency, "whois" untuk info domain',
                     },
                     target: {
                         type: 'string',
-                        description: 'IP address atau nama host/domain (contoh: "64.235.45.179", "google.com")',
+                        description:
+                            'IP address atau nama host/domain (contoh: "64.235.45.179", "google.com")',
                     },
                 },
                 required: ['action', 'target'],
@@ -393,7 +406,11 @@ async function executeIrengTool(name, args) {
                 angin: `${c.ws} km/jam (${c.wd})`,
             }));
             return JSON.stringify({
-                lokasi: locInfo?.detail || res.data?.data?.lokasi?.kotkab || res.data?.lokasi?.kotkab || 'Indonesia',
+                lokasi:
+                    locInfo?.detail ||
+                    res.data?.data?.lokasi?.kotkab ||
+                    res.data?.lokasi?.kotkab ||
+                    'Indonesia',
                 adm4: targetAdm4,
                 prakiraan: ringkasan,
             });
@@ -406,9 +423,12 @@ async function executeIrengTool(name, args) {
             return JSON.stringify(res.data);
         }
         if (name === 'hadits_detail') {
-            const res = await axios.get(`${IRENG_BASE_URL}/api/v1/hadits/${args.perawi.toLowerCase()}/${args.nomor}`, {
-                timeout: 15000,
-            });
+            const res = await axios.get(
+                `${IRENG_BASE_URL}/api/v1/hadits/${args.perawi.toLowerCase()}/${args.nomor}`,
+                {
+                    timeout: 15000,
+                }
+            );
             return JSON.stringify(res.data);
         }
         if (name === 'layanan_islami') {
@@ -422,7 +442,10 @@ async function executeIrengTool(name, args) {
             return JSON.stringify(res.data);
         }
         if (name === 'aksara_jawa') {
-            const endpoint = args.direction === 'latin_to_jawa' ? '/api/v1/aksara/latin-to-jawa' : '/api/v1/aksara/jawa-to-latin';
+            const endpoint =
+                args.direction === 'latin_to_jawa'
+                    ? '/api/v1/aksara/latin-to-jawa'
+                    : '/api/v1/aksara/jawa-to-latin';
             const res = await axios.get(`${IRENG_BASE_URL}${endpoint}`, {
                 params: { text: args.text },
                 timeout: 15000,
@@ -499,7 +522,9 @@ async function executeIrengTool(name, args) {
             let topMem = [];
             if (diagType === 'all' || diagType === 'processes') {
                 try {
-                    const cpuOut = execSync('ps -eo pid,user,%cpu,%mem,comm --sort=-%cpu | head -n 6')
+                    const cpuOut = execSync(
+                        'ps -eo pid,user,%cpu,%mem,comm --sort=-%cpu | head -n 6'
+                    )
                         .toString()
                         .trim()
                         .split('\n');
@@ -516,7 +541,9 @@ async function executeIrengTool(name, args) {
                 } catch {}
 
                 try {
-                    const memOut = execSync('ps -eo pid,user,%cpu,%mem,comm --sort=-%mem | head -n 6')
+                    const memOut = execSync(
+                        'ps -eo pid,user,%cpu,%mem,comm --sort=-%mem | head -n 6'
+                    )
                         .toString()
                         .trim()
                         .split('\n');
@@ -578,7 +605,9 @@ async function executeIrengTool(name, args) {
             const query = args.query || args.q || '';
             // Jika query mencari hadits, alihkan ke hadits_search internal
             if (/hadits|hadis|bukhari|muslim|tirmidzi|sunan|shahih/i.test(query)) {
-                const cleanQ = query.replace(/hadits|hadis|shahih|riwayat|tentang|mengenai/gi, '').trim() || query;
+                const cleanQ =
+                    query.replace(/hadits|hadis|shahih|riwayat|tentang|mengenai/gi, '').trim() ||
+                    query;
                 const res = await axios.get(`${IRENG_BASE_URL}/api/v1/hadits/search`, {
                     params: { q: cleanQ, page: 1, limit: args.max_results || args.limit || 5 },
                     timeout: 15000,
@@ -592,7 +621,9 @@ async function executeIrengTool(name, args) {
                 error: `Tool ${name} tidak tersedia. Gunakan tool hadits_search, bmkg_cuaca, sholat_jadwal, dll yang tersedia di daftar tools, atau jawab secara langsung.`,
             });
         }
-        return JSON.stringify({ error: `Tool ${name} tidak dikenali. Gunakan tool yang ada di daftar.` });
+        return JSON.stringify({
+            error: `Tool ${name} tidak dikenali. Gunakan tool yang ada di daftar.`,
+        });
     } catch (err) {
         return JSON.stringify({ error: err.message });
     }
@@ -698,27 +729,23 @@ export async function handleDsChat(sock, m, promptText) {
         ];
 
         // Panggilan pertama ke DeepSeek
-        let response = await axios.post(
-            `${DS_BASE_URL.replace(/\/+$/, '')}/v1/chat/completions`,
+        let response = await chatCompletion(
             {
                 model: DEFAULT_MODEL,
                 messages: messages,
                 tools: allowedTools,
             },
-            {
-                headers: {
-                    Authorization: `Bearer ${DS_API_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-                timeout: 60000,
-            }
+            { timeout: 60000 }
         );
 
         // Loop interaksi tool call hingga menghasilkan jawaban final (maksimal 3 iterasi)
         let iterations = 0;
         const MAX_TOOL_ITERATIONS = 3;
 
-        while (response.data?.choices?.[0]?.message?.tool_calls?.length > 0 && iterations < MAX_TOOL_ITERATIONS) {
+        while (
+            response.data?.choices?.[0]?.message?.tool_calls?.length > 0 &&
+            iterations < MAX_TOOL_ITERATIONS
+        ) {
             iterations++;
             const assistantMsg = response.data.choices[0].message;
             messages.push(assistantMsg);
@@ -747,20 +774,13 @@ export async function handleDsChat(sock, m, promptText) {
             }
 
             // Kirim kembali hasil tool ke DeepSeek
-            response = await axios.post(
-                `${DS_BASE_URL.replace(/\/+$/, '')}/v1/chat/completions`,
+            response = await chatCompletion(
                 {
                     model: DEFAULT_MODEL,
                     messages: messages,
                     tools: allowedTools,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${DS_API_KEY}`,
-                        'Content-Type': 'application/json',
-                    },
-                    timeout: 60000,
-                }
+                { timeout: 60000 }
             );
         }
 
@@ -822,14 +842,14 @@ export default {
         if (!inputPrompt) {
             return m.reply(
                 `*DeepSeek AI + IrengCloud Tools*\n\n` +
-                `Format: *${settings.prefix}ds <pertanyaan>*\n` +
-                `Atau reply pesan bot / tag bot untuk ngobrol langsung bersambung!\n\n` +
-                `_Contoh:_\n` +
-                `• ${settings.prefix}ds Info gempa terbaru BMKG dong\n` +
-                `• ${settings.prefix}ds Jadwal sholat Surabaya hari ini\n` +
-                `• ${settings.prefix}ds Cari hadits tentang menuntut ilmu\n` +
-                `• ${settings.prefix}ds Tulis aksara jawa: Sugeng Rawuh\n` +
-                `• ${settings.prefix}ds Lirik lagu Bohemian Rhapsody Queen`
+                    `Format: *${settings.prefix}ds <pertanyaan>*\n` +
+                    `Atau reply pesan bot / tag bot untuk ngobrol langsung bersambung!\n\n` +
+                    `_Contoh:_\n` +
+                    `• ${settings.prefix}ds Info gempa terbaru BMKG dong\n` +
+                    `• ${settings.prefix}ds Jadwal sholat Surabaya hari ini\n` +
+                    `• ${settings.prefix}ds Cari hadits tentang menuntut ilmu\n` +
+                    `• ${settings.prefix}ds Tulis aksara jawa: Sugeng Rawuh\n` +
+                    `• ${settings.prefix}ds Lirik lagu Bohemian Rhapsody Queen`
             );
         }
 

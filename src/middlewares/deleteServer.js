@@ -1,4 +1,4 @@
-import { env } from '../config/env.js';
+import { deleteServer } from '../services/pterodactyl.js';
 import { pendingServerDeletes } from '../state/pendingServerDeletes.js';
 
 export const handleDeleteServerConfirmation = async (m) => {
@@ -11,30 +11,10 @@ export const handleDeleteServerConfirmation = async (m) => {
         await m.react('⏳');
 
         try {
-            const PTERO_URL = env.PTERO_URL;
-            const PTERO_API_KEY = env.PTERO_API_KEY;
-            const axios = (await import('axios')).default;
-
-            const ptero = axios.create({
-                baseURL: `${PTERO_URL}/api/application`,
-                headers: {
-                    Authorization: `Bearer ${PTERO_API_KEY}`,
-                    'Content-Type': 'application/json',
-                    Accept: 'Application/vnd.pterodactyl.v1+json',
-                },
-            });
-
-            try {
-                await ptero.delete(force ? `/servers/${pteroId}/force` : `/servers/${pteroId}`);
-            } catch (e) {
-                if (e.response?.status !== 404) throw e;
-            }
-
-            const { serverRepo } = await import('../database/repos/serverRepo.js');
-            const deletedDb = await serverRepo.remove({ pteroId });
+            const { removedFromDb } = await deleteServer(pteroId, { force });
 
             await m.reply(
-                `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb > 0 ? 'Terhapus' : 'Tidak di DB'}`
+                `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${removedFromDb ? 'Terhapus' : 'Tidak di DB'}`
             );
             await m.react('✅');
         } catch (err) {

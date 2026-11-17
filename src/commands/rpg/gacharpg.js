@@ -1,34 +1,153 @@
+import { saveUser } from '../../services/userService.js';
 import { randomUUID } from 'node:crypto';
-import { getOrCreatePlayer } from '../../services/rpgService.js';
-import { rpgInventoryRepo } from '../../database/repos/rpgRepos.js';
+import { addItem, findItem, getOrCreatePlayer, saveItem } from '../../services/rpgService.js';
 import { recordRpgActivity } from '../../services/rpgProgressService.js';
 import { icon } from '../../lib/icons.js';
 import logger from '../../utils/logger.js';
-import { userRepo } from '../../database/repos/userRepo.js';
 
 const GACHA_POOL = [
     // COMMON (60%)
-    { id: 'kopi_saset', name: 'Kopi Saset Kapal Api', category: 'konsumsi', desc: 'Energi +20, Waras +10', rarity: 'C', rate: 12, iconName: 'mug' },
-    { id: 'mie_instan', name: 'Indomie Goreng Spesial', category: 'konsumsi', desc: 'Gizi +30, Waras +10', rarity: 'C', rate: 12, iconName: 'utensils' },
-    { id: 'tolak_angin', name: 'Jamu Tolak Angin', category: 'konsumsi', desc: 'HP +35, Waras +10', rarity: 'C', rate: 12, iconName: 'pills' },
-    { id: 'obat_maag', name: 'Promag Sakit Perut', category: 'konsumsi', desc: 'HP +40, Waras +15', rarity: 'C', rate: 12, iconName: 'pills' },
-    { id: 'token_listrik', name: 'Token Listrik PLN 20k', category: 'konsumsi', desc: 'Kewarasan +25', rarity: 'C', rate: 12, iconName: 'bolt' },
+    {
+        id: 'kopi_saset',
+        name: 'Kopi Saset Kapal Api',
+        category: 'konsumsi',
+        desc: 'Energi +20, Waras +10',
+        rarity: 'C',
+        rate: 12,
+        iconName: 'mug',
+    },
+    {
+        id: 'mie_instan',
+        name: 'Indomie Goreng Spesial',
+        category: 'konsumsi',
+        desc: 'Gizi +30, Waras +10',
+        rarity: 'C',
+        rate: 12,
+        iconName: 'utensils',
+    },
+    {
+        id: 'tolak_angin',
+        name: 'Jamu Tolak Angin',
+        category: 'konsumsi',
+        desc: 'HP +35, Waras +10',
+        rarity: 'C',
+        rate: 12,
+        iconName: 'pills',
+    },
+    {
+        id: 'obat_maag',
+        name: 'Promag Sakit Perut',
+        category: 'konsumsi',
+        desc: 'HP +40, Waras +15',
+        rarity: 'C',
+        rate: 12,
+        iconName: 'pills',
+    },
+    {
+        id: 'token_listrik',
+        name: 'Token Listrik PLN 20k',
+        category: 'konsumsi',
+        desc: 'Kewarasan +25',
+        rarity: 'C',
+        rate: 12,
+        iconName: 'bolt',
+    },
 
     // RARE (25%)
-    { id: 'kuota_internet', name: 'Paket Kuota 10GB', category: 'konsumsi', desc: 'Kewarasan +30', rarity: 'R', rate: 8, iconName: 'bolt' },
-    { id: 'helm_sni', name: 'Helm Bogo SNI', category: 'senjata', desc: 'Defense +25 anti begal', rarity: 'R', rate: 6, iconName: 'shield' },
-    { id: 'kunci_inggris', name: 'Kunci Inggris Baja', category: 'senjata', desc: 'Attack +30 bela diri', rarity: 'R', rate: 6, iconName: 'wrench' },
-    { id: 'jas_hujan', name: 'Jas Hujan Ponco Elmondo', category: 'aksesoris', desc: 'Tahan badai hujan', rarity: 'R', rate: 5, iconName: 'shield' },
+    {
+        id: 'kuota_internet',
+        name: 'Paket Kuota 10GB',
+        category: 'konsumsi',
+        desc: 'Kewarasan +30',
+        rarity: 'R',
+        rate: 8,
+        iconName: 'bolt',
+    },
+    {
+        id: 'helm_sni',
+        name: 'Helm Bogo SNI',
+        category: 'senjata',
+        desc: 'Defense +25 anti begal',
+        rarity: 'R',
+        rate: 6,
+        iconName: 'shield',
+    },
+    {
+        id: 'kunci_inggris',
+        name: 'Kunci Inggris Baja',
+        category: 'senjata',
+        desc: 'Attack +30 bela diri',
+        rarity: 'R',
+        rate: 6,
+        iconName: 'wrench',
+    },
+    {
+        id: 'jas_hujan',
+        name: 'Jas Hujan Ponco Elmondo',
+        category: 'aksesoris',
+        desc: 'Tahan badai hujan',
+        rarity: 'R',
+        rate: 5,
+        iconName: 'shield',
+    },
 
     // SUPER RARE (12%)
-    { id: 'sepeda_butut', name: 'Sepeda Onthel Butut', category: 'kendaraan', desc: 'Hemat stamina kerja 10%', rarity: 'SR', rate: 4, iconName: 'bicycle' },
-    { id: 'jaket_ojol', name: 'Jaket Hijau Ojol Ori', category: 'aksesoris', desc: 'Reputasi Ojol +20', rarity: 'SR', rate: 4, iconName: 'motorcycle' },
-    { id: 'knalpot_brong', name: 'Knalpot Racing Brong', category: 'aksesoris', desc: 'Preman segan, Aparat waspada', rarity: 'SR', rate: 4, iconName: 'motorcycle' },
+    {
+        id: 'sepeda_butut',
+        name: 'Sepeda Onthel Butut',
+        category: 'kendaraan',
+        desc: 'Hemat stamina kerja 10%',
+        rarity: 'SR',
+        rate: 4,
+        iconName: 'bicycle',
+    },
+    {
+        id: 'jaket_ojol',
+        name: 'Jaket Hijau Ojol Ori',
+        category: 'aksesoris',
+        desc: 'Reputasi Ojol +20',
+        rarity: 'SR',
+        rate: 4,
+        iconName: 'motorcycle',
+    },
+    {
+        id: 'knalpot_brong',
+        name: 'Knalpot Racing Brong',
+        category: 'aksesoris',
+        desc: 'Preman segan, Aparat waspada',
+        rarity: 'SR',
+        rate: 4,
+        iconName: 'motorcycle',
+    },
 
     // SSR (3%)
-    { id: 'motor_matic', name: 'Motor Matic Beat Karbu', category: 'kendaraan', desc: 'Syarat wajib jadi Driver Ojol!', rarity: 'SSR', rate: 1.5, iconName: 'motorcycle' },
-    { id: 'sertifikat_tanah', name: 'Sertifikat Tanah Kavling', category: 'spesial', desc: 'Aset idaman calon mertua', rarity: 'SSR', rate: 1, iconName: 'scroll' },
-    { id: 'kartu_bansos_vip', name: 'Kartu Sakti Bansos VIP', category: 'spesial', desc: 'Diskon sembako seumur hidup', rarity: 'SSR', rate: 0.5, iconName: 'creditCard' },
+    {
+        id: 'motor_matic',
+        name: 'Motor Matic Beat Karbu',
+        category: 'kendaraan',
+        desc: 'Syarat wajib jadi Driver Ojol!',
+        rarity: 'SSR',
+        rate: 1.5,
+        iconName: 'motorcycle',
+    },
+    {
+        id: 'sertifikat_tanah',
+        name: 'Sertifikat Tanah Kavling',
+        category: 'spesial',
+        desc: 'Aset idaman calon mertua',
+        rarity: 'SSR',
+        rate: 1,
+        iconName: 'scroll',
+    },
+    {
+        id: 'kartu_bansos_vip',
+        name: 'Kartu Sakti Bansos VIP',
+        category: 'spesial',
+        desc: 'Diskon sembako seumur hidup',
+        rarity: 'SSR',
+        rate: 0.5,
+        iconName: 'creditCard',
+    },
 ];
 
 const rollSingleItem = () => {
@@ -71,7 +190,7 @@ export default {
 
             // Potong saldo
             user.balance -= totalCost;
-            await userRepo.save(user);
+            await saveUser(user);
 
             // Lakukan gacha
             const wonItems = [];
@@ -87,12 +206,12 @@ export default {
                 }
 
                 // Masukkan ke database RpgInventory
-                let inv = await rpgInventoryRepo.findOne({ userId: sender, itemId: item.id });
+                let inv = await findItem({ userId: sender, itemId: item.id });
                 if (inv) {
                     inv.quantity += 1;
-                    await rpgInventoryRepo.save(inv);
+                    await saveItem(inv);
                 } else {
-                    await rpgInventoryRepo.create({
+                    await addItem({
                         userId: sender,
                         itemId: item.id,
                         itemName: item.name,
@@ -242,8 +361,7 @@ html,body{width:100%;background:transparent;font-family:-apple-system,BlinkMacSy
                                                             payload: html,
                                                             trusted_sources: [],
                                                         },
-                                                        __typename:
-                                                            'GenAISingleLayoutViewModel',
+                                                        __typename: 'GenAISingleLayoutViewModel',
                                                     },
                                                 },
                                             ],

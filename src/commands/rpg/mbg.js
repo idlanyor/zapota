@@ -1,7 +1,6 @@
-import { getOrCreatePlayer } from '../../services/rpgService.js';
+import { getOrCreatePlayer, savePlayer } from '../../services/rpgService.js';
 import { sendRpgReply } from '../../lib/rpgVisuals.js';
 import { recordRpgActivity } from '../../services/rpgProgressService.js';
-import { rpgPlayerRepo } from '../../database/repos/rpgRepos.js';
 
 export default {
     name: 'klaim_mbg',
@@ -53,7 +52,7 @@ export default {
                 player.gizi = Math.min(100, player.gizi + 50);
                 player.hp = Math.min(player.maxHp, player.hp + 10);
                 player.kewarasan = Math.min(100, player.kewarasan + 10);
-                await rpgPlayerRepo.save(player);
+                await savePlayer(player);
                 await recordRpgActivity(sender, 'meal');
 
                 return sendRpgReply(
@@ -74,7 +73,7 @@ export default {
                 // Menu Karbo Tinggi / Kualitas Minim
                 player.gizi = Math.min(100, player.gizi + 20);
                 player.kewarasan = Math.max(10, player.kewarasan - 5);
-                await rpgPlayerRepo.save(player);
+                await savePlayer(player);
                 await recordRpgActivity(sender, 'meal');
 
                 return sendRpgReply(
@@ -94,7 +93,7 @@ export default {
                 // Skandal SPPG Korup / Keracunan
                 player.hp = Math.max(10, player.hp - 35);
                 player.kewarasan = Math.max(10, player.kewarasan - 25);
-                await rpgPlayerRepo.save(player);
+                await savePlayer(player);
                 await recordRpgActivity(sender, 'meal');
 
                 return sendRpgReply(

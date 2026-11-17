@@ -1,19 +1,8 @@
-import { userRepo } from '../../database/repos/userRepo.js';
+import { credit } from '../../services/walletService.js';
 import { settings } from '../../config/settings.js';
-import axios from 'axios';
 
 import { env } from '../../config/env.js';
-const PTERO_URL = env.PTERO_URL;
-const PTERO_API_KEY = env.PTERO_API_KEY;
-
-const ptero = axios.create({
-    baseURL: `${PTERO_URL}/api/application`,
-    headers: {
-        Authorization: `Bearer ${PTERO_API_KEY}`,
-        'Content-Type': 'application/json',
-        Accept: 'Application/vnd.pterodactyl.v1+json',
-    },
-});
+import { pteroApp as ptero } from '../../services/pterodactyl.js';
 
 export default {
     name: 'addbalance',
@@ -93,13 +82,7 @@ Email *${emailInput}* tidak ditemukan di panel Pterodactyl.`);
             }
 
             // 3. Update saldo di database bot
-            let user = await userRepo.findOne({ jid: targetJid });
-            if (!user) {
-                user = await userRepo.create({ jid: targetJid });
-            }
-
-            user.balance += amount;
-            await userRepo.save(user);
+            const user = { balance: await credit(targetJid, amount) };
 
             const userNotice =
                 `*PEMBERITAHUAN TOPUP*\n\n` +

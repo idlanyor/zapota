@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '../../wa/helpers.js';
+import { downloadMediaBuffer } from '../../wa/helpers.js';
 import ILovePDfSdk from 'ilovepdf-sdk';
 import fs from 'fs';
 import path from 'path';
@@ -38,11 +38,7 @@ export default {
 
             // Download file
             const mediaType = isImage ? 'image' : 'document';
-            const stream = await downloadContentFromMessage(msg, mediaType, sock);
-            let buffer = Buffer.from([]);
-            for await (const chunk of stream) {
-                buffer = Buffer.concat([buffer, chunk]);
-            }
+            const buffer = await downloadMediaBuffer(msg, mediaType, sock);
 
             // Save temporary input file
             const fileName = path.basename(msg.fileName || getRandom(isImage ? '.jpg' : '.docx'));
