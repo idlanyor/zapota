@@ -3,6 +3,7 @@ import cron from 'node-cron';
 import { messageHandler, clearSettingsCache } from '../handlers/messageHandler.js';
 import { groupParticipantsUpdate, handleMessagesUpdate } from '../handlers/groupHandler.js';
 import logger from '../utils/logger.js';
+import { settings } from '../config/settings.js';
 import Server from '../database/models/Server.js';
 import Group from '../database/models/Group.js';
 import { botSocket } from './socket.js';
@@ -113,9 +114,23 @@ export const registerSocketEvents = ({
     onOpen,
 }) => {
     sock.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect, qr } = update;
+        const { connection, lastDisconnect, qr, pairingCode, pairingError } = update;
 
-        if (qr) {
+        if (pairingError) logger.error(`Failed to request pairing code: ${pairingError.message}`);
+
+        if (pairingCode) {
+            const formatted = pairingCode.match(/.{1,4}/g).join('-');
+            logger.event({
+                scope: 'WA',
+                action: 'Pairing code',
+                details: `${formatted} → WhatsApp > Perangkat tertaut > Tautkan dengan nomor telepon`,
+                level: 'success',
+            });
+            logger.info(`PAIRING CODE: ${formatted}`);
+        }
+
+        // zapo + BOT_PHONE_NUMBER logs in by pairing code; Baileys still uses QR.
+        if (qr && !(settings.pairingNumber && settings.transport === 'zapo')) {
             import('qrcode-terminal').then(({ default: qrcode }) => {
                 qrcode.generate(qr, { small: true });
             });
@@ -281,9 +296,8 @@ const scheduleCacheCleanup = () => {
                 const cacheCleaned = cleanupCaches();
                 // Shim DB tidak mendukung TTL index — poll >7 hari dihapus manual.
                 const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                const pollsRemoved = (
-                    await Poll.deleteMany({ createdAt: { $lt: weekAgo } })
-                ).deletedCount;
+                const pollsRemoved = (await Poll.deleteMany({ createdAt: { $lt: weekAgo } }))
+                    .deletedCount;
 
                 if (chatCleaned > 0 || cacheCleaned > 0 || pollsRemoved > 0) {
                     logger.info(

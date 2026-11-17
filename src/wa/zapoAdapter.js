@@ -61,8 +61,7 @@ const zapoOptions = (content, options) => {
     const result = {
         quote: quoted ? asKey(quoted) : undefined,
         mentions: options?.mentions || content?.mentions,
-        contextInfo:
-            Object.keys(rawContextInfo).length > 0 ? { raw: rawContextInfo } : undefined,
+        contextInfo: Object.keys(rawContextInfo).length > 0 ? { raw: rawContextInfo } : undefined,
     };
     if (content?.edit) result.editKey = asKey(content.edit);
     return result;
@@ -123,8 +122,7 @@ const zapoContent = async (content) => {
 const ensureAiRichTextEnvelope = (message, options = {}) => {
     if (options?.raw || options?.rawMessage) return message;
     const richResponse =
-        message?.richResponseMessage ||
-        message?.botForwardedMessage?.message?.richResponseMessage;
+        message?.richResponseMessage || message?.botForwardedMessage?.message?.richResponseMessage;
 
     if (!richResponse || message?.conversation != null || richResponse?.unifiedResponse)
         return message;
@@ -135,7 +133,9 @@ const ensureAiRichTextEnvelope = (message, options = {}) => {
             const code = submessage?.codeMetadata?.codeBlocks
                 ?.map((block) => block.codeContent || '')
                 .join('');
-            return code ? [`\`\`\`${submessage.codeMetadata.codeLanguage || ''}\n${code}\n\`\`\``] : [];
+            return code
+                ? [`\`\`\`${submessage.codeMetadata.codeLanguage || ''}\n${code}\n\`\`\``]
+                : [];
         })
         .join('\n\n');
 
@@ -544,12 +544,34 @@ export const createZapoFacade = ({
     return facade;
 };
 
+/**
+ * Link-code login: once the server is ready for pairing, ask for a code for
+ * `phoneNumber`. The code reaches listeners via the `auth_pairing_code` event
+ * (re-emitted as `connection.update { pairingCode }`). One request per client.
+ */
+export const requestPairingCodeWhenNeeded = (zapo, phoneNumber) => {
+    let requested = false;
+    const request = async () => {
+        if (requested || zapo.getState().registered) return;
+        requested = true;
+        try {
+            await zapo.auth.requestPairingCode(phoneNumber);
+        } catch (err) {
+            requested = false;
+            zapo.emit?.('auth_pairing_error', err);
+        }
+    };
+    zapo.on('auth_pairing_required', request);
+    zapo.on('auth_qr', request);
+};
+
 export const createZapoAdapter = async ({
     storePath = 'data/zapo-auth.sqlite',
     sessionId = 'default',
     reconnect = true,
     reconnectBaseMs = 1_000,
     reconnectMaxMs = 30_000,
+    pairingNumber,
 } = {}) => {
     if (!sessionId || typeof sessionId !== 'string')
         throw new TypeError('sessionId must be a stable non-empty string');
@@ -586,6 +608,13 @@ export const createZapoAdapter = async ({
         reconnectBaseMs,
         reconnectMaxMs,
     });
+
+    if (pairingNumber) {
+        zapo.on('auth_pairing_error', (pairingError) =>
+            client.ev.emit('connection.update', { pairingError })
+        );
+        requestPairingCodeWhenNeeded(zapo, pairingNumber);
+    }
 
     return {
         client,

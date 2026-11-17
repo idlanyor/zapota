@@ -41,5 +41,9 @@ export const createTransport = async ({ sessionId = 'default' } = {}) => {
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
     const createZapoAdapter = await getZapoAdapter();
-    return createZapoAdapter({ storePath: dbPath, sessionId });
+    return createZapoAdapter({
+        storePath: dbPath,
+        sessionId,
+        pairingNumber: sessionId === 'default' ? settings.pairingNumber : undefined,
+    });
 };
