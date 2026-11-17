@@ -10,6 +10,7 @@ import { botSocket } from './socket.js';
 import { cleanupCaches } from '../handlers/messageFlow.js';
 import Poll from '../database/models/Poll.js';
 
+import { env } from '../config/env.js';
 const safeAck = (ack, payload) => {
     if (typeof ack === 'function') ack(payload);
 };
@@ -225,9 +226,9 @@ const scheduleAutoSuspend = (sock) => {
 
                 const { default: axios } = await import('axios');
                 const ptero = axios.create({
-                    baseURL: `${process.env.PTERO_URL}/api/application`,
+                    baseURL: `${env.PTERO_URL}/api/application`,
                     headers: {
-                        Authorization: `Bearer ${process.env.PTERO_API_KEY}`,
+                        Authorization: `Bearer ${env.PTERO_API_KEY}`,
                         'Content-Type': 'application/json',
                         Accept: 'Application/vnd.pterodactyl.v1+json',
                     },
@@ -312,11 +313,17 @@ const scheduleCacheCleanup = () => {
     );
 };
 
+let recurringTasksRegistered = false;
+
+/**
+ * Register cron jobs once per process. Pass a live socket (see
+ * lib/liveSocket.js) so jobs keep working after reconnects.
+ */
 export const registerRecurringTasks = (sock) => {
-    if (global.isBackupScheduled) return;
+    if (recurringTasksRegistered) return;
+    recurringTasksRegistered = true;
     scheduleBackup(sock);
     // scheduleAutoSuspend(sock); // Dimatikan sementara karena menyebabkan error 404
     scheduleExpiryReminder(sock);
-    scheduleCacheCleanup(); // Add cache cleanup
-    global.isBackupScheduled = true;
+    scheduleCacheCleanup();
 };

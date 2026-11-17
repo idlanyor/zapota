@@ -13,6 +13,7 @@ import { getCachedSettings } from '../handlers/messageFlow.js';
 import { decodeJid } from '\.\./utils/serialize\.js';
 import { coreRequest } from './kanataCore.js';
 import * as qrisService from './qrisService.js';
+import { env } from '../config/env.js';
 
 const DEFAULT_PORT = 8787;
 const MAX_BODY_BYTES = 1 * 1024 * 1024; // Increased to 1MB for image/audio data
@@ -139,10 +140,10 @@ const checkRateLimit = (key) => {
 };
 
 export const startWebhookApi = ({ getSocket }) => {
-    const port = Number(process.env.BOT_WEBHOOK_PORT || DEFAULT_PORT);
-    const host = process.env.BOT_WEBHOOK_HOST || '127.0.0.1';
-    const token = process.env.BOT_WEBHOOK_TOKEN;
-    const allowList = (process.env.BOT_WEBHOOK_ALLOWLIST || '')
+    const port = Number(env.BOT_WEBHOOK_PORT || DEFAULT_PORT);
+    const host = env.BOT_WEBHOOK_HOST || '127.0.0.1';
+    const token = env.BOT_WEBHOOK_TOKEN;
+    const allowList = (env.BOT_WEBHOOK_ALLOWLIST || '')
         .split(',')
         .map((v) => v.trim())
         .filter(Boolean);

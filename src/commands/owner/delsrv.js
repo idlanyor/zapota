@@ -2,8 +2,10 @@ import Server from '../../database/models/Server.js';
 import { settings } from '../../config/settings.js';
 import axios from 'axios';
 
-const PTERO_URL = process.env.PTERO_URL;
-const PTERO_API_KEY = process.env.PTERO_API_KEY;
+import { env } from '../../config/env.js';
+import { pendingServerDeletes } from '../../state/pendingServerDeletes.js';
+const PTERO_URL = env.PTERO_URL;
+const PTERO_API_KEY = env.PTERO_API_KEY;
 
 const ptero = axios.create({
     baseURL: `${PTERO_URL}/api/application`,
@@ -66,18 +68,8 @@ Contoh:
 
             const sent = await m.reply(confirmMsg);
 
-            // Simpan state konfirmasi ke global agar bisa ditangkap messageHandler
-            if (!global.confirmDelete) global.confirmDelete = new Map();
-            global.confirmDelete.set(m.sender, {
-                pteroId,
-                force,
-                timeout: setTimeout(() => {
-                    if (global.confirmDelete.has(m.sender)) {
-                        global.confirmDelete.delete(m.sender);
-                        // Optional: kirim pesan timeout
-                    }
-                }, 30000),
-            });
+            // Balasan Y/ya berikutnya ditangkap pipeline (pendingDeleteConfirmation).
+            pendingServerDeletes.add(m.sender, { pteroId, force });
         } catch (error) {
             console.error(error);
             await m.reply(`Error: ${error.message}`);

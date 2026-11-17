@@ -1,8 +1,9 @@
 import { downloadContentFromMessage } from '../../wa/helpers.js';
 import { settings } from '../../config/settings.js';
 
-const BASE = (process.env.KANATA_BASE_URL || 'https://ai.kanata.web.id').replace(/\/+$/, '');
-const KEY = process.env.KANATA_API_KEY;
+import { env } from '../../config/env.js';
+const BASE = (env.KANATA_BASE_URL || 'https://ai.kanata.web.id').replace(/\/+$/, '');
+const KEY = env.KANATA_API_KEY;
 const MODEL = 'ag/gemini-3-flash';
 
 const SYSTEM_PROMPT =

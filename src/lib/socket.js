@@ -1,11 +1,12 @@
 import { io } from 'socket.io-client';
 import logger from '../utils/logger.js';
 
+import { env } from '../config/env.js';
 class BotSocket {
     constructor() {
         this.socket = null;
-        this.url = process.env.WEBAPP_URL || 'http://localhost:3000';
-        this.auth = process.env.ACCESS_KEY;
+        this.url = env.WEBAPP_URL || 'http://localhost:3000';
+        this.auth = env.ACCESS_KEY;
     }
 
     connect() {

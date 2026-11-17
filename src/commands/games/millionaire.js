@@ -1,9 +1,10 @@
 import { sessionManager } from '../../utils/session.js';
 import axios from 'axios';
 import { awardMinigameWin } from '../../services/rpgService.js';
+import { env } from '../../config/env.js';
 
-const DS_BASE_URL = process.env.DS_BASE_URL || 'http://localhost:5050';
-const DS_API_KEY = process.env.DS_API_KEY || 'dseeker';
+const DS_BASE_URL = env.DS_BASE_URL || 'http://localhost:5050';
+const DS_API_KEY = env.DS_API_KEY || 'dseeker';
 
 // Skema 15 Nominal Hadiah Resmi Millionaire Indonesia
 export const PRIZE_LADDER = [

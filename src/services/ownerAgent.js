@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '../../');
 
-const MODEL = process.env.OWNER_AGENT_MODEL || 'MiniMax-M3';
+const MODEL = env.OWNER_AGENT_MODEL || 'MiniMax-M3';
 const MAX_TOOL_ITERATIONS = 8;
 
 // The SDK appends /v1/messages itself, so strip a trailing /v1 some providers include in their base URL.
@@ -27,8 +27,8 @@ const getAnthropicClass = async () => {
 const getClient = async () => {
     const Anthropic = await getAnthropicClass();
     return new Anthropic({
-        apiKey: process.env.OWNER_AGENT_API_KEY,
-        baseURL: normaliseBaseUrl(process.env.OWNER_AGENT_BASE_URL),
+        apiKey: env.OWNER_AGENT_API_KEY,
+        baseURL: normaliseBaseUrl(env.OWNER_AGENT_BASE_URL),
     });
 };
 
@@ -46,6 +46,7 @@ import {
     gitRollback,
     validateCodeSnippet,
 } from './selfManagementService.js';
+import { env } from '../config/env.js';
 
 const SYSTEM_PROMPT = `Kamu adalah asisten pribadi Owner bot WhatsApp ini yang memiliki kemampuan Self-Management (bisa mengelola diri sendiri, plugin, kode, library, dan git secara otonom dan aman).
 Kamu memiliki akses:
@@ -316,6 +317,7 @@ const executeShell = async (command) => {
             cwd: projectRoot,
             timeout: 5 * 60 * 1000,
             maxBuffer: 5 * 1024 * 1024,
+            // eslint-disable-next-line no-restricted-properties -- child process inherits the full env
             env: process.env,
         });
         return [stdout, stderr].filter(Boolean).join('\n').trim() || '(no output)';

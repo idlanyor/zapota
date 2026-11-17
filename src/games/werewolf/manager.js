@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { DEFAULT_SETTINGS, PHASES } from './constants.js';
 
+import { env } from '../../config/env.js';
 class WerewolfGameManager {
     constructor({ persistencePath } = {}) {
         this.games = new Map();
@@ -10,9 +11,9 @@ class WerewolfGameManager {
         this.privateContacts = new Map();
         this.persistencePath =
             persistencePath === undefined
-                ? process.env.NODE_ENV === 'test'
+                ? env.NODE_ENV === 'test'
                     ? null
-                    : resolve(process.env.WEREWOLF_READY_FILE || './data/werewolf-ready.json')
+                    : resolve(env.WEREWOLF_READY_FILE || './data/werewolf-ready.json')
                 : persistencePath;
         this.loadPrivateContacts();
     }

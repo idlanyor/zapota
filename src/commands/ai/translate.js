@@ -1,7 +1,8 @@
 import { settings } from '../../config/settings.js';
+import { env } from '../../config/env.js';
 
 const BASE = 'https://ai.kanata.web.id';
-const KEY = process.env.KANATA_API_KEY;
+const KEY = env.KANATA_API_KEY;
 const MODEL = 'ag/claude-sonnet-4-6';
 
 const HELP = `Translate teks via AI.

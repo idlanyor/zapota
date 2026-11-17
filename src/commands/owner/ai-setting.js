@@ -1,5 +1,6 @@
 import Settings from '../../database/models/Settings.js';
 import { clearSettingsCache } from '../../handlers/messageHandler.js';
+import { resetRequiredGroupCache } from '../../middlewares/auth.js';
 
 export default {
     name: 'aisetting',
@@ -96,7 +97,7 @@ Persona: ${botSettings.privateAiPersona}`);
             if (!link || !link.includes('chat.whatsapp.com'))
                 return m.reply('Harap masukkan link grup yang valid.');
             botSettings.groupInviteLink = link;
-            global.targetGroupJid = null; // Reset cache JID
+            resetRequiredGroupCache();
             await botSettings.save();
             clearSettingsCache();
             return m.reply(`✅ Link grup berhasil diubah ke:\n${link}`);

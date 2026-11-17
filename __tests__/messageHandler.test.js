@@ -56,6 +56,7 @@ jest.unstable_mockModule('../src/utils/logger.js', () => ({ default: logger }));
 const { messageHandler } = await import('../src/handlers/messageHandler.js');
 const { commands } = await import('../src/lib/commands.js');
 const { sessionManager } = await import('../src/utils/session.js');
+const { pendingServerDeletes } = await import('../src/state/pendingServerDeletes.js');
 
 let seq = 0;
 const uid = () => `MSG${Date.now()}${++seq}`;
@@ -353,13 +354,13 @@ describe('messageHandler: early exits and special routes', () => {
     });
 
     test('pending server-delete confirmation is checked for owner', async () => {
-        global.confirmDelete = new Map([[OWNER, {}]]);
+        pendingServerDeletes.add(OWNER, { pteroId: 1, force: false });
         handleDeleteServerConfirmation.mockResolvedValue(true);
         const cmd = addCommand({ name: 'ping' });
         await messageHandler(makeSock(), raw({ text: '.ping', chat: OWNER }));
         expect(handleDeleteServerConfirmation).toHaveBeenCalledTimes(1);
         expect(cmd.execute).not.toHaveBeenCalled();
-        delete global.confirmDelete;
+        pendingServerDeletes.clearAll();
     });
 });
 

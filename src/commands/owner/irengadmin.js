@@ -11,6 +11,7 @@ import {
     adminInvoices,
     adminInvoiceDetail,
 } from '../../services/irengAdmin.js';
+import { env } from '../../config/env.js';
 
 const fmtMoney = (n) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
 
@@ -249,7 +250,7 @@ export default {
     description: 'Kelola IrengCloud (owner): server, user, invoice',
     category: 'Owner',
     execute: async (sock, m, args) => {
-        if (!process.env.IRENG_ADMIN_TOKEN) {
+        if (!env.IRENG_ADMIN_TOKEN) {
             return m.reply(
                 `❌ Config admin IrengCloud belum diset.\n\n` +
                     `Atur \`IRENG_ADMIN_TOKEN\` di file .env bot, lalu restart.`

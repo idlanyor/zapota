@@ -1,6 +1,7 @@
 import QRCode from 'qrcode';
+import { env } from '../../config/env.js';
 
-const SAKURA_URL = process.env.SAKURA_API_URL || 'https://sakura.irengcloud.com';
+const SAKURA_URL = env.SAKURA_API_URL || 'https://sakura.irengcloud.com';
 
 export default {
     name: 'createwg',
@@ -38,7 +39,7 @@ export default {
 
             const reqId = data.id;
 
-            const ownerNum = process.env.OWNER_NUMBER || '62895395590009';
+            const ownerNum = env.OWNER_NUMBER || '62895395590009';
             const cleanOwner = ownerNum.replace(/\D/g, '');
             const ownerJid = `${cleanOwner}@s.whatsapp.net`;
 

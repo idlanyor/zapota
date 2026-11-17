@@ -2,7 +2,8 @@ import axios from 'axios';
 import { Sticker, StickerTypes } from '../../lib/stickerFormatter.js';
 import { settings } from '../../config/settings.js';
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+import { env } from '../../config/env.js';
+const TELEGRAM_BOT_TOKEN = env.TELEGRAM_BOT_TOKEN || '';
 const headers = {
     'user-agent':
         'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36',

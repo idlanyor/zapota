@@ -11,6 +11,7 @@ import { initAfkCache, getAfk, removeAfk, formatAfkDuration } from '../services/
 import logger from '../utils/logger.js';
 import { isAddressedToBot, stripBotMentions } from '../lib/botMention.js';
 
+import { env } from '../config/env.js';
 initAfkCache().catch(() => {});
 
 let settingsCache = null;
@@ -261,8 +262,8 @@ const handlePollUpdate = async (sock, m) => {
                     await sock.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
 
                     try {
-                        const PTERO_URL = process.env.PTERO_URL;
-                        const PTERO_API_KEY = process.env.PTERO_API_KEY;
+                        const PTERO_URL = env.PTERO_URL;
+                        const PTERO_API_KEY = env.PTERO_API_KEY;
                         const axios = (await import('axios')).default;
 
                         const ptero = axios.create({
@@ -323,7 +324,7 @@ export const handleAutoAiPrivate = async (sock, m, botSettings, isOwner = false)
     if (!(m.body || isMedia)) return;
 
     const textLength = m.body?.length || 50;
-    const configuredDelay = Number(process.env.AUTO_AI_TYPING_DELAY_MS);
+    const configuredDelay = Number(env.AUTO_AI_TYPING_DELAY_MS);
     // Reduced default delay: 10ms per char, min 100ms, max 1000ms (was 20ms, 300-2000ms)
     const typingDelay =
         Number.isFinite(configuredDelay) && configuredDelay >= 0

@@ -1,9 +1,10 @@
 import crypto from 'node:crypto';
+import { env } from '../config/env.js';
 
 const config = () => ({
-    baseUrl: (process.env.KANATA_CORE_URL || 'http://127.0.0.1:8790').replace(/\/$/, ''),
-    clientId: process.env.KANATA_CORE_CLIENT_ID || '',
-    secret: process.env.KANATA_CORE_CLIENT_SECRET || '',
+    baseUrl: (env.KANATA_CORE_URL || 'http://127.0.0.1:8790').replace(/\/$/, ''),
+    clientId: env.KANATA_CORE_CLIENT_ID || '',
+    secret: env.KANATA_CORE_CLIENT_SECRET || '',
 });
 
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');

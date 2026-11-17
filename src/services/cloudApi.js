@@ -1,9 +1,10 @@
 import axios from 'axios';
 import https from 'https';
 
+import { env } from '../config/env.js';
 const getClient = () => {
-    const CLOUD_URL = process.env.CLOUD_API_URL || 'http://cloud.kanata.web.id';
-    const CLOUD_TOKEN = process.env.CLOUD_ADMIN_TOKEN;
+    const CLOUD_URL = env.CLOUD_API_URL || 'http://cloud.kanata.web.id';
+    const CLOUD_TOKEN = env.CLOUD_ADMIN_TOKEN;
 
     return axios.create({
         baseURL: `${CLOUD_URL}/api`,

@@ -5,6 +5,7 @@ import chokidar from 'chokidar';
 import logger from '../utils/logger.js';
 import { validateGuards } from '../pipeline/guardNames.js';
 
+import { env } from '../config/env.js';
 const commands = new Map();
 const buttonHandlers = new Map();
 
@@ -107,7 +108,7 @@ const registerEntry = (entry) => {
 export const loadCommands = async () => {
     logger.info(`Scanning for commands in: ${commandsDir}`);
 
-    if (process.env.NODE_ENV === 'production') {
+    if (env.NODE_ENV === 'production') {
         try {
             manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
         } catch (e) {

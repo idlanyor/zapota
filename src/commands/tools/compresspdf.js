@@ -2,6 +2,7 @@ import { downloadContentFromMessage } from '../../wa/helpers.js';
 import ILovePDfSdk from 'ilovepdf-sdk';
 import fs from 'fs';
 import { makeResultPath } from '../../utils/resultPath.js';
+import { env } from '../../config/env.js';
 
 const getRandom = (ext) => `${Math.floor(Math.random() * 10000)}${ext}`;
 const LEVELS = ['low', 'recommended', 'extreme'];
@@ -17,7 +18,7 @@ export default {
     description: 'Kompres PDF. Reply PDF: .compresspdf [low|recommended|extreme]',
     category: 'Tools',
     execute: async (sock, m, args) => {
-        if (!process.env.ILOVEPDF_PUBLIC_KEY || !process.env.ILOVEPDF_SECRET_KEY) {
+        if (!env.ILOVEPDF_PUBLIC_KEY || !env.ILOVEPDF_SECRET_KEY) {
             return m.reply('iLovePDF API keys belum diset di .env.');
         }
         if (!m.quoted) return m.reply('Reply PDF yang mau dikompres.');
@@ -44,8 +45,8 @@ export default {
             fs.writeFileSync(tempIn, buffer);
 
             const ilovepdf = new ILovePDfSdk(
-                process.env.ILOVEPDF_PUBLIC_KEY,
-                process.env.ILOVEPDF_SECRET_KEY
+                env.ILOVEPDF_PUBLIC_KEY,
+                env.ILOVEPDF_SECRET_KEY
             );
             const task = await ilovepdf.createTask('compress');
             await task.addFile(tempIn);

@@ -15,6 +15,7 @@ import {
 import { handleButtons } from '../../handlers/buttonHandler.js';
 import { checkJoinGroup } from '../../middlewares/auth.js';
 import { handleDeleteServerConfirmation } from '../../middlewares/deleteServer.js';
+import { pendingServerDeletes } from '../../state/pendingServerDeletes.js';
 
 /** Non-prefixed replies go to the command that owns the active session. */
 export const routeActiveSession = async (ctx, next) => {
@@ -33,7 +34,7 @@ export const routeActiveSession = async (ctx, next) => {
 /** Owner's "y/ya" reply to a pending `delsrv` confirmation. */
 export const pendingDeleteConfirmation = async (ctx, next) => {
     const { m, isOwner } = ctx;
-    if (isOwner && global.confirmDelete?.has(m.sender)) {
+    if (isOwner && pendingServerDeletes.has(m.sender)) {
         if (await handleDeleteServerConfirmation(m)) return;
     }
     await next();

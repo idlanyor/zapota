@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { env } from '../../config/env.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -99,7 +100,7 @@ ${settings.prefix}renew VPS 158.69.207.97 | 100000 | Roy | 12 March 2026`
         try {
             await m.react('⏳');
 
-            const apiKey = process.env.INVOICE_API_KEY;
+            const apiKey = env.INVOICE_API_KEY;
             const pdfBuffer = await generateInvoice(invoiceData, apiKey);
 
             await sock.sendMessage(

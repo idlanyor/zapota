@@ -1,12 +1,13 @@
 import fs from 'fs';
 import { makeResultPath } from '../utils/resultPath.js';
 import { coreRequest } from './kanataCore.js';
+import { env } from '../config/env.js';
 
 let genAiPromise;
 const getGenAi = async () => {
     genAiPromise ??= (async () => {
         const { GoogleGenAI, createUserContent, createPartFromUri } = await import('@google/genai');
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
         return { ai, createUserContent, createPartFromUri };
     })();
     return genAiPromise;
@@ -111,7 +112,7 @@ export const getMonthlyReport = async (userId, month, year, filters = {}) => {
 
 // Gemini OCR tetap di bot; hasil transaksi dikirim ke Core.
 export const processAiTransaction = async (userId, userName, prompt, fileData = null) => {
-    if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY belum diatur.');
+    if (!env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY belum diatur.');
 
     const { ai, createUserContent, createPartFromUri } = await getGenAi();
 

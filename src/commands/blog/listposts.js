@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { setBlogSession } from '../../lib/blogSession.js';
 import dotenv from 'dotenv';
+import { env } from '../../config/env.js';
 dotenv.config();
 
 export default {
@@ -11,7 +12,7 @@ export default {
     execute: async (sock, m, args, text) => {
         try {
             await m.react('⏳');
-            const response = await axios.get(`${process.env.BLOG_API_URL}/posts`);
+            const response = await axios.get(`${env.BLOG_API_URL}/posts`);
             const posts = response.data;
 
             if (posts.length === 0) {

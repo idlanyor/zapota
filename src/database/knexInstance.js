@@ -13,6 +13,7 @@
 
 import knexFactory from 'knex';
 
+import { env } from '../config/env.js';
 let cachedKnex = null;
 let cachedConfig = null;
 
@@ -30,8 +31,8 @@ let cachedConfig = null;
 export const buildKnexConfig = (overrides = {}) => {
     if (cachedConfig) return { ...cachedConfig, ...overrides };
 
-    const sqlitePath = process.env.SQLITE_PATH || './data/bot.db';
-    const useMemory = process.env.SQLITE_MEMORY === '1' || sqlitePath === ':memory:';
+    const sqlitePath = env.SQLITE_PATH || './data/bot.db';
+    const useMemory = env.SQLITE_MEMORY === '1' || sqlitePath === ':memory:';
 
     cachedConfig = {
         client: 'sqlite3',

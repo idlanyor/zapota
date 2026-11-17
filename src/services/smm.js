@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
+import { env } from '../config/env.js';
 const execAsync = promisify(exec);
 
 class SmmService {
@@ -9,13 +10,13 @@ class SmmService {
     }
 
     get apiKey() {
-        return process.env.SMM_API_KEY;
+        return env.SMM_API_KEY;
     }
 
     get baseUrl() {
         // Pastikan tidak mereturn string "undefined" tapi default URL
-        return process.env.SMM_BASE_URL && process.env.SMM_BASE_URL !== 'undefined'
-            ? process.env.SMM_BASE_URL
+        return env.SMM_BASE_URL && env.SMM_BASE_URL !== 'undefined'
+            ? env.SMM_BASE_URL
             : 'https://indosmm.id/api/v2';
     }
 

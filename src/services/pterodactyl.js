@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const PTERO_URL = process.env.PTERO_URL; // e.g., https://panel.example.com
-const PTERO_API_KEY = process.env.PTERO_API_KEY; // Application API Key
+import { env } from '../config/env.js';
+const PTERO_URL = env.PTERO_URL; // e.g., https://panel.example.com
+const PTERO_API_KEY = env.PTERO_API_KEY; // Application API Key
 
 const ptero = axios.create({
     baseURL: `${PTERO_URL}/api/application`,
@@ -34,7 +35,7 @@ export const getClientAccount = async () => {
         const client = axios.create({
             baseURL: `${PTERO_URL}/api/client`,
             headers: {
-                Authorization: `Bearer ${process.env.PTERO_CLIENT_KEY}`,
+                Authorization: `Bearer ${env.PTERO_CLIENT_KEY}`,
                 'Content-Type': 'application/json',
                 Accept: 'Application/vnd.pterodactyl.v1+json',
             },
@@ -146,8 +147,8 @@ export const createPteroServer = async (userJid, plan) => {
         const serverData = {
             name: `${pteroUser.username}-${plan.name}`,
             user: pteroUser.id,
-            nest: parseInt(process.env.PTERO_NEST_ID) || 1,
-            egg: parseInt(process.env.PTERO_EGG_ID) || 1,
+            nest: parseInt(env.PTERO_NEST_ID) || 1,
+            egg: parseInt(env.PTERO_EGG_ID) || 1,
             docker_image: 'ghcr.io/shirokamiryzen/yolks:nodejs_22',
             startup:
                 'if [[ -d .git ]]; then git pull; fi; if [[ ! -z ${NODE_PACKAGES} ]]; then /usr/local/bin/npm install ${NODE_PACKAGES}; fi; /usr/local/bin/node /home/container/${MAIN_FILE}',
@@ -176,7 +177,7 @@ export const createPteroServer = async (userJid, plan) => {
                 NODE_ARGS: '',
             },
             deploy: {
-                locations: [parseInt(process.env.PTERO_LOCATION_ID) || 1],
+                locations: [parseInt(env.PTERO_LOCATION_ID) || 1],
                 dedicated_ip: false,
                 port_range: [],
             },
@@ -225,7 +226,7 @@ export const setServerPowerState = async (serverIdentifier, signal) => {
         const client = axios.create({
             baseURL: `${PTERO_URL}/api/client`,
             headers: {
-                Authorization: `Bearer ${process.env.PTERO_CLIENT_KEY}`,
+                Authorization: `Bearer ${env.PTERO_CLIENT_KEY}`,
                 'Content-Type': 'application/json',
                 Accept: 'Application/vnd.pterodactyl.v1+json',
             },
@@ -244,7 +245,7 @@ export const getServerResources = async (serverIdentifier) => {
         const client = axios.create({
             baseURL: `${PTERO_URL}/api/client`,
             headers: {
-                Authorization: `Bearer ${process.env.PTERO_CLIENT_KEY}`,
+                Authorization: `Bearer ${env.PTERO_CLIENT_KEY}`,
                 'Content-Type': 'application/json',
                 Accept: 'Application/vnd.pterodactyl.v1+json',
             },

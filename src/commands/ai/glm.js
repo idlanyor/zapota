@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { settings } from '../../config/settings.js';
+import { env } from '../../config/env.js';
 
 export default {
     name: 'glm',
@@ -8,9 +9,9 @@ export default {
     category: 'AI',
     execute: async (sock, m, args, text) => {
         try {
-            const baseUrl = process.env.GLM_BASE_URL || 'https://api.zrouter.dev/v1';
-            const apiKey = process.env.GLM_API_KEY;
-            const model = process.env.GLM_MODEL || 'glm-5.3-flash';
+            const baseUrl = env.GLM_BASE_URL || 'https://api.zrouter.dev/v1';
+            const apiKey = env.GLM_API_KEY;
+            const model = env.GLM_MODEL || 'glm-5.3-flash';
 
             if (!apiKey) {
                 return m.reply('❌ API Key GLM belum disetel di environment (`GLM_API_KEY`).');

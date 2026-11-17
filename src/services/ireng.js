@@ -2,7 +2,8 @@ import axios from 'axios';
 import User from '../database/models/User.js';
 import { encrypt, decrypt } from '../utils/crypto.js';
 
-const BASE_URL = process.env.IRENG_API_URL || 'https://irengcloud.net/api';
+import { env } from '../config/env.js';
+const BASE_URL = env.IRENG_API_URL || 'https://irengcloud.net/api';
 
 const client = (token) =>
     axios.create({

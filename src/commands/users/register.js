@@ -2,6 +2,7 @@ import { createPteroUser, getPteroUserByJid } from '../../services/pterodactyl.j
 import { settings } from '../../config/settings.js';
 import crypto from 'crypto';
 
+import { env } from '../../config/env.js';
 export default {
     name: 'register',
     aliases: ['daftar'],
@@ -64,7 +65,7 @@ export default {
             const successMsg =
                 `*REGISTRASI BERHASIL!*\n\n` +
                 `Berikut detail akun panel Anda:\n` +
-                `+ URL: ${process.env.PTERO_URL}\n` +
+                `+ URL: ${env.PTERO_URL}\n` +
                 `+ Username: ${newUser.username}\n` +
                 `+ Email: ${newUser.email}\n` +
                 `+ Password: ${password}\n\n` +

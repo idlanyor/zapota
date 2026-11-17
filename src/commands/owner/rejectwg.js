@@ -1,4 +1,6 @@
-const SAKURA_URL = process.env.SAKURA_API_URL || 'https://sakura.irengcloud.com';
+import { env } from '../../config/env.js';
+
+const SAKURA_URL = env.SAKURA_API_URL || 'https://sakura.irengcloud.com';
 
 export default {
     name: 'rejectwg',

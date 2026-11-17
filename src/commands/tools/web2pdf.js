@@ -6,6 +6,7 @@ import { createPage } from '../../lib/browserManager.js';
 import { settings } from '../../config/settings.js';
 import { makeResultPath } from '../../utils/resultPath.js';
 
+import { env } from '../../config/env.js';
 function htmlToMarkdown(html, url) {
     const $ = cheerio.load(html);
 
@@ -88,8 +89,8 @@ async function htmlToMarkdownAI(html, url) {
     const cleanHtml = $('body').html()?.trim() || html;
     const truncatedHtml = cleanHtml.slice(0, 50000);
 
-    const apiKey = process.env.ANTHROPIC_AUTH_TOKEN;
-    const baseUrl = process.env.ANTHROPIC_BASE_URL;
+    const apiKey = env.ANTHROPIC_AUTH_TOKEN;
+    const baseUrl = env.ANTHROPIC_BASE_URL;
 
     if (!apiKey || !baseUrl) {
         throw new Error('ANTHROPIC_AUTH_TOKEN or ANTHROPIC_BASE_URL is not configured in env');
@@ -317,8 +318,8 @@ export default {
                 // Auto compress if PDF is larger than 3MB (to make it light for WhatsApp) and iLovePDF keys are set
                 if (
                     pdfBuffer.length > 3 * 1024 * 1024 &&
-                    process.env.ILOVEPDF_PUBLIC_KEY &&
-                    process.env.ILOVEPDF_SECRET_KEY
+                    env.ILOVEPDF_PUBLIC_KEY &&
+                    env.ILOVEPDF_SECRET_KEY
                 ) {
                     try {
                         const tempInName = `in_${Date.now()}_${Math.floor(Math.random() * 1000)}.pdf`;
@@ -329,8 +330,8 @@ export default {
                         fs.writeFileSync(tempInPath, pdfBuffer);
 
                         const ilovepdf = new ILovePDfSdk(
-                            process.env.ILOVEPDF_PUBLIC_KEY,
-                            process.env.ILOVEPDF_SECRET_KEY
+                            env.ILOVEPDF_PUBLIC_KEY,
+                            env.ILOVEPDF_SECRET_KEY
                         );
 
                         const task = await ilovepdf.createTask('compress');

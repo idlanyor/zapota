@@ -1,3 +1,4 @@
+import { env } from '../config/env.js';
 /**
  * GoBiz / GoPay QRIS Service
  * Provides Dynamic QRIS generator according to ASPI EMVCo specification,
@@ -9,7 +10,7 @@ export const invoiceStore = new Map();
 
 // Static QRIS payload from GoBiz Merchant profile (IrengCloud by Antidonasi)
 export const DEFAULT_STATIC_QRIS =
-    process.env.GOBIZ_STATIC_QRIS ||
+    env.GOBIZ_STATIC_QRIS ||
     '00020101021126610014COM.GO-JEK.WWW01189360091430467026090210G0467026090303UMI51440014ID.CO.QRIS.WWW0215ID10254125107580303UMI5204899953033605802ID5925IrengCloud by Antidonasi,6011PURBALINGGA61055331162070703A01630452EC';
 
 /**
