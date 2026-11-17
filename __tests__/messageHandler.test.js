@@ -362,3 +362,88 @@ describe('messageHandler: early exits and special routes', () => {
         delete global.confirmDelete;
     });
 });
+
+describe('messageHandler: declarative command guards', () => {
+    const groupSock = (adminIds = []) =>
+        makeSock({
+            participants: [USER, ADMIN, BOT].map((id) => ({
+                id,
+                admin: adminIds.includes(id) ? 'admin' : null,
+            })),
+        });
+
+    test("'group' denies private chats with a notice", async () => {
+        const cmd = addCommand({ name: 'g', guards: ['group'] });
+        const sock = makeSock();
+        await messageHandler(sock, raw({ text: '.g' }));
+        expect(cmd.execute).not.toHaveBeenCalled();
+        expect(sentTexts(sock)).toContain('Perintah ini hanya bisa digunakan di dalam grup.');
+    });
+
+    test("'private' denies group chats", async () => {
+        const cmd = addCommand({ name: 'p', guards: ['private'] });
+        await messageHandler(makeSock(), raw({ text: '.p', chat: groupJid() }));
+        expect(cmd.execute).not.toHaveBeenCalled();
+    });
+
+    test("'admin' implies group and requires the sender to be admin", async () => {
+        const cmd = addCommand({ name: 'k', guards: ['admin'] });
+
+        const priv = makeSock();
+        await messageHandler(priv, raw({ text: '.k' }));
+        expect(sentTexts(priv)).toContain('Perintah ini hanya bisa digunakan di dalam grup.');
+
+        const sock = groupSock([ADMIN]);
+        const g = groupJid();
+        await messageHandler(sock, raw({ text: '.k', chat: g, sender: USER }));
+        expect(cmd.execute).not.toHaveBeenCalled();
+        expect(sentTexts(sock)).toContain('Perintah ini khusus admin grup.');
+
+        await messageHandler(sock, raw({ text: '.k', chat: g, sender: ADMIN }));
+        expect(cmd.execute).toHaveBeenCalledTimes(1);
+    });
+
+    test("'botAdmin' requires the bot to be admin", async () => {
+        const cmd = addCommand({ name: 'k', guards: ['admin', 'botAdmin'] });
+        const g = groupJid();
+
+        const noBot = groupSock([ADMIN]);
+        await messageHandler(noBot, raw({ text: '.k', chat: g, sender: ADMIN }));
+        expect(cmd.execute).not.toHaveBeenCalled();
+        expect(sentTexts(noBot)).toContain('Jadikan bot sebagai admin grup terlebih dahulu.');
+
+        await messageHandler(groupSock([ADMIN, BOT]), raw({ text: '.k', chat: g, sender: ADMIN }));
+        expect(cmd.execute).toHaveBeenCalledTimes(1);
+    });
+
+    test("'owner' guard works outside the Owner category", async () => {
+        const cmd = addCommand({ name: 'o', category: 'Tools', guards: ['owner'] });
+        await messageHandler(makeSock(), raw({ text: '.o' }));
+        expect(cmd.execute).not.toHaveBeenCalled();
+        await messageHandler(makeSock(), raw({ text: '.o', chat: OWNER }));
+        expect(cmd.execute).toHaveBeenCalledTimes(1);
+    });
+
+    test('an unknown guard name blocks the command instead of silently passing', async () => {
+        const cmd = addCommand({ name: 'typo', guards: ['admn'] });
+        await messageHandler(makeSock(), raw({ text: '.typo' }));
+        expect(cmd.execute).not.toHaveBeenCalled();
+    });
+});
+
+describe('group commands declare their guards', () => {
+    test.each([
+        ['kick', ['admin', 'botAdmin']],
+        ['add', ['admin', 'botAdmin']],
+        ['promote', ['admin', 'botAdmin']],
+        ['demote', ['admin', 'botAdmin']],
+        ['group', ['admin', 'botAdmin']],
+        ['hidetag', ['admin']],
+        ['setoption', ['admin']],
+        ['setopen', ['admin']],
+        ['setclose', ['admin']],
+    ])('%s', async (file, guards) => {
+        const { default: cmd } = await import(`../src/commands/group/${file}.js`);
+        expect(cmd.guards).toEqual(guards);
+    });
+});

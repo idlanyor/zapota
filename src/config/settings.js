@@ -11,3 +11,7 @@ export const settings = {
     mpApiKey: process.env.MP_APIKEY,
     pinterestCookies: process.env.PINTEREST_COOKIES || '',
 };
+
+/** Command prefixes the bot reacts to (primary prefix first). */
+export const getPrefixes = () =>
+    [settings.prefix, ...(settings.prefixAliases || [])].filter(Boolean);

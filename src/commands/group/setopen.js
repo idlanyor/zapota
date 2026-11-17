@@ -1,25 +1,14 @@
-import { jidNormalizedUser } from '../../wa/helpers.js';
 import Group from '../../database/models/Group.js';
 import { clearSettingsCache } from '../../handlers/messageHandler.js';
 
 const isTime = (v) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(v || '');
 
-async function isGroupAdmin(sock, m) {
-    const meta = await sock.groupMetadata(m.chat);
-    const sender = jidNormalizedUser(m.sender);
-    const me = meta.participants.find((p) => jidNormalizedUser(p.id) === sender);
-    return me?.admin === 'admin' || me?.admin === 'superadmin';
-}
-
 export default {
     name: 'setopen',
     description: 'Atur auto open grup',
     category: 'Group',
+    guards: ['admin'],
     execute: async (sock, m, args) => {
-        if (!m.isGroup) return m.reply('Perintah ini hanya untuk grup.');
-        if (!(await isGroupAdmin(sock, m)))
-            return m.reply('Hanya admin grup yang bisa pakai command ini.');
-
         const input = (args[0] || '').toLowerCase();
         if (!input) return m.reply('Format: .setopen <HH:mm|on|off>');
 

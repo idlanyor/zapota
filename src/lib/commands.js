@@ -3,6 +3,7 @@ import { pathToFileURL } from 'url';
 import { readFile } from 'node:fs/promises';
 import chokidar from 'chokidar';
 import logger from '../utils/logger.js';
+import { validateGuards } from '../pipeline/guardNames.js';
 
 const commands = new Map();
 const buttonHandlers = new Map();
@@ -48,13 +49,14 @@ const resolveEntry = async (entry) => {
  */
 const makeStub = (entry) => {
     let realPromise = null;
-    const real = () => (realPromise || (realPromise = resolveEntry(entry)));
+    const real = () => realPromise || (realPromise = resolveEntry(entry));
 
     const stub = {
         name: entry.name,
         aliases: entry.aliases,
         description: entry.description,
         category: entry.category || categoryFromPath(entry.file),
+        guards: entry.guards || [],
         _filePath: entry.file,
         _manifestEntry: entry,
         _resolve: real,
@@ -65,7 +67,8 @@ const makeStub = (entry) => {
         },
         handleSession: async (sock, m, session) => {
             const cmd = await real();
-            if (typeof cmd?.handleSession === 'function') return cmd.handleSession(sock, m, session);
+            if (typeof cmd?.handleSession === 'function')
+                return cmd.handleSession(sock, m, session);
         },
         handleButton: async (sock, m, isOwner) => {
             const cmd = await real();
@@ -159,6 +162,7 @@ const importCommand = async (filePath) => {
                 aliases: Array.isArray(cmd.aliases) ? cmd.aliases : [],
                 description: cmd.description || '',
                 category: cmd.category || categoryFromPath(filePath),
+                guards: validateGuards(cmd.guards || [], `${path.basename(filePath)}#${cmd.name}`),
                 buttonPrefix: cmd.buttonPrefix || '',
                 hasHandleButton: typeof cmd.handleButton === 'function',
                 hasHandleSession: typeof cmd.handleSession === 'function',

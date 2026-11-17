@@ -2,10 +2,12 @@ import { glob } from 'glob';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { writeFile } from 'node:fs/promises';
+import { validateGuards } from '../src/pipeline/guardNames.js';
 
 const commandsDir = path.resolve('src/commands');
 const files = await glob(`${commandsDir}/**/*.js`);
 const manifest = [];
+const failures = [];
 
 const categoryFromPath = (filePath) => {
     const rel = path.relative(commandsDir, filePath);
@@ -31,6 +33,10 @@ for (const file of files) {
                 aliases: Array.isArray(cmd.aliases) ? cmd.aliases : [],
                 description: cmd.description || '',
                 category: cmd.category || categoryFromPath(file),
+                guards: validateGuards(
+                    cmd.guards || [],
+                    `${path.relative(process.cwd(), file)}#${cmd.name}`
+                ),
                 buttonPrefix: cmd.buttonPrefix || '',
                 hasHandleButton: typeof cmd.handleButton === 'function',
                 hasHandleSession: typeof cmd.handleSession === 'function',
@@ -38,7 +44,13 @@ for (const file of files) {
         });
     } catch (e) {
         console.error(`Failed to inspect ${file}:`, e.message);
+        failures.push(file);
     }
+}
+
+if (failures.length) {
+    console.error(`Manifest NOT written: ${failures.length} command file(s) failed to load.`);
+    process.exit(1);
 }
 
 manifest.sort((a, b) => a.file.localeCompare(b.file) || a.index - b.index);

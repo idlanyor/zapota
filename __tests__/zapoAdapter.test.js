@@ -106,7 +106,12 @@ describe('Zapo Baileys facade', () => {
 
         const [jid, content, options] = zapo.message.send.mock.calls[0];
         expect(jid).toBe('chat@s.whatsapp.net');
-        expect(content).toEqual({ type: 'poll', name: 'Pick', options: ['A', 'B'], selectableCount: 1 });
+        expect(content).toEqual({
+            type: 'poll',
+            name: 'Pick',
+            options: ['A', 'B'],
+            selectableCount: 1,
+        });
         expect(options.messageSecret).toBeInstanceOf(Buffer);
         expect(options.messageSecret).toHaveLength(32);
         expect(result.message.messageContextInfo.messageSecret).toBe(options.messageSecret);

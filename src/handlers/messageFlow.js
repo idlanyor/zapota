@@ -1,6 +1,5 @@
 import { jidNormalizedUser } from '../wa/helpers.js';
 import { createHash } from 'crypto';
-import { decodeJid } from '../utils/serialize.js';
 import { settings } from '../config/settings.js';
 import Settings from '../database/models/Settings.js';
 import Group from '../database/models/Group.js';
@@ -8,13 +7,9 @@ import Poll from '../database/models/Poll.js';
 import { getMessage } from '../lib/msgStore.js';
 import { generateAIResponse } from '../lib/ai.js';
 import NodeCache from 'node-cache';
-import {
-    initAfkCache,
-    getAfk,
-    removeAfk,
-    formatAfkDuration,
-} from '../services/afkService.js';
+import { initAfkCache, getAfk, removeAfk, formatAfkDuration } from '../services/afkService.js';
 import logger from '../utils/logger.js';
+import { isAddressedToBot, stripBotMentions } from '../lib/botMention.js';
 
 initAfkCache().catch(() => {});
 
@@ -242,7 +237,8 @@ const handlePollUpdate = async (sock, m) => {
                     .toLowerCase();
                 selectedOptionName = pollData.options.find(
                     (opt) =>
-                        createHash('sha256').update(opt).digest('hex').toLowerCase() === selectedHash
+                        createHash('sha256').update(opt).digest('hex').toLowerCase() ===
+                        selectedHash
                 );
             }
         }
@@ -250,9 +246,7 @@ const handlePollUpdate = async (sock, m) => {
         if (selectedOptionName) {
             if (pollData.question.startsWith('CONFIRM_DELETE_SRV:')) {
                 const ownerJid = jidNormalizedUser(settings.ownerNumber);
-                const ownerLid = settings.ownerLid
-                    ? jidNormalizedUser(settings.ownerLid)
-                    : null;
+                const ownerLid = settings.ownerLid ? jidNormalizedUser(settings.ownerLid) : null;
                 if (![ownerJid, ownerLid].includes(voterJid)) {
                     return sock.sendMessage(m.chat, {
                         text: '❌ Hanya Owner yang bisa memberikan konfirmasi ini.',
@@ -412,34 +406,10 @@ export const handleOwnerAgentTrigger = async (sock, m, isOwner, usedPrefix) => {
         }
     }
 
-    const botJid = decodeJid(sock.user?.id);
-    const botLid = sock.user?.lid ? decodeJid(sock.user.lid) : null;
-    const mentioned = (m.mentionedJid || []).map((jid) => decodeJid(jid) || jid);
-    const isBotMentioned = mentioned.some((jid) => jid === botJid || (botLid && jid === botLid));
-
-    const botNum = botJid ? botJid.split('@')[0].split(':')[0] : null;
-    const botLidNum = botLid ? botLid.split('@')[0].split(':')[0] : null;
-    const quotedSenderNum = m.quoted?.sender ? m.quoted.sender.split('@')[0].split(':')[0] : null;
-
-    const isReplyingBot = Boolean(
-        m.quoted && (
-            m.quoted.fromMe ||
-            m.quoted.sender === botJid ||
-            (botLid && m.quoted.sender === botLid) ||
-            (botNum && quotedSenderNum === botNum) ||
-            (botLidNum && quotedSenderNum === botLidNum)
-        )
-    );
-
-    if (!isBotMentioned && !isReplyingBot) return false;
+    if (!isAddressedToBot(sock, m).addressed) return false;
 
     // Bersihkan mention bot dari text prompt agar prompt bersih
-    if (botNum) {
-        m.body = m.body.replace(new RegExp(`@${botNum}`, 'g'), '').trim();
-    }
-    if (botLidNum) {
-        m.body = m.body.replace(new RegExp(`@${botLidNum}`, 'g'), '').trim();
-    }
+    m.body = stripBotMentions(sock, m.body);
 
     logger.agent({
         phase: 'PROMPT',

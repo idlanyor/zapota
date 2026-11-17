@@ -41,8 +41,7 @@ export default [
 
             if (!input) {
                 const g = await Group.findOne({ jid: m.chat });
-                const bg =
-                    g?.welcomeBg || 'https://i.ibb.co/4YBNyvP/images-76.jpg (default)';
+                const bg = g?.welcomeBg || 'https://i.ibb.co/4YBNyvP/images-76.jpg (default)';
                 return m.reply(
                     `Background welcome saat ini:\n${bg}\n\nKetik URL baru untuk mengganti, atau \`setwelcomebg reset\` untuk balik ke default.`
                 );

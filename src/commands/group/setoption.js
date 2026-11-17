@@ -1,4 +1,3 @@
-import { jidNormalizedUser } from '../../wa/helpers.js';
 import Group from '../../database/models/Group.js';
 import { clearSettingsCache } from '../../handlers/messageHandler.js';
 
@@ -7,20 +6,8 @@ export default {
     aliases: ['setopt', 'option'],
     description: 'Atur opsi fitur grup (Antilink, Antitoxic, dll)',
     category: 'Group',
+    guards: ['admin'],
     execute: async (sock, m, args, text) => {
-        if (!m.isGroup) return m.reply('Perintah ini hanya bisa digunakan di dalam grup!');
-
-        // Cek Admin
-        const groupMetadata = await sock.groupMetadata(m.chat);
-        const participants = groupMetadata.participants;
-        const isAdmin = participants.find(
-            (p) =>
-                jidNormalizedUser(p.id) === jidNormalizedUser(m.sender) &&
-                (p.admin === 'admin' || p.admin === 'superadmin')
-        );
-
-        if (!isAdmin) return m.reply('Hanya admin grup yang bisa menggunakan perintah ini!');
-
         const options = [
             'antilink',
             'antitoxic',
