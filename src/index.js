@@ -4,7 +4,7 @@ import { loadCommands } from './lib/commands.js';
 import logger from './utils/logger.js';
 import { startPrayerScheduler } from './lib/prayerScheduler.js';
 import { startGroupScheduler } from './lib/groupScheduler.js';
-import { startWebhookApi } from './services/webhookApi.js';
+import { startWebhookApi } from './webhook/server.js';
 import { registerRecurringTasks, registerSocketEvents } from './lib/botRuntime.js';
 import { jadibotService } from './services/jadibotService.js';
 import { installProcessGuards } from './lib/appSetup.js';
