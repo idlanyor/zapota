@@ -8,6 +8,9 @@ const codec = createCodec({ date: ['time', 'createdAt', 'updatedAt'] });
  * @typedef {{ userId: string, userName: string, reason: string, time: Date }} AfkRecord
  */
 export const afkRepo = {
+    table: TABLE,
+    codec,
+
     /** @returns {Promise<AfkRecord[]>} */
     async all() {
         const rows = await getKnex()(TABLE).select('userId', 'userName', 'reason', 'time');

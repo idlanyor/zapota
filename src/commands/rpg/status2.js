@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { getOrCreatePlayer } from '../../services/rpgService.js';
 import { getOrCreateRpgProgress } from '../../services/rpgProgressService.js';
-import RpgInventory from '../../database/models/RpgInventory.js';
+import { rpgInventoryRepo } from '../../database/repos/rpgRepos.js';
 import { icon } from '../../lib/icons.js';
 import logger from '../../utils/logger.js';
 
@@ -17,7 +17,7 @@ export default {
         try {
             const { user, player } = await getOrCreatePlayer(sender, pushName);
             const progress = await getOrCreateRpgProgress(sender);
-            const inventory = await RpgInventory.find({ userId: sender }).lean();
+            const inventory = await rpgInventoryRepo.find({ userId: sender });
 
             const title = progress.equippedTitle
                 ? `${progress.equippedTitle} · ${player.job}`

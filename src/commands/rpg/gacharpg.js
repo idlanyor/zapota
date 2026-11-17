@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { getOrCreatePlayer } from '../../services/rpgService.js';
-import RpgInventory from '../../database/models/RpgInventory.js';
+import { rpgInventoryRepo } from '../../database/repos/rpgRepos.js';
 import { recordRpgActivity } from '../../services/rpgProgressService.js';
 import { icon } from '../../lib/icons.js';
 import logger from '../../utils/logger.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 
 const GACHA_POOL = [
     // COMMON (60%)
@@ -70,7 +71,7 @@ export default {
 
             // Potong saldo
             user.balance -= totalCost;
-            await user.save();
+            await userRepo.save(user);
 
             // Lakukan gacha
             const wonItems = [];
@@ -86,12 +87,12 @@ export default {
                 }
 
                 // Masukkan ke database RpgInventory
-                let inv = await RpgInventory.findOne({ userId: sender, itemId: item.id });
+                let inv = await rpgInventoryRepo.findOne({ userId: sender, itemId: item.id });
                 if (inv) {
                     inv.quantity += 1;
-                    await inv.save();
+                    await rpgInventoryRepo.save(inv);
                 } else {
-                    await RpgInventory.create({
+                    await rpgInventoryRepo.create({
                         userId: sender,
                         itemId: item.id,
                         itemName: item.name,

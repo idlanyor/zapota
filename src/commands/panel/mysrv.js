@@ -1,6 +1,6 @@
 import { getUserServers } from '../../services/pterodactyl.js';
 import { settings } from '../../config/settings.js';
-import Server from '../../database/models/Server.js';
+import { serverRepo } from '../../database/repos/serverRepo.js';
 
 export default {
     name: 'mysrv',
@@ -20,7 +20,7 @@ export default {
             }
 
             // Get expiration data from DB
-            const dbServers = await Server.find({ userId: m.sender });
+            const dbServers = await serverRepo.find({ userId: m.sender });
 
             let msg = `*YOUR SERVERS*\n\n`;
             servers.forEach((s, i) => {

@@ -1,6 +1,6 @@
 import { getPteroUserByJid, updatePteroProfile } from '../../services/pterodactyl.js';
 import { settings } from '../../config/settings.js';
-import User from '../../database/models/User.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 
 export default {
     name: 'profile',
@@ -10,7 +10,7 @@ export default {
     execute: async (sock, m, args, text) => {
         try {
             const pteroUser = await getPteroUserByJid(m.sender);
-            const dbUser = await User.findOne({ jid: m.sender });
+            const dbUser = await userRepo.findOne({ jid: m.sender });
             const balance = dbUser ? dbUser.balance : 0;
 
             if (!pteroUser) {

@@ -1,4 +1,4 @@
-import User from '../../database/models/User.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 
 export default {
     name: 'balance',
@@ -6,7 +6,7 @@ export default {
     description: 'Check your current balance',
     category: 'Utility',
     execute: async (sock, m, args, text) => {
-        const user = await User.findOne({ jid: m.sender });
+        const user = await userRepo.findOne({ jid: m.sender });
         const balance = user ? user.balance : 0;
 
         await m.reply(`Your current balance is: Rp ${balance.toLocaleString()}`);

@@ -1,6 +1,6 @@
 import { downloadContentFromMessage } from '../../wa/helpers.js';
 import { settings } from '../../config/settings.js';
-import User from '../../database/models/User.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 import axios from 'axios';
 
 export default {
@@ -47,11 +47,7 @@ export default {
                     }
                 }
 
-                await User.findOneAndUpdate(
-                    { jid: m.sender },
-                    { visionModel: newModel },
-                    { upsert: true, new: true }
-                );
+                await userRepo.upsert({ jid: m.sender }, { visionModel: newModel });
 
                 return m.reply(`✅ Vision model berhasil diubah menjadi: *${newModel}*`);
             }
@@ -74,7 +70,7 @@ export default {
             await m.react('⏳');
 
             // Fetch selected model from DB
-            const user = await User.findOne({ jid: m.sender });
+            const user = await userRepo.findOne({ jid: m.sender });
             const selectedModel = user?.visionModel || 'or/openai/gpt-4o-mini';
 
             const stream = await downloadContentFromMessage(msg, 'image', sock);

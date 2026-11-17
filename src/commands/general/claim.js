@@ -1,6 +1,6 @@
 import { voucherRepo } from '../../database/repos/voucherRepo.js';
-import User from '../../database/models/User.js';
-import Transaction from '../../database/models/Transaction.js';
+import { userRepo } from '../../database/repos/userRepo.js';
+import { transactionRepo } from '../../database/repos/transactionRepo.js';
 
 export default {
     name: 'claim',
@@ -20,7 +20,7 @@ export default {
         if (!(await voucherRepo.findByCode(code))) return m.reply(REJECTED.invalid);
 
         try {
-            if (!(await User.findOne({ jid: m.sender }))) await User.create({ jid: m.sender });
+            if (!(await userRepo.findOne({ jid: m.sender }))) await userRepo.create({ jid: m.sender });
 
             // Quota check, usage record and balance credit happen atomically.
             const result = await voucherRepo.redeem(code, m.sender);
@@ -32,7 +32,7 @@ export default {
             const user = { balance: result.balance };
 
             // Record Transaction
-            await Transaction.create({
+            await transactionRepo.create({
                 userId: m.sender,
                 userName: m.pushName || 'User',
                 type: 'income',

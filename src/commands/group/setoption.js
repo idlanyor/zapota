@@ -1,4 +1,4 @@
-import Group from '../../database/models/Group.js';
+import { groupRepo } from '../../database/repos/groupRepo.js';
 import { clearSettingsCache } from '../../handlers/messageHandler.js';
 
 export default {
@@ -20,8 +20,8 @@ export default {
         const input = args[0]?.toLowerCase();
         const value = args[1]?.toLowerCase();
 
-        let groupData = await Group.findOne({ jid: m.chat });
-        if (!groupData) groupData = await Group.create({ jid: m.chat });
+        let groupData = await groupRepo.findOne({ jid: m.chat });
+        if (!groupData) groupData = await groupRepo.create({ jid: m.chat });
 
         // Tanpa argumen / "status" → tampilkan semua opsi
         if (!input || input === 'status') {
@@ -55,7 +55,7 @@ export default {
         try {
             const newStatus = value === 'on';
             groupData[input] = newStatus;
-            await groupData.save();
+            await groupRepo.save(groupData);
 
             clearSettingsCache();
 

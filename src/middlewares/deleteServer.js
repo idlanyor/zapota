@@ -30,11 +30,11 @@ export const handleDeleteServerConfirmation = async (m) => {
                 if (e.response?.status !== 404) throw e;
             }
 
-            const Server = (await import('../database/models/Server.js')).default;
-            const deletedDb = await Server.deleteOne({ pteroId });
+            const { serverRepo } = await import('../database/repos/serverRepo.js');
+            const deletedDb = await serverRepo.remove({ pteroId });
 
             await m.reply(
-                `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb.deletedCount > 0 ? 'Terhapus' : 'Tidak di DB'}`
+                `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb > 0 ? 'Terhapus' : 'Tidak di DB'}`
             );
             await m.react('✅');
         } catch (err) {

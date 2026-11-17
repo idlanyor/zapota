@@ -1,4 +1,4 @@
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 import { clearSettingsCache } from '../../handlers/messageHandler.js';
 
 export default {
@@ -8,7 +8,7 @@ export default {
     category: 'Owner',
     execute: async (sock, m, args, text) => {
         if (!args[0]) {
-            const current = await Settings.findOne({ id: 'bot_settings' });
+            const current = await settingsRepo.get();
             return m.reply(
                 `Format: .mode <public/self/group>\n\n*Status Saat Ini:* ${current?.mode?.toUpperCase() || 'PUBLIC'}`
             );
@@ -22,11 +22,7 @@ export default {
         }
 
         try {
-            await Settings.findOneAndUpdate(
-                { id: 'bot_settings' },
-                { mode: newMode },
-                { upsert: true }
-            );
+            await settingsRepo.update({ mode: newMode });
 
             clearSettingsCache();
 

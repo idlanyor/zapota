@@ -96,7 +96,7 @@ menu bot. File `.jss` sengaja tidak dimuat oleh plugin loader.
 src/
 ├── commands/       plugin command aktif
 ├── config/         konfigurasi bot dan Knex
-├── database/       adapter, model, dan migration SQLite
+├── database/       repository Knex (repos/), codec, dan migration SQLite
 ├── handlers/       alur pesan, tombol, dan event grup
 ├── lib/            runtime, scheduler, media, renderer, dan helper
 ├── services/       Core, webhook, AI, Cloudflare, jadibot, dan integrasi lain
@@ -214,7 +214,12 @@ bot hanya dimulai jika `BOT_WEBHOOK_TOKEN` terisi. Dokumentasi endpoint tersedia
 
 Database default berada di `data/bot.db` dan dapat diubah dengan `SQLITE_PATH`.
 Migration mencakup user, transaksi legacy, server, budget, grup, polling, settings,
-voucher, RPG, AFK, dan progress RPG.
+voucher, RPG, AFK, dan progress RPG. Bot menjalankan migration yang tertunda secara
+otomatis saat start, kecuali pada database lama yang tidak punya riwayat migration
+(bot hanya memberi peringatan; jalankan `npm run db:migrate` setelah backup).
+
+Akses data melalui repository di `src/database/repos/` (satu per tabel, query Knex
+eksplisit). Tidak ada lagi MongoDB/Mongoose maupun lapisan kompatibilitasnya.
 
 ```bash
 npm run db:migrate
@@ -238,8 +243,8 @@ npm --prefix core test
 npm run lint
 ```
 
-`npm test` menjalankan Jest lalu tiga suite `node:test` untuk adapter SQLite, pencarian
-YouTube, dan parser API Utama. Audit 28 Agustus 2026 menghasilkan:
+`npm test` menjalankan Jest lalu suite `node:test` untuk migration dan repository SQLite,
+pencarian YouTube, dan parser API Utama. Audit 28 Agustus 2026 menghasilkan:
 
 - bot: **22 suite Jest / 151 test** dan **25 test Node**, semua lulus;
 - Core: **13 test**, semua lulus;

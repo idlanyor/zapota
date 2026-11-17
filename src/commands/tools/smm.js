@@ -1,6 +1,6 @@
 import { smm } from '../../services/smm.js';
-import User from '../../database/models/User.js';
-import Transaction from '../../database/models/Transaction.js';
+import { userRepo } from '../../database/repos/userRepo.js';
+import { transactionRepo } from '../../database/repos/transactionRepo.js';
 import { settings } from '../../config/settings.js';
 
 export default {
@@ -98,7 +98,7 @@ export default {
             if (order.order) {
                 // Log Transaction (Opsional, buat catatan owner aja)
                 try {
-                    await Transaction.create({
+                    await transactionRepo.create({
                         userId: m.sender,
                         userName: m.pushName,
                         type: 'expense',

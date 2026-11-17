@@ -1,5 +1,5 @@
 import { jidNormalizedUser } from '../../wa/helpers.js';
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 import { clearSettingsCache } from '../../handlers/messageFlow.js';
 
 export default [
@@ -25,15 +25,14 @@ export default [
 
             const normalizedTarget = jidNormalizedUser(target);
             const botSettings =
-                (await Settings.findOne({ id: 'bot_settings' })) ||
-                (await Settings.create({ id: 'bot_settings' }));
+                (await settingsRepo.get());
 
             if (botSettings.owners.includes(normalizedTarget)) {
                 return m.reply('❌ User tersebut sudah menjadi owner.');
             }
 
             botSettings.owners.push(normalizedTarget);
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             clearSettingsCache();
 
             m.reply(`✅ Berhasil menambahkan @${normalizedTarget.split('@')[0]} sebagai owner.`, {
@@ -63,15 +62,14 @@ export default [
 
             const normalizedTarget = jidNormalizedUser(target);
             const botSettings =
-                (await Settings.findOne({ id: 'bot_settings' })) ||
-                (await Settings.create({ id: 'bot_settings' }));
+                (await settingsRepo.get());
 
             if (!botSettings.owners.includes(normalizedTarget)) {
                 return m.reply('❌ User tersebut bukan owner.');
             }
 
             botSettings.owners = botSettings.owners.filter((o) => o !== normalizedTarget);
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             clearSettingsCache();
 
             m.reply(`✅ Berhasil menghapus @${normalizedTarget.split('@')[0]} dari daftar owner.`, {
@@ -87,8 +85,7 @@ export default [
         execute: async (sock, m, args, text) => {
             const { settings } = await import('../../config/settings.js');
             const botSettings =
-                (await Settings.findOne({ id: 'bot_settings' })) ||
-                (await Settings.create({ id: 'bot_settings' }));
+                (await settingsRepo.get());
 
             const dbOwners = botSettings.owners || [];
 

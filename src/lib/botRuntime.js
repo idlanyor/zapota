@@ -4,8 +4,8 @@ import { messageHandler, clearSettingsCache } from '../handlers/messageHandler.j
 import { groupParticipantsUpdate, handleMessagesUpdate } from '../handlers/groupHandler.js';
 import logger from '../utils/logger.js';
 import { settings } from '../config/settings.js';
-import Server from '../database/models/Server.js';
-import Group from '../database/models/Group.js';
+import { serverRepo } from '../database/repos/serverRepo.js';
+import { groupRepo } from '../database/repos/groupRepo.js';
 import { botSocket } from './socket.js';
 import { cleanupCaches } from '../handlers/messageFlow.js';
 import { pollRepo } from '../database/repos/pollRepo.js';
@@ -25,11 +25,7 @@ const runGroupSync = async (sock, data, ack) => {
         const targetJid = data.jid;
         if (targetJid) {
             const meta = await sock.groupMetadata(targetJid);
-            await Group.findOneAndUpdate(
-                { jid: targetJid },
-                { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict },
-                { upsert: true }
-            );
+            await groupRepo.upsert({ jid: targetJid }, { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict });
             botSocket.emitLog('Synced: ' + meta.subject, 'success');
             safeAck(ack, { ok: true });
             return;
@@ -40,17 +36,13 @@ const runGroupSync = async (sock, data, ack) => {
         let count = 0;
 
         for (const jid in groups) {
-            const dbGroup = await Group.findOne({ jid });
+            const dbGroup = await groupRepo.findOne({ jid });
             if (dbGroup && dbGroup.name) continue;
 
             await delay(5000);
             try {
                 const meta = await sock.groupMetadata(jid);
-                await Group.findOneAndUpdate(
-                    { jid },
-                    { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict },
-                    { upsert: true }
-                );
+                await groupRepo.upsert({ jid }, { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict });
                 count++;
                 logger.info('Resolved: ' + meta.subject);
             } catch (e) {
@@ -218,8 +210,7 @@ const scheduleAutoSuspend = (sock) => {
         async () => {
             try {
                 const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                const expiredServers = await Server.find({
-                    expiredAt: { $lt: sevenDaysAgo },
+                const expiredServers = await serverRepo.findExpiredBefore(sevenDaysAgo, {
                     status: 'active',
                 });
                 if (expiredServers.length === 0) return;
@@ -238,7 +229,7 @@ const scheduleAutoSuspend = (sock) => {
                     try {
                         await ptero.post(`/servers/${srv.pteroId}/suspend`);
                         srv.status = 'suspended';
-                        await srv.save();
+                        await serverRepo.save(srv);
                         await sock.sendMessage(srv.userId, {
                             text: `*LAYANAN DI-SUSPEND*\n\nServer Anda *${srv.planName}* (ID: ${srv.identifier}) telah ditangguhkan karena melewati jatuh tempo lebih dari 7 hari.\nSilakan perpanjang untuk mengaktifkan kembali.`,
                         });
@@ -266,8 +257,7 @@ const scheduleExpiryReminder = (sock) => {
                 const startOf5Days = new Date(fiveDaysLater.setHours(0, 0, 0, 0));
                 const endOf5Days = new Date(fiveDaysLater.setHours(23, 59, 59, 999));
 
-                const expiringServers = await Server.find({
-                    expiredAt: { $gte: startOf5Days, $lte: endOf5Days },
+                const expiringServers = await serverRepo.findExpiringBetween(startOf5Days, endOf5Days, {
                     status: 'active',
                 });
 

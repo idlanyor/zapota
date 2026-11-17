@@ -1,4 +1,4 @@
-import Server from '../../database/models/Server.js';
+import { serverRepo } from '../../database/repos/serverRepo.js';
 import { settings } from '../../config/settings.js';
 import axios from 'axios';
 
@@ -37,7 +37,7 @@ Contoh:
 
         try {
             // 1. Cari data server
-            let srv = await Server.findOne({ $or: [{ pteroId: id }, { identifier: id }] });
+            let srv = await serverRepo.findByPteroIdOrIdentifier(id);
             let pteroId = srv ? srv.pteroId : isNaN(id) ? null : id;
 
             if (!pteroId && isNaN(id)) {

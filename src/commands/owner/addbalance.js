@@ -1,4 +1,4 @@
-import User from '../../database/models/User.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 import { settings } from '../../config/settings.js';
 import axios from 'axios';
 
@@ -93,13 +93,13 @@ Email *${emailInput}* tidak ditemukan di panel Pterodactyl.`);
             }
 
             // 3. Update saldo di database bot
-            let user = await User.findOne({ jid: targetJid });
+            let user = await userRepo.findOne({ jid: targetJid });
             if (!user) {
-                user = await User.create({ jid: targetJid });
+                user = await userRepo.create({ jid: targetJid });
             }
 
             user.balance += amount;
-            await user.save();
+            await userRepo.save(user);
 
             const userNotice =
                 `*PEMBERITAHUAN TOPUP*\n\n` +

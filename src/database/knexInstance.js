@@ -1,10 +1,7 @@
 /**
- * Lazy singleton holding the Knex instance for the database adapter.
- *
- * Why lazy? Mongoose callers may import `src/database/index.js` and never
- * actually hit a collection during tests or CLI runs. We avoid paying the
- * driver setup cost (and a hard crash on missing config) until the first
- * `defineModel()` call needs a real Knex client.
+ * Lazy singleton holding the Knex (SQLite) instance used by the repositories
+ * in ./repos. Lazy so importing a repo never opens the database by itself;
+ * the connection is created on the first query.
  *
  * The actual Knex instance is created the first time `getKnex()` runs, and
  * cached in a module-level variable. Subsequent calls return the same

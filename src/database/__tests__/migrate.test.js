@@ -43,27 +43,29 @@ test('legacy database (tables, no migration history): skips and warns', async ()
     await knex.destroy();
 });
 
-test('schema drift: every model field has a column after migrations', async () => {
+test('schema drift: every column a repository converts exists after migrations', async () => {
     const knex = makeKnex();
     const { setKnex } = await import('../knexInstance.js');
     setKnex(knex);
-    await migrateIfSafe(knex, makeLog());
-
     try {
+        await migrateIfSafe(knex, makeLog());
         const fs = await import('node:fs');
         const path = await import('node:path');
-        const dir = path.resolve(import.meta.dirname, '../models');
+        const dir = path.resolve(import.meta.dirname, '../repos');
         const drift = [];
+        let checked = 0;
         for (const file of fs.readdirSync(dir)) {
-            const { default: Model } = await import(path.join(dir, file));
-            const cols = Object.keys(await knex(Model.tableName).columnInfo());
-            for (const field of Object.keys(Model.schema?.paths || {})) {
-                // settings.id is an alias of settingsId (the integer id is the PK)
-                if (Model.tableName === 'settings' && field === 'id') continue;
-                if (!cols.includes(field)) drift.push(`${Model.tableName}.${field}`);
+            const mod = await import(path.join(dir, file));
+            for (const repo of Object.values(mod)) {
+                if (!repo?.codec?.fields || !repo.table) continue;
+                checked++;
+                const cols = Object.keys(await knex(repo.table).columnInfo());
+                for (const f of repo.codec.fields)
+                    if (!cols.includes(f)) drift.push(`${repo.table}.${f}`);
             }
         }
-        assert.deepEqual(drift, [], `model fields without a migration: ${drift.join(', ')}`);
+        assert.ok(checked >= 9, `expected to check all table repos, checked ${checked}`);
+        assert.deepEqual(drift, [], `repository fields without a column: ${drift.join(', ')}`);
     } finally {
         await knex.destroy();
     }

@@ -71,6 +71,15 @@ export const addTransaction = async ({
     return res.data;
 };
 
+/** One transaction owned by `userId`, or null. */
+export const getTransaction = async (userId, transactionId) => {
+    const res = await coreRequest(
+        'GET',
+        `/v1/finance/transactions/${encodeURIComponent(transactionId)}?userId=${encodeURIComponent(userId)}`
+    );
+    return res.ok ? res.data : null;
+};
+
 export const deleteTransaction = async (userId, transactionId) => {
     // Ambil data tx dulu agar bisa ditampilkan setelah hapus.
     let target;

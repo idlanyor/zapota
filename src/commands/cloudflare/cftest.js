@@ -1,5 +1,5 @@
 import { listRules, listDnsRecords } from '../../services/cloudflare.js';
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 
 import { env } from '../../config/env.js';
 export default {
@@ -8,7 +8,7 @@ export default {
     description: 'Menguji konektivitas API Cloudflare',
     category: 'Cloudflare',
     execute: async (sock, m, args) => {
-        const botSettings = await Settings.findOne({ id: 'bot_settings' });
+        const botSettings = await settingsRepo.get();
 
         if (!botSettings || (!botSettings.cfToken && !env.CLOUDFLARE_API_TOKEN)) {
             return m.reply(

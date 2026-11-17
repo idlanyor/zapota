@@ -1,7 +1,8 @@
 import { KOPDES_ITEMS, getOrCreatePlayer } from '../../services/rpgService.js';
-import RpgInventory from '../../database/models/RpgInventory.js';
+import { rpgInventoryRepo } from '../../database/repos/rpgRepos.js';
 import { getRpgHeaderImage, sendRpgReply } from '../../lib/rpgVisuals.js';
 import { recordRpgActivity } from '../../services/rpgProgressService.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 
 export default {
     name: 'kopdes',
@@ -59,15 +60,15 @@ export default {
 
                 // Potong saldo
                 user.balance -= totalPrice;
-                await user.save();
+                await userRepo.save(user);
 
                 // Tambah atau update item di inventory
-                let userItem = await RpgInventory.findOne({ userId: sender, itemId: item.id });
+                let userItem = await rpgInventoryRepo.findOne({ userId: sender, itemId: item.id });
                 if (userItem) {
                     userItem.quantity += qty;
-                    await userItem.save();
+                    await rpgInventoryRepo.save(userItem);
                 } else {
-                    await RpgInventory.create({
+                    await rpgInventoryRepo.create({
                         userId: sender,
                         itemId: item.id,
                         itemName: item.name,

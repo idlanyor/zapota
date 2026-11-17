@@ -9,6 +9,9 @@ const codec = createCodec({
 });
 
 export const voucherRepo = {
+    table: TABLE,
+    codec,
+
     async create({ code, value, quota = 1, isPublic = false, expiredAt = null }) {
         const now = Date.now();
         await getKnex()(TABLE).insert(

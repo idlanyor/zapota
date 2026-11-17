@@ -1,4 +1,4 @@
-import User from '../../database/models/User.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 import { resolveSenderInfo } from '../../utils/phoneLookup.js';
 import { resolveUser, ensureUser, attachIdentity, coreRequest } from '../../services/kanataCore.js';
 import logger from '../../utils/logger.js';
@@ -20,15 +20,15 @@ export default {
 
             // 1. Update legacy User model
             try {
-                let user = await User.findOne({ jid: m.sender });
+                let user = await userRepo.findOne({ jid: m.sender });
                 if (!user) {
-                    user = await User.create({
+                    user = await userRepo.create({
                         jid: m.sender,
                         name: m.pushName || '',
                     });
                 }
                 user.phoneNumber = phoneNumber;
-                await user.save();
+                await userRepo.save(user);
             } catch (err) {
                 logger.warn(`Legacy User model rebind error: ${err.message}`);
             }

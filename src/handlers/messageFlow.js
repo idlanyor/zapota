@@ -1,8 +1,8 @@
 import { jidNormalizedUser } from '../wa/helpers.js';
 import { createHash } from 'crypto';
 import { settings } from '../config/settings.js';
-import Settings from '../database/models/Settings.js';
-import Group from '../database/models/Group.js';
+import { settingsRepo } from '../database/repos/settingsRepo.js';
+import { groupRepo } from '../database/repos/groupRepo.js';
 import { pollRepo } from '../database/repos/pollRepo.js';
 import { getMessage } from '../lib/msgStore.js';
 import { generateAIResponse } from '../lib/ai.js';
@@ -35,8 +35,7 @@ export const getCachedSettings = async () => {
     const now = Date.now();
     if (!settingsCache || now - lastCacheTime > SETTINGS_CACHE_TTL_MS) {
         settingsCache =
-            (await Settings.findOne({ id: 'bot_settings' })) ||
-            (await Settings.create({ id: 'bot_settings' }));
+            (await settingsRepo.get());
         lastCacheTime = now;
     }
     return settingsCache;
@@ -47,11 +46,11 @@ export const getGroupSettings = async (jid, subject = '') => {
     const cached = groupCache.get(jid);
     if (cached) return cached;
 
-    let data = await Group.findOne({ jid });
+    let data = await groupRepo.findOne({ jid });
     if (!data) {
-        data = await Group.create({ jid, name: subject || '' });
+        data = await groupRepo.create({ jid, name: subject || '' });
     } else if (subject && !data.name) {
-        data = await Group.findOneAndUpdate({ jid }, { name: subject }, { new: true });
+        data = await groupRepo.updateOne({ jid }, { name: subject });
     }
 
     groupCache.set(jid, data);
@@ -283,11 +282,11 @@ const handlePollUpdate = async (sock, m) => {
                             if (e.response?.status !== 404) throw e;
                         }
 
-                        const Server = (await import('../database/models/Server.js')).default;
-                        const deletedDb = await Server.deleteOne({ pteroId });
+                        const { serverRepo } = await import('../database/repos/serverRepo.js');
+                        const deletedDb = await serverRepo.remove({ pteroId });
 
                         await sock.sendMessage(m.chat, {
-                            text: `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb.deletedCount > 0 ? 'Terhapus' : 'Tidak di DB'}`,
+                            text: `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb > 0 ? 'Terhapus' : 'Tidak di DB'}`,
                         });
                         await sock.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
                     } catch (err) {

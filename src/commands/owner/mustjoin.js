@@ -1,4 +1,4 @@
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 import { clearSettingsCache } from '../../handlers/messageFlow.js';
 
 export default {
@@ -8,8 +8,7 @@ export default {
     category: 'Owner',
     execute: async (sock, m, args, text) => {
         const botSettings =
-            (await Settings.findOne({ id: 'bot_settings' })) ||
-            (await Settings.create({ id: 'bot_settings' }));
+            (await settingsRepo.get());
 
         if (!args[0]) {
             return m.reply(
@@ -26,14 +25,14 @@ export default {
 
         if (action === 'on') {
             botSettings.mustJoinGroup = true;
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             clearSettingsCache();
             return m.reply('✅ Fitur *Must Join Group* berhasil diaktifkan.');
         }
 
         if (action === 'off') {
             botSettings.mustJoinGroup = false;
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             clearSettingsCache();
             return m.reply('❌ Fitur *Must Join Group* berhasil dimatikan.');
         }
@@ -46,7 +45,7 @@ export default {
                 );
             }
             botSettings.groupInviteLink = link;
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             clearSettingsCache();
             return m.reply(`✅ Link grup berhasil diubah ke:\n${link}`);
         }

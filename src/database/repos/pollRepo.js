@@ -10,6 +10,9 @@ const codec = createCodec({ json: ['options'], date: ['createdAt'] });
  *             messageSecret: Buffer, createdAt: Date }} PollRecord
  */
 export const pollRepo = {
+    table: TABLE,
+    codec,
+
     async create({ pollId, chat, question, options = [], messageSecret }) {
         const row = codec.toRow({ pollId, chat, question, options, createdAt: Date.now() });
         await getKnex()(TABLE).insert({ ...row, messageSecret: Buffer.from(messageSecret) });

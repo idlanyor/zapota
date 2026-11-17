@@ -1,4 +1,4 @@
-import Group from '../../database/models/Group.js';
+import { groupRepo } from '../../database/repos/groupRepo.js';
 import { clearSettingsCache } from '../../handlers/messageHandler.js';
 
 const isTime = (v) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(v || '');
@@ -13,11 +13,11 @@ export default {
         if (!input) return m.reply('Format: .setopen <HH:mm|on|off>');
 
         const group =
-            (await Group.findOne({ jid: m.chat })) || (await Group.create({ jid: m.chat }));
+            (await groupRepo.findOne({ jid: m.chat })) || (await groupRepo.create({ jid: m.chat }));
 
         if (input === 'on' || input === 'off') {
             group.autoOpen = input === 'on';
-            await group.save();
+            await groupRepo.save(group);
             clearSettingsCache();
             return m.reply(`✅ Auto open ${group.autoOpen ? 'diaktifkan' : 'dinonaktifkan'}.`);
         }
@@ -26,7 +26,7 @@ export default {
 
         group.autoOpenTime = input;
         group.autoOpen = true;
-        await group.save();
+        await groupRepo.save(group);
         clearSettingsCache();
         return m.reply(`✅ Waktu auto open diset ke ${input} WIB dan fitur diaktifkan.`);
     },

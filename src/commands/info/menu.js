@@ -4,7 +4,7 @@ import { prepareWAMessageMedia } from 'baileys';
 import sharp from 'sharp';
 import { commands } from '../../lib/commands.js';
 import { settings } from '../../config/settings.js';
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 
 const MAIN_MENU_IMAGE_PATH = fileURLToPath(
     new URL('../../assets/kanata-mascot-banner-v4-clay.png', import.meta.url)
@@ -143,7 +143,7 @@ export default {
     description: 'Show available commands in text format',
     category: 'Info',
     execute: async (sock, m, args, text) => {
-        let botSettings = await Settings.findOne({ id: 'bot_settings' });
+        let botSettings = await settingsRepo.get();
         const disabledList = botSettings ? botSettings.disabledCommands : [];
 
         const uniqueCommands = Array.from(new Set(commands.values()));

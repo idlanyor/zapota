@@ -1,6 +1,6 @@
 /**
- * Row <-> object conversion for SQLite, compatible with what the legacy
- * Mongoose-style adapter already stored:
+ * Row <-> object conversion for SQLite (compatible with rows written by the
+ * previous adapter):
  *   - Date fields  → epoch milliseconds (INTEGER); SQLite CURRENT_TIMESTAMP
  *                    strings ('YYYY-MM-DD HH:MM:SS', UTC) are also read
  *   - JSON fields  → JSON text (arrays/objects)
@@ -34,6 +34,8 @@ const parseJson = (value, fallback) => {
  * @param {{ json?: string[], date?: string[], bool?: string[] }} fields
  */
 export const createCodec = ({ json = [], date = [], bool = [] } = {}) => ({
+    /** Columns this codec converts (used by the schema-drift test). */
+    fields: [...json, ...date, ...bool],
     /** DB row → plain object */
     fromRow(row) {
         if (!row) return null;

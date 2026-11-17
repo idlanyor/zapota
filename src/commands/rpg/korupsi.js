@@ -1,5 +1,7 @@
 import { getOrCreatePlayer } from '../../services/rpgService.js';
 import { sendRpgReply } from '../../lib/rpgVisuals.js';
+import { rpgPlayerRepo } from '../../database/repos/rpgRepos.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 
 export default {
     name: 'sunat_dana',
@@ -45,7 +47,7 @@ export default {
                 // OTT KPK Event: Sita aset & turun kasta
                 const confiscated = user.balance || 0;
                 user.balance = 0;
-                await user.save();
+                await userRepo.save(user);
 
                 player.job = 'Pengangguran (Mantan Napi Korupsi)';
                 player.bintangKorupsi = 0;
@@ -53,7 +55,7 @@ export default {
                 player.kewarasan = 10;
                 player.reputasiAparat = 0;
                 player.reputasiWarga = 5;
-                await player.save();
+                await rpgPlayerRepo.save(player);
 
                 return sendRpgReply(
                     sock,
@@ -73,8 +75,8 @@ export default {
 
             // Korupsi Lolos
             user.balance = (user.balance || 0) + korupsiGain;
-            await user.save();
-            await player.save();
+            await userRepo.save(user);
+            await rpgPlayerRepo.save(player);
 
             const starText = '⭐'.repeat(player.bintangKorupsi);
 

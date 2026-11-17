@@ -1,17 +1,17 @@
 import fs from 'fs';
 import path from 'path';
-import User from '../database/models/User.js';
-import Transaction from '../database/models/Transaction.js';
-import Settings from '../database/models/Settings.js';
+import { userRepo } from '../database/repos/userRepo.js';
+import { transactionRepo } from '../database/repos/transactionRepo.js';
+import { settingsRepo } from '../database/repos/settingsRepo.js';
 import { settings } from '../config/settings.js';
 import logger from '../utils/logger.js';
 
 export const createDatabaseBackup = async () => {
     try {
         logger.info('[DEBUG] Starting database fetch...');
-        const users = await User.find({});
-        const transactions = await Transaction.find({});
-        const botSettings = await Settings.find({});
+        const users = await userRepo.find();
+        const transactions = await transactionRepo.find();
+        const botSettings = await settingsRepo.all();
         logger.info(`[DEBUG] Fetched ${users.length} users, ${transactions.length} transactions.`);
 
         const backupData = {
