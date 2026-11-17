@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '../../wa/helpers.js';
+import { downloadMediaBuffer } from '../../wa/helpers.js';
 import { settings } from '../../config/settings.js';
 import { generateAIResponse } from '../../lib/ai.js';
 
@@ -32,11 +32,7 @@ export default {
             if (isImage) {
                 await m.react('⏳');
 
-                const stream = await downloadContentFromMessage(msg, 'image', sock);
-                let buffer = Buffer.from([]);
-                for await (const chunk of stream) {
-                    buffer = Buffer.concat([buffer, chunk]);
-                }
+                const buffer = await downloadMediaBuffer(msg, 'image', sock);
 
                 imageBuffer = buffer;
                 imageMime = mime || 'image/jpeg';

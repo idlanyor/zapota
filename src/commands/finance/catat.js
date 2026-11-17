@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '../../wa/helpers.js';
+import { downloadMediaBuffer } from '../../wa/helpers.js';
 import { processAiTransaction } from '../../services/financeService.js';
 
 export default {
@@ -21,9 +21,7 @@ export default {
             if (isAudio || isImage) {
                 const mediaType = isAudio ? 'audio' : 'image';
                 await m.react('⏳');
-                const stream = await downloadContentFromMessage(msg, mediaType, sock);
-                let buffer = Buffer.from([]);
-                for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+                const buffer = await downloadMediaBuffer(msg, mediaType, sock);
 
                 fileData = {
                     buffer,

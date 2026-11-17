@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '../../wa/helpers.js';
+import { downloadMediaBuffer } from '../../wa/helpers.js';
 import axios from 'axios';
 import { Sticker, StickerTypes } from '../../lib/stickerFormatter.js';
 import { settings } from '../../config/settings.js';
@@ -33,11 +33,7 @@ export default {
             // Download media
             const mediaType =
                 /sticker/.test(mime) || /stickerMessage/.test(mtype) ? 'sticker' : 'image';
-            const stream = await downloadContentFromMessage(msg, mediaType, sock);
-            let buffer = Buffer.from([]);
-            for await (const chunk of stream) {
-                buffer = Buffer.concat([buffer, chunk]);
-            }
+            const buffer = await downloadMediaBuffer(msg, mediaType, sock);
 
             // Upload to a temporary image hosting (like Telegra.ph or similar) to use with Memegen API
             // Or use a direct API if available.

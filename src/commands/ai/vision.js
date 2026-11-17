@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '../../wa/helpers.js';
+import { downloadMediaBuffer } from '../../wa/helpers.js';
 import { settings } from '../../config/settings.js';
 import { userRepo } from '../../database/repos/userRepo.js';
 import axios from 'axios';
@@ -73,11 +73,7 @@ export default {
             const user = await userRepo.findOne({ jid: m.sender });
             const selectedModel = user?.visionModel || 'or/openai/gpt-4o-mini';
 
-            const stream = await downloadContentFromMessage(msg, 'image', sock);
-            let buffer = Buffer.from([]);
-            for await (const chunk of stream) {
-                buffer = Buffer.concat([buffer, chunk]);
-            }
+            const buffer = await downloadMediaBuffer(msg, 'image', sock);
 
             const base64Image = `data:${mime || 'image/jpeg'};base64,${buffer.toString('base64')}`;
 

@@ -1,3 +1,4 @@
+/* global window, document -- referenced inside page.evaluate() callbacks (browser context) */
 /**
  * Gemini Chat Scraper Module
  *

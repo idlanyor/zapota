@@ -228,16 +228,7 @@ const scheduleAutoSuspend = (sock) => {
                     status: 'active',
                 });
                 if (expiredServers.length === 0) return;
-
-                const { default: axios } = await import('axios');
-                const ptero = axios.create({
-                    baseURL: `${env.PTERO_URL}/api/application`,
-                    headers: {
-                        Authorization: `Bearer ${env.PTERO_API_KEY}`,
-                        'Content-Type': 'application/json',
-                        Accept: 'Application/vnd.pterodactyl.v1+json',
-                    },
-                });
+                const { pteroApp: ptero } = await import('../services/pterodactyl.js');
 
                 for (const srv of expiredServers) {
                     try {

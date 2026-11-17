@@ -1,20 +1,9 @@
 import { serverRepo } from '../../database/repos/serverRepo.js';
 import { settings } from '../../config/settings.js';
-import axios from 'axios';
 
 import { env } from '../../config/env.js';
+import { pteroApp as ptero } from '../../services/pterodactyl.js';
 import { pendingServerDeletes } from '../../state/pendingServerDeletes.js';
-const PTERO_URL = env.PTERO_URL;
-const PTERO_API_KEY = env.PTERO_API_KEY;
-
-const ptero = axios.create({
-    baseURL: `${PTERO_URL}/api/application`,
-    headers: {
-        Authorization: `Bearer ${PTERO_API_KEY}`,
-        'Content-Type': 'application/json',
-        Accept: 'Application/vnd.pterodactyl.v1+json',
-    },
-});
 
 export default {
     name: 'delsrv',

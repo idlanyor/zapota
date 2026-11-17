@@ -18,7 +18,7 @@ export default [
             'no-unused-vars': 'warn',
             'no-console': 'warn',
             eqeqeq: 'off',
-            'no-undef': 'off',
+            'no-undef': 'error',
             'no-empty': 'warn',
             'no-control-regex': 'warn',
             'no-useless-escape': 'off',
@@ -29,6 +29,10 @@ export default [
             'no-prototype-builtins': 'warn',
             'no-useless-catch': 'warn',
         },
+    },
+    {
+        files: ['**/__tests__/**/*.js', '**/*.test.js'],
+        languageOptions: { globals: { ...globals.jest } },
     },
     {
         // Read configuration through src/config/env.js (declared + validated).
