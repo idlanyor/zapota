@@ -191,7 +191,7 @@ describe('Werewolf service', () => {
         const game = buildManagedGame(manager, groupJid, 5, sock);
         const villager = game.players[0];
         const wolf = game.players[1];
-        const sharedBotJid = '628157695152@s.whatsapp.net';
+        const sharedBotJid = '628000000001@s.whatsapp.net';
         manager.bindAliases(game, villager, [sharedBotJid]);
         wolf.role = ROLES.WEREWOLF;
         wolf.faction = FACTIONS.WEREWOLF;

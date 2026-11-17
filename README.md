@@ -312,5 +312,4 @@ folder tersebut bukan bagian distribusi repository.
 
 - `WEBHOOK_API.md`: endpoint webhook bot.
 - `core/README.md`: endpoint, auth, dan operasi Kanata Core.
-- `PRD_RPG.md`: spesifikasi fitur RPG.
 - `PRD_Werewolf.md`: spesifikasi integrasi Werewolf.

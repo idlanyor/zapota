@@ -58,8 +58,6 @@ const buildJidCandidates = (...values) => {
 
 export const messageHandler = async (sock, m) => {
     if (!m || !m.key || !m.key.id) return;
-    if (m.key.remoteJid.includes('120363403334136453@g.us'))
-        logger.info(m.message.extendedTextMessage?.contextInfo);
     if (processingMessages.has(m.key.id)) return;
     processingMessages.set(m.key.id, true);
 
