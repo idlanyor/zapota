@@ -42,3 +42,29 @@ test('legacy database (tables, no migration history): skips and warns', async ()
     assert.match(log.calls.warn[0], /no migration history; skipping auto-migrate/);
     await knex.destroy();
 });
+
+test('schema drift: every model field has a column after migrations', async () => {
+    const knex = makeKnex();
+    const { setKnex } = await import('../knexInstance.js');
+    setKnex(knex);
+    await migrateIfSafe(knex, makeLog());
+
+    try {
+        const fs = await import('node:fs');
+        const path = await import('node:path');
+        const dir = path.resolve(import.meta.dirname, '../models');
+        const drift = [];
+        for (const file of fs.readdirSync(dir)) {
+            const { default: Model } = await import(path.join(dir, file));
+            const cols = Object.keys(await knex(Model.tableName).columnInfo());
+            for (const field of Object.keys(Model.schema?.paths || {})) {
+                // settings.id is an alias of settingsId (the integer id is the PK)
+                if (Model.tableName === 'settings' && field === 'id') continue;
+                if (!cols.includes(field)) drift.push(`${Model.tableName}.${field}`);
+            }
+        }
+        assert.deepEqual(drift, [], `model fields without a migration: ${drift.join(', ')}`);
+    } finally {
+        await knex.destroy();
+    }
+});
