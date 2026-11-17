@@ -1,6 +1,5 @@
 import { smm } from '../../services/smm.js';
-import { userRepo } from '../../database/repos/userRepo.js';
-import { transactionRepo } from '../../database/repos/transactionRepo.js';
+import { recordTransaction } from '../../services/walletService.js';
 import { settings } from '../../config/settings.js';
 
 export default {
@@ -98,7 +97,7 @@ export default {
             if (order.order) {
                 // Log Transaction (Opsional, buat catatan owner aja)
                 try {
-                    await transactionRepo.create({
+                    await recordTransaction({
                         userId: m.sender,
                         userName: m.pushName,
                         type: 'expense',

@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { getOrCreatePlayer } from '../../services/rpgService.js';
+import { getOrCreatePlayer, listItems } from '../../services/rpgService.js';
 import { getOrCreateRpgProgress } from '../../services/rpgProgressService.js';
-import { rpgInventoryRepo } from '../../database/repos/rpgRepos.js';
 import { icon } from '../../lib/icons.js';
 import logger from '../../utils/logger.js';
 
@@ -17,7 +16,7 @@ export default {
         try {
             const { user, player } = await getOrCreatePlayer(sender, pushName);
             const progress = await getOrCreateRpgProgress(sender);
-            const inventory = await rpgInventoryRepo.find({ userId: sender });
+            const inventory = await listItems({ userId: sender });
 
             const title = progress.equippedTitle
                 ? `${progress.equippedTitle} · ${player.job}`
@@ -269,8 +268,7 @@ html,body{width:100%;background:transparent;font-family:-apple-system,BlinkMacSy
                                                             payload: html,
                                                             trusted_sources: [],
                                                         },
-                                                        __typename:
-                                                            'GenAISingleLayoutViewModel',
+                                                        __typename: 'GenAISingleLayoutViewModel',
                                                     },
                                                 },
                                             ],

@@ -25,7 +25,10 @@ const runGroupSync = async (sock, data, ack) => {
         const targetJid = data.jid;
         if (targetJid) {
             const meta = await sock.groupMetadata(targetJid);
-            await groupRepo.upsert({ jid: targetJid }, { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict });
+            await groupRepo.upsert(
+                { jid: targetJid },
+                { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict }
+            );
             botSocket.emitLog('Synced: ' + meta.subject, 'success');
             safeAck(ack, { ok: true });
             return;
@@ -42,7 +45,10 @@ const runGroupSync = async (sock, data, ack) => {
             await delay(5000);
             try {
                 const meta = await sock.groupMetadata(jid);
-                await groupRepo.upsert({ jid }, { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict });
+                await groupRepo.upsert(
+                    { jid },
+                    { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict }
+                );
                 count++;
                 logger.info('Resolved: ' + meta.subject);
             } catch (e) {
@@ -105,6 +111,7 @@ export const registerSocketEvents = ({
     connectToWhatsApp,
     authFolder,
     onOpen,
+    onLoggedOut,
 }) => {
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr, pairingCode, pairingError } = update;
@@ -139,9 +146,16 @@ export const registerSocketEvents = ({
             });
             logger.warn(`WhatsApp connection closed. statusCode=${statusCode ?? 'unknown'}`);
             if (statusCode === DisconnectReason.loggedOut) {
-                logger.error('Logged out. Please scan QR again.');
-                // fsExtra.emptyDirSync(authFolder); // Jangan hapus otomatis biar nggak repot
-                process.exit(1);
+                logger.error('WhatsApp session logged out (401).');
+                // Restarting with the same dead credentials would just loop on 401.
+                if (typeof onLoggedOut === 'function') {
+                    Promise.resolve(onLoggedOut()).catch((err) =>
+                        logger.error(`Re-login after logout failed: ${err.message}`)
+                    );
+                } else {
+                    process.exit(1);
+                }
+                return;
             }
 
             if (statusCode === DisconnectReason.connectionReplaced) {
@@ -214,16 +228,7 @@ const scheduleAutoSuspend = (sock) => {
                     status: 'active',
                 });
                 if (expiredServers.length === 0) return;
-
-                const { default: axios } = await import('axios');
-                const ptero = axios.create({
-                    baseURL: `${env.PTERO_URL}/api/application`,
-                    headers: {
-                        Authorization: `Bearer ${env.PTERO_API_KEY}`,
-                        'Content-Type': 'application/json',
-                        Accept: 'Application/vnd.pterodactyl.v1+json',
-                    },
-                });
+                const { pteroApp: ptero } = await import('../services/pterodactyl.js');
 
                 for (const srv of expiredServers) {
                     try {
@@ -257,9 +262,13 @@ const scheduleExpiryReminder = (sock) => {
                 const startOf5Days = new Date(fiveDaysLater.setHours(0, 0, 0, 0));
                 const endOf5Days = new Date(fiveDaysLater.setHours(23, 59, 59, 999));
 
-                const expiringServers = await serverRepo.findExpiringBetween(startOf5Days, endOf5Days, {
-                    status: 'active',
-                });
+                const expiringServers = await serverRepo.findExpiringBetween(
+                    startOf5Days,
+                    endOf5Days,
+                    {
+                        status: 'active',
+                    }
+                );
 
                 for (const srv of expiringServers) {
                     await sock.sendMessage(srv.userId, {

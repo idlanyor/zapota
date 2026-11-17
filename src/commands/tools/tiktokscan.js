@@ -1,3 +1,4 @@
+/* global window, document -- referenced inside page.evaluate() callbacks (browser context) */
 import logger from '../../utils/logger.js';
 import { settings } from '../../config/settings.js';
 

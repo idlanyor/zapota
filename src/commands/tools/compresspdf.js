@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '../../wa/helpers.js';
+import { downloadMediaBuffer } from '../../wa/helpers.js';
 import ILovePDfSdk from 'ilovepdf-sdk';
 import fs from 'fs';
 import { makeResultPath } from '../../utils/resultPath.js';
@@ -39,9 +39,7 @@ export default {
         const tempOut = makeResultPath(getRandom('.pdf'));
         try {
             await m.react('⏳');
-            const stream = await downloadContentFromMessage(msg, 'document', sock);
-            let buffer = Buffer.from([]);
-            for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+            const buffer = await downloadMediaBuffer(msg, 'document', sock);
             fs.writeFileSync(tempIn, buffer);
 
             const ilovepdf = new ILovePDfSdk(

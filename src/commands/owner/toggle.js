@@ -1,4 +1,4 @@
-import { settingsRepo } from '../../database/repos/settingsRepo.js';
+import { getBotSettings, saveBotSettings } from '../../services/settingsService.js';
 import { commands } from '../../lib/commands.js';
 import { settings } from '../../config/settings.js';
 
@@ -8,17 +8,10 @@ export default {
     description: 'Disable or Enable a command',
     category: 'Owner',
     execute: async (sock, m, args, text) => {
-        const sender = m.sender;
-        const isOwner =
-            sender === settings.ownerNumber ||
-            sender === settings.ownerLid ||
-            sender.split(':')[0] === settings.ownerNumber.split('@')[0];
-        if (!isOwner) return;
-
+        // Owner-only via the Owner category guard (also covers owners added in DB settings).
         const commandStr = m.body.slice(settings.prefix.length).trim().split(' ')[0].toLowerCase();
 
-        let botSettings = await settingsRepo.get();
-        if (!botSettings) botSettings = await settingsRepo.get();
+        const botSettings = await getBotSettings();
 
         if (commandStr === 'listdisable') {
             if (botSettings.disabledCommands.length === 0)
@@ -43,7 +36,7 @@ export default {
                 return m.reply(`Command *${cmd.name}* is already disabled.`);
             }
             botSettings.disabledCommands.push(cmd.name);
-            await settingsRepo.save(botSettings);
+            await saveBotSettings(botSettings);
             await m.reply(`Successfully disabled command: *${cmd.name}*`);
         } else if (commandStr === 'enable') {
             if (!botSettings.disabledCommands.includes(cmd.name)) {
@@ -52,7 +45,7 @@ export default {
             botSettings.disabledCommands = botSettings.disabledCommands.filter(
                 (c) => c !== cmd.name
             );
-            await settingsRepo.save(botSettings);
+            await saveBotSettings(botSettings);
             await m.reply(`Successfully enabled command: *${cmd.name}*`);
         }
     },

@@ -1,10 +1,7 @@
+import { chatCompletion } from '../../services/deepseek.js';
 import { sessionManager } from '../../utils/session.js';
-import axios from 'axios';
 import { awardMinigameWin } from '../../services/rpgService.js';
 import { env } from '../../config/env.js';
-
-const DS_BASE_URL = env.DS_BASE_URL || 'http://localhost:5050';
-const DS_API_KEY = env.DS_API_KEY || 'dseeker';
 
 // Skema 15 Nominal Hadiah Resmi Millionaire Indonesia
 export const PRIZE_LADDER = [
@@ -30,13 +27,17 @@ export const PRIZE_LADDER = [
  */
 async function generateQuestion(level = 1) {
     const ladder = PRIZE_LADDER[level - 1] || PRIZE_LADDER[0];
-    let difficultyDesc = 'sangat mudah, seputar pengetahuan umum dasar, fakta populer, atau budaya Indonesia';
+    let difficultyDesc =
+        'sangat mudah, seputar pengetahuan umum dasar, fakta populer, atau budaya Indonesia';
     if (level >= 5 && level <= 9) {
-        difficultyDesc = 'tingkat menengah, seputar geografi, sejarah Indonesia/dunia, biologi, atau sains umum';
+        difficultyDesc =
+            'tingkat menengah, seputar geografi, sejarah Indonesia/dunia, biologi, atau sains umum';
     } else if (level >= 10 && level <= 13) {
-        difficultyDesc = 'sulit, fakta mendalam, sejarah spesifik, ilmu pengetahuan lanjut, atau literatur';
+        difficultyDesc =
+            'sulit, fakta mendalam, sejarah spesifik, ilmu pengetahuan lanjut, atau literatur';
     } else if (level >= 14) {
-        difficultyDesc = 'sangat sulit / level 1 Miliar, pertanyaan prestisius dengan fakta langka tingkat tinggi';
+        difficultyDesc =
+            'sangat sulit / level 1 Miliar, pertanyaan prestisius dengan fakta langka tingkat tinggi';
     }
 
     const prompt = `Anda adalah host resmi kuis "Who Wants to Be a Millionaire" (Siapa Berani Jadi Miliarder) versi Indonesia.
@@ -60,24 +61,20 @@ Aturan penting:
   "pembahasan": "penjelasan singkat"
 }`;
 
-    const res = await axios.post(
-        `${DS_BASE_URL}/v1/chat/completions`,
+    const res = await chatCompletion(
         {
             model: 'deepseek-chat',
             messages: [{ role: 'user', content: prompt }],
             temperature: 0.7,
         },
-        {
-            headers: {
-                Authorization: `Bearer ${DS_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            timeout: 30000,
-        }
+        { timeout: 30000 }
     );
 
     let content = res.data?.choices?.[0]?.message?.content || '{}';
-    content = content.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    content = content
+        .replace(/^```json\s*/i, '')
+        .replace(/```\s*$/i, '')
+        .trim();
 
     const parsed = JSON.parse(content);
     return {
@@ -115,7 +112,8 @@ function renderQuestionMessage(sessionData) {
         }
     }
 
-    const safeMilestone = sessionData.level > 10 ? 'Rp 32.000.000' : sessionData.level > 5 ? 'Rp 1.000.000' : 'Rp 0';
+    const safeMilestone =
+        sessionData.level > 10 ? 'Rp 32.000.000' : sessionData.level > 5 ? 'Rp 1.000.000' : 'Rp 0';
 
     return (
         `💰 *WHO WANTS TO BE A MILLIONAIRE* 💰\n` +
@@ -144,13 +142,17 @@ export default {
     execute: async (sock, m, args, text) => {
         const existingSession = sessionManager.get(m.chat);
         if (existingSession) {
-            return m.reply('Masih ada game yang sedang berlangsung di chat ini. Selesaikan dulu atau ketik *.nyerah*!');
+            return m.reply(
+                'Masih ada game yang sedang berlangsung di chat ini. Selesaikan dulu atau ketik *.nyerah*!'
+            );
         }
 
         // Lock session awal
         sessionManager.create(m.chat, { commandName: 'millionaire', isStarting: true });
 
-        await m.reply('🎙️ *Tantangan dimulai!* Mempersiapkan kursi panas dan pertanyaan Level 1 untukmu...');
+        await m.reply(
+            '🎙️ *Tantangan dimulai!* Mempersiapkan kursi panas dan pertanyaan Level 1 untukmu...'
+        );
 
         try {
             const firstQuestion = await generateQuestion(1);
@@ -162,7 +164,7 @@ export default {
                 currentQuestion: firstQuestion,
                 hiddenOptions: [],
                 lifelines: {
-                    '5050': true,
+                    5050: true,
                     call: true,
                     poll: true,
                 },
@@ -176,7 +178,9 @@ export default {
         } catch (err) {
             sessionManager.delete(m.chat);
             console.error('Error starting millionaire:', err.message);
-            m.reply('❌ Terjadi gangguan saat menyiapkan pertanyaan kuis Millionaire. Silakan coba sesaat lagi.');
+            m.reply(
+                '❌ Terjadi gangguan saat menyiapkan pertanyaan kuis Millionaire. Silakan coba sesaat lagi.'
+            );
         }
     },
 
@@ -186,10 +190,17 @@ export default {
         // Hanya pemain yang memulai kuis yang bisa menjawab
         if (m.sender !== session.data.player) {
             // Jika orang lain mencoba jawab
-            if (['a', 'b', 'c', 'd', '5050', 'call', 'poll', 'stop'].includes(m.body.toLowerCase().trim())) {
-                return m.reply(`⚠️ Saat ini giliran @${session.data.player.split('@')[0]} di kursi panas!`, {
-                    mentions: [session.data.player],
-                });
+            if (
+                ['a', 'b', 'c', 'd', '5050', 'call', 'poll', 'stop'].includes(
+                    m.body.toLowerCase().trim()
+                )
+            ) {
+                return m.reply(
+                    `⚠️ Saat ini giliran @${session.data.player.split('@')[0]} di kursi panas!`,
+                    {
+                        mentions: [session.data.player],
+                    }
+                );
             }
             return;
         }
@@ -247,8 +258,8 @@ export default {
             const updatedMsg = renderQuestionMessage(session.data);
             return m.reply(
                 `✂️ *BANTUAN 50:50 DIAKTIFKAN!*\n` +
-                `Komputer telah mengeliminasi 2 opsi salah (${session.data.hiddenOptions.join(' & ')}).\n\n` +
-                updatedMsg,
+                    `Komputer telah mengeliminasi 2 opsi salah (${session.data.hiddenOptions.join(' & ')}).\n\n` +
+                    updatedMsg,
                 { mentions: [m.sender] }
             );
         }
@@ -317,12 +328,16 @@ export default {
         // 5. VALIDASI JAWABAN (A, B, C, D)
         const choice = input.toUpperCase();
         if (!['A', 'B', 'C', 'D'].includes(choice)) {
-            return m.reply('⚠️ Harap jawab dengan pilihan *A, B, C, atau D*, pilih bantuan (*5050* / *call* / *poll*), atau *stop*!');
+            return m.reply(
+                '⚠️ Harap jawab dengan pilihan *A, B, C, atau D*, pilih bantuan (*5050* / *call* / *poll*), atau *stop*!'
+            );
         }
 
         // Cek jika memilih opsi yang sudah dieliminasi 50:50
         if (session.data.hiddenOptions && session.data.hiddenOptions.includes(choice)) {
-            return m.reply(`⚠️ Opsi *${choice}* sudah dieliminasi oleh 50:50! Pilih opsi yang tersisa.`);
+            return m.reply(
+                `⚠️ Opsi *${choice}* sudah dieliminasi oleh 50:50! Pilih opsi yang tersisa.`
+            );
         }
 
         const isCorrect = choice === currentQ.jawaban_benar;
@@ -354,9 +369,9 @@ export default {
             // Naik ke level berikutnya
             await m.reply(
                 `🎉 *JAWABAN BENAR!* Opsi *${choice}* tepat sekali!\n` +
-                `Kamu mengamankan pertanyaan Level ${currentLevel} (*${currentPrize.prize}*).\n` +
-                `_${currentQ.pembahasan}_\n\n` +
-                `⏳ Menyiapkan pertanyaan Level ${currentLevel + 1}...`
+                    `Kamu mengamankan pertanyaan Level ${currentLevel} (*${currentPrize.prize}*).\n` +
+                    `_${currentQ.pembahasan}_\n\n` +
+                    `⏳ Menyiapkan pertanyaan Level ${currentLevel + 1}...`
             );
 
             try {
@@ -372,7 +387,9 @@ export default {
             } catch (err) {
                 sessionManager.delete(m.chat);
                 console.error('Error next question:', err.message);
-                return m.reply('❌ Terjadi gangguan saat mengambil pertanyaan berikutnya. Game dihentikan.');
+                return m.reply(
+                    '❌ Terjadi gangguan saat mengambil pertanyaan berikutnya. Game dihentikan.'
+                );
             }
         } else {
             // JAWABAN SALAH!

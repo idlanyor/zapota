@@ -2,6 +2,9 @@ import { getKnex } from '../knexInstance.js';
 
 const columnCache = new Map();
 
+/** Values of delta columns as last read from / written to the DB. */
+const LOADED = Symbol('loadedDeltaValues');
+
 /**
  * Small table repository over Knex. Records are plain objects (decoded by
  * `codec`); filters are plain equality objects (`{ jid, isPaid: false }`).
@@ -14,6 +17,10 @@ const columnCache = new Map();
  * @param {boolean} [opts.timestamps]   maintain createdAt/updatedAt (epoch ms)
  * @param {() => object} [opts.createDefaults]  values for new rows not covered by DB defaults
  * @param {string} [opts.key]  column `save()` uses to locate the row (default `id`)
+ * @param {string[]} [opts.deltaColumns]  numeric columns that `save()` persists as
+ *   `col = col + (current - loaded)` instead of overwriting, so concurrent
+ *   read-modify-save code (e.g. two commands changing a balance) cannot lose
+ *   each other's updates
  */
 export const createRepo = ({
     table,
@@ -21,9 +28,21 @@ export const createRepo = ({
     timestamps = false,
     createDefaults = () => ({}),
     key = 'id',
+    deltaColumns = [],
 }) => {
     const db = (k = getKnex()) => k(table);
-    const decode = (row) => codec.fromRow(row);
+    const remember = (record) => {
+        if (record && deltaColumns.length) {
+            Object.defineProperty(record, LOADED, {
+                value: Object.fromEntries(deltaColumns.map((c) => [c, record[c]])),
+                enumerable: false,
+                configurable: true,
+                writable: true,
+            });
+        }
+        return record;
+    };
+    const decode = (row) => remember(codec.fromRow(row));
     const encodeFilter = (filter = {}) => codec.toRow(filter);
     const stamp = (data, isCreate) => {
         if (!timestamps) return data;
@@ -101,15 +120,34 @@ export const createRepo = ({
                 throw new Error(`${table}.save(): record has no ${key}`);
             }
             const cols = await columns();
+            const loaded = record[LOADED];
             const patch = {};
+            const deltas = [];
             for (const c of cols) {
                 if (c === 'id' || c === 'createdAt' || c === key) continue;
-                if (record[c] !== undefined) patch[c] = record[c];
+                if (record[c] === undefined) continue;
+                if (loaded && deltaColumns.includes(c)) {
+                    const delta = Number(record[c]) - Number(loaded[c] ?? 0);
+                    if (delta) deltas.push([c, delta]);
+                    continue;
+                }
+                patch[c] = record[c];
             }
-            await db()
-                .where({ [key]: record[key] })
-                .update(codec.toRow(stamp(patch, false)));
-            return record;
+            const row = codec.toRow(stamp(patch, false));
+            for (const [c, delta] of deltas) row[c] = getKnex().raw('?? + ?', [c, delta]);
+            if (Object.keys(row).length) {
+                await db()
+                    .where({ [key]: record[key] })
+                    .update(row);
+            }
+            if (deltas.length) {
+                // Reflect the real stored values (other writers may have changed them).
+                const fresh = await db()
+                    .where({ [key]: record[key] })
+                    .first(deltas.map(([c]) => c));
+                if (fresh) Object.assign(record, fresh);
+            }
+            return remember(record);
         },
 
         /** Delete rows matching `filter`; returns the number removed. */

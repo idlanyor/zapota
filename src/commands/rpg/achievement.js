@@ -2,9 +2,9 @@ import { getOrCreatePlayer } from '../../services/rpgService.js';
 import {
     ACHIEVEMENTS,
     getOrCreateRpgProgress,
+    saveProgress,
     syncAchievements,
 } from '../../services/rpgProgressService.js';
-import { rpgProgressRepo } from '../../database/repos/rpgRepos.js';
 
 export default {
     name: 'achievement',
@@ -26,7 +26,7 @@ export default {
 
             if (cmd === 'gelar' && ['lepas', 'hapus', 'none'].includes(input)) {
                 progress.equippedTitle = '';
-                await rpgProgressRepo.save(progress);
+                await saveProgress(progress);
                 return m.reply('✅ Gelar berhasil dilepas.');
             }
 
@@ -41,7 +41,7 @@ export default {
                     return m.reply(`🔒 Achievement *${achievement.name}* belum terbuka.`);
                 }
                 progress.equippedTitle = achievement.title;
-                await rpgProgressRepo.save(progress);
+                await saveProgress(progress);
                 return m.reply(`🏷️ Gelar *${achievement.title}* berhasil dipasang di profilmu.`);
             }
 

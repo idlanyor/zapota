@@ -1,5 +1,4 @@
-import { settingsRepo } from '../../database/repos/settingsRepo.js';
-import { clearSettingsCache } from '../../handlers/messageHandler.js';
+import { getBotSettings, saveBotSettings } from '../../services/settingsService.js';
 import { resetRequiredGroupCache } from '../../middlewares/auth.js';
 
 export default {
@@ -19,19 +18,17 @@ Gunakan:
 - *.aisetting check* : Cek status`);
         }
 
-        let botSettings = await settingsRepo.get();
+        let botSettings = await getBotSettings();
 
         if (subcommand === 'on') {
             botSettings.autoAiPrivate = true;
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
             return m.reply(' Auto-AI untuk Private Chat diaktifkan.');
         }
 
         if (subcommand === 'off') {
             botSettings.autoAiPrivate = false;
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
             return m.reply(' Auto-AI untuk Private Chat dimatikan.');
         }
 
@@ -40,8 +37,7 @@ Gunakan:
             if (!persona) return m.reply('Harap masukkan teks persona.');
 
             botSettings.privateAiPersona = persona;
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
             return m.reply(` Persona PC berhasil diubah menjadi:
 "${persona}"`);
         }
@@ -60,15 +56,13 @@ Persona: ${botSettings.privateAiPersona}`);
             const toggle = args[1]?.toLowerCase();
             if (toggle === 'on') {
                 botSettings.smartMode = true;
-                await settingsRepo.save(botSettings);
-                clearSettingsCache();
+                await saveBotSettings(botSettings);
                 return m.reply(
                     '🧠 Smart Mode diaktifkan.\nBot hanya akan membalas jika kamu AFK (tidak aktif mengirim pesan selama 2 menit).'
                 );
             } else if (toggle === 'off') {
                 botSettings.smartMode = false;
-                await settingsRepo.save(botSettings);
-                clearSettingsCache();
+                await saveBotSettings(botSettings);
                 return m.reply(
                     '🤖 Smart Mode dimatikan.\nBot akan selalu membalas chat (Always On).'
                 );
@@ -80,13 +74,11 @@ Persona: ${botSettings.privateAiPersona}`);
             const toggle = args[1]?.toLowerCase();
             if (toggle === 'on') {
                 botSettings.mustJoinGroup = true;
-                await settingsRepo.save(botSettings);
-                clearSettingsCache();
+                await saveBotSettings(botSettings);
                 return m.reply('✅ Syarat bergabung grup diaktifkan.');
             } else if (toggle === 'off') {
                 botSettings.mustJoinGroup = false;
-                await settingsRepo.save(botSettings);
-                clearSettingsCache();
+                await saveBotSettings(botSettings);
                 return m.reply('🚫 Syarat bergabung grup dimatikan.');
             }
             return m.reply('Gunakan: .aisetting mustjoin on/off');
@@ -98,8 +90,7 @@ Persona: ${botSettings.privateAiPersona}`);
                 return m.reply('Harap masukkan link grup yang valid.');
             botSettings.groupInviteLink = link;
             resetRequiredGroupCache();
-            await settingsRepo.save(botSettings);
-            clearSettingsCache();
+            await saveBotSettings(botSettings);
             return m.reply(`✅ Link grup berhasil diubah ke:\n${link}`);
         }
 

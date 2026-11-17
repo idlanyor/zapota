@@ -448,3 +448,23 @@ describe('group commands declare their guards', () => {
         expect(cmd.guards).toEqual(guards);
     });
 });
+
+describe('messageHandler: disabled commands', () => {
+    test('a disabled command is refused for non-owners (also via alias) but runs for the owner', async () => {
+        flow.getCachedSettings.mockResolvedValue({
+            mode: 'public',
+            owners: [],
+            disabledCommands: ['ping'],
+        });
+        const cmd = addCommand({ name: 'ping', aliases: ['p'] });
+
+        const sock = makeSock();
+        await messageHandler(sock, raw({ text: '.ping' }));
+        await messageHandler(sock, raw({ text: '.p' }));
+        expect(cmd.execute).not.toHaveBeenCalled();
+        expect(sentTexts(sock).filter((t) => t.includes('dinonaktifkan'))).toHaveLength(2);
+
+        await messageHandler(makeSock(), raw({ text: '.ping', chat: OWNER }));
+        expect(cmd.execute).toHaveBeenCalledTimes(1);
+    });
+});

@@ -1,4 +1,4 @@
-import { userRepo } from '../../database/repos/userRepo.js';
+import { findUser } from '../../services/userService.js';
 
 export default {
     name: 'balance',
@@ -6,7 +6,7 @@ export default {
     description: 'Check your current balance',
     category: 'Utility',
     execute: async (sock, m, args, text) => {
-        const user = await userRepo.findOne({ jid: m.sender });
+        const user = await findUser(m.sender);
         const balance = user ? user.balance : 0;
 
         await m.reply(`Your current balance is: Rp ${balance.toLocaleString()}`);

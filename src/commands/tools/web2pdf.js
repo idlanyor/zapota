@@ -1,3 +1,4 @@
+/* global window, document -- referenced inside page.evaluate() callbacks (browser context) */
 import * as cheerio from 'cheerio';
 import fs from 'fs';
 import axios from 'axios';

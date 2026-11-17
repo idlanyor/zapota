@@ -22,6 +22,7 @@ const deny = (reply) => ({ reply });
 
 export const MESSAGES = Object.freeze({
     owner: ' Akses Ditolak. Perintah ini hanya untuk Owner.',
+    disabled: 'Perintah ini sedang dinonaktifkan oleh owner.',
     rpg: '🔒 *AKSES TERBATAS*\n\nFitur RPG saat ini sedang dalam masa uji coba tertutup dan hanya dapat digunakan di grup yang memiliki Owner bot sebagai Admin.',
     group: 'Perintah ini hanya bisa digunakan di dalam grup.',
     private: 'Perintah ini hanya bisa digunakan di chat pribadi.',
@@ -61,6 +62,15 @@ const botMode = async ({ botSettings, isOwner, m }) => {
     return null;
 };
 
+/** Commands switched off with `.toggle disable <cmd>` (owners can still use them). */
+const disabledCommand = async ({ botSettings, isOwner }, command) => {
+    if (isOwner) return null;
+    const disabled = Array.isArray(botSettings?.disabledCommands)
+        ? botSettings.disabledCommands
+        : [];
+    return disabled.includes(command.name) ? deny(MESSAGES.disabled) : null;
+};
+
 const ownerCategory = async (ctx, command) =>
     command.category === 'Owner' && !ctx.isOwner ? deny(MESSAGES.owner) : null;
 
@@ -71,7 +81,7 @@ const rpgInGroup = async (ctx, command) => {
         : deny(MESSAGES.rpg);
 };
 
-export const DEFAULT_GUARDS = [mutedGroup, botMode, ownerCategory, rpgInGroup];
+export const DEFAULT_GUARDS = [mutedGroup, botMode, disabledCommand, ownerCategory, rpgInGroup];
 
 /* ---------------------------- declarative --------------------------- */
 

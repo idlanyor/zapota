@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '../../wa/helpers.js';
+import { downloadMediaBuffer } from '../../wa/helpers.js';
 import ILovePDfSdk from 'ilovepdf-sdk';
 import fs from 'fs';
 import { makeResultPath } from '../../utils/resultPath.js';
@@ -30,12 +30,8 @@ const ensureEntry = (id) => {
     return e;
 };
 
-const downloadDoc = async (msg) => {
-    const stream = await downloadContentFromMessage(msg, 'document', sock);
-    let buffer = Buffer.from([]);
-    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-    return buffer;
-};
+// `sock` must be passed in: it only exists inside execute().
+const downloadDoc = (msg, sock) => downloadMediaBuffer(msg, 'document', sock);
 
 const formatList = (files) => files.map((f, i) => `➛ ${i + 1}. ${f.name}`).join('\n');
 
@@ -126,7 +122,7 @@ export default {
             }
             try {
                 await m.react('⏳');
-                const buffer = await downloadDoc(msg);
+                const buffer = await downloadDoc(msg, sock);
                 const name = (msg?.fileName || `file${entry.files.length + 1}.pdf`).replace(
                     /\s+/g,
                     '_'

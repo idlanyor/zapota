@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '../../wa/helpers.js';
+import { downloadMediaBuffer } from '../../wa/helpers.js';
 import path from 'path';
 
 export default {
@@ -22,9 +22,7 @@ export default {
 
         try {
             await m.react('⏳');
-            const stream = await downloadContentFromMessage(msg, 'document', sock);
-            let buffer = Buffer.from([]);
-            for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+            const buffer = await downloadMediaBuffer(msg, 'document', sock);
 
             await sock.sendMessage(
                 m.chat,

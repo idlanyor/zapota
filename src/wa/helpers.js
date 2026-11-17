@@ -28,16 +28,16 @@ export const getContentType = (content) => {
     if (content && typeof content === 'object') {
         const keys = Object.keys(content);
         return keys.find(
-            (k) => (k === 'conversation' || k.includes('Message')) && k !== 'senderKeyDistributionMessage'
+            (k) =>
+                (k === 'conversation' || k.includes('Message')) &&
+                k !== 'senderKeyDistributionMessage'
         );
     }
 };
 
 let downloadBaileysContentPromise;
 const getDownloadBaileysContent = async () => {
-    downloadBaileysContentPromise ??= import('baileys').then(
-        (m) => m.downloadContentFromMessage
-    );
+    downloadBaileysContentPromise ??= import('baileys').then((m) => m.downloadContentFromMessage);
     return downloadBaileysContentPromise;
 };
 
@@ -54,4 +54,17 @@ export const downloadContentFromMessage = async (message, type, sourceOrOptions,
         return source.message.download(content, downloadOptions);
     }
     return downloadZapoMedia(content, downloadOptions);
+};
+
+/**
+ * Download a message's media into a single Buffer.
+ * @param {object} msg     message content (e.g. m.msg or m.quoted)
+ * @param {string} type    'image' | 'video' | 'audio' | 'document' | 'sticker'
+ * @param {object} sock    transport client
+ */
+export const downloadMediaBuffer = async (msg, type, sock) => {
+    const stream = await downloadContentFromMessage(msg, type, sock);
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    return Buffer.concat(chunks);
 };
