@@ -5,14 +5,15 @@ import url from 'url';
 import logger from '\.\./utils/logger\.js';
 import * as financeService from './financeService.js';
 import { jadibotService } from './jadibotService.js';
-import User from '../database/models/User.js';
-import Settings from '../database/models/Settings.js';
+import { userRepo } from '../database/repos/userRepo.js';
+import { settingsRepo } from '../database/repos/settingsRepo.js';
 import { settings } from '../config/settings.js';
 import * as cloudflare from './cloudflare.js';
 import { getCachedSettings } from '../handlers/messageFlow.js';
 import { decodeJid } from '\.\./utils/serialize\.js';
 import { coreRequest } from './kanataCore.js';
 import * as qrisService from './qrisService.js';
+import { env } from '../config/env.js';
 
 const DEFAULT_PORT = 8787;
 const MAX_BODY_BYTES = 1 * 1024 * 1024; // Increased to 1MB for image/audio data
@@ -139,10 +140,10 @@ const checkRateLimit = (key) => {
 };
 
 export const startWebhookApi = ({ getSocket }) => {
-    const port = Number(process.env.BOT_WEBHOOK_PORT || DEFAULT_PORT);
-    const host = process.env.BOT_WEBHOOK_HOST || '127.0.0.1';
-    const token = process.env.BOT_WEBHOOK_TOKEN;
-    const allowList = (process.env.BOT_WEBHOOK_ALLOWLIST || '')
+    const port = Number(env.BOT_WEBHOOK_PORT || DEFAULT_PORT);
+    const host = env.BOT_WEBHOOK_HOST || '127.0.0.1';
+    const token = env.BOT_WEBHOOK_TOKEN;
+    const allowList = (env.BOT_WEBHOOK_ALLOWLIST || '')
         .split(',')
         .map((v) => v.trim())
         .filter(Boolean);
@@ -347,7 +348,7 @@ export const startWebhookApi = ({ getSocket }) => {
                     });
                 }
                 const d = core.data;
-                const user = await User.findOne({ jid: d.userId });
+                const user = await userRepo.findOne({ jid: d.userId });
                 return respond(res, 200, {
                     ok: true,
                     data: {
@@ -503,11 +504,7 @@ export const startWebhookApi = ({ getSocket }) => {
                         return respond(res, 400, { ok: false, error: 'No valid fields to update' });
                     }
 
-                    const updated = await Settings.findOneAndUpdate(
-                        { id: 'bot_settings' },
-                        updateData,
-                        { new: true, upsert: true }
-                    );
+                    const updated = await settingsRepo.update(updateData);
 
                     const { clearSettingsCache } = await import('../handlers/messageHandler.js');
                     clearSettingsCache();
@@ -747,10 +744,8 @@ export const startWebhookApi = ({ getSocket }) => {
                         error: 'userId and transactionId are required',
                     });
 
-                const transaction = await financeService.Transaction.findOne({
-                    _id: transactionId,
-                    userId,
-                });
+                // Finance data lives in Kanata Core.
+                const transaction = await financeService.getTransaction(userId, transactionId);
                 return respond(res, 200, { ok: !!transaction, data: transaction });
             }
 

@@ -1,17 +1,18 @@
+import { env } from '../config/env.js';
+import { pendingServerDeletes } from '../state/pendingServerDeletes.js';
+
 export const handleDeleteServerConfirmation = async (m) => {
-    const confirm = global.confirmDelete.get(m.sender);
+    if (!pendingServerDeletes.has(m.sender)) return false;
     const body = m.body?.toLowerCase();
 
     if (body === 'y' || body === 'ya') {
-        const { pteroId, force, timeout } = confirm;
-        clearTimeout(timeout);
-        global.confirmDelete.delete(m.sender);
+        const { pteroId, force } = pendingServerDeletes.take(m.sender);
 
         await m.react('⏳');
 
         try {
-            const PTERO_URL = process.env.PTERO_URL;
-            const PTERO_API_KEY = process.env.PTERO_API_KEY;
+            const PTERO_URL = env.PTERO_URL;
+            const PTERO_API_KEY = env.PTERO_API_KEY;
             const axios = (await import('axios')).default;
 
             const ptero = axios.create({
@@ -29,11 +30,11 @@ export const handleDeleteServerConfirmation = async (m) => {
                 if (e.response?.status !== 404) throw e;
             }
 
-            const Server = (await import('../database/models/Server.js')).default;
-            const deletedDb = await Server.deleteOne({ pteroId });
+            const { serverRepo } = await import('../database/repos/serverRepo.js');
+            const deletedDb = await serverRepo.remove({ pteroId });
 
             await m.reply(
-                `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb.deletedCount > 0 ? 'Terhapus' : 'Tidak di DB'}`
+                `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb > 0 ? 'Terhapus' : 'Tidak di DB'}`
             );
             await m.react('✅');
         } catch (err) {
@@ -44,9 +45,7 @@ export const handleDeleteServerConfirmation = async (m) => {
     }
 
     if (body) {
-        const { timeout } = confirm;
-        clearTimeout(timeout);
-        global.confirmDelete.delete(m.sender);
+        pendingServerDeletes.take(m.sender);
         await m.reply('❌ Penghapusan dibatalkan.');
         return true;
     }

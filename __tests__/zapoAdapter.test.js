@@ -106,7 +106,12 @@ describe('Zapo Baileys facade', () => {
 
         const [jid, content, options] = zapo.message.send.mock.calls[0];
         expect(jid).toBe('chat@s.whatsapp.net');
-        expect(content).toEqual({ type: 'poll', name: 'Pick', options: ['A', 'B'], selectableCount: 1 });
+        expect(content).toEqual({
+            type: 'poll',
+            name: 'Pick',
+            options: ['A', 'B'],
+            selectableCount: 1,
+        });
         expect(options.messageSecret).toBeInstanceOf(Buffer);
         expect(options.messageSecret).toHaveLength(32);
         expect(result.message.messageContextInfo.messageSecret).toBe(options.messageSecret);
@@ -337,5 +342,54 @@ describe('Zapo Baileys facade', () => {
             __listMessageCompatAttached: true,
             __groupMetadataPatchAttached: true,
         });
+    });
+});
+
+describe('requestPairingCodeWhenNeeded', () => {
+    const makeZapo = ({ registered = false, request } = {}) => {
+        const zapo = new EventEmitter();
+        zapo.getState = () => ({ registered });
+        zapo.auth = { requestPairingCode: request || jest.fn(async () => 'ABCD1234') };
+        return zapo;
+    };
+    const flush = () => new Promise((r) => setImmediate(r));
+
+    test('requests a code once when pairing is required, even if QR events follow', async () => {
+        const { requestPairingCodeWhenNeeded } = await import('../src/wa/zapoAdapter.js');
+        const zapo = makeZapo();
+        requestPairingCodeWhenNeeded(zapo, '628000000001');
+        zapo.emit('auth_pairing_required');
+        zapo.emit('auth_qr', { qr: 'x' });
+        zapo.emit('auth_qr', { qr: 'y' });
+        await flush();
+        expect(zapo.auth.requestPairingCode).toHaveBeenCalledTimes(1);
+        expect(zapo.auth.requestPairingCode).toHaveBeenCalledWith('628000000001');
+    });
+
+    test('does nothing for an already registered session', async () => {
+        const { requestPairingCodeWhenNeeded } = await import('../src/wa/zapoAdapter.js');
+        const zapo = makeZapo({ registered: true });
+        requestPairingCodeWhenNeeded(zapo, '628000000001');
+        zapo.emit('auth_pairing_required');
+        await flush();
+        expect(zapo.auth.requestPairingCode).not.toHaveBeenCalled();
+    });
+
+    test('retries on the next event after a failed request', async () => {
+        const { requestPairingCodeWhenNeeded } = await import('../src/wa/zapoAdapter.js');
+        const request = jest
+            .fn()
+            .mockRejectedValueOnce(new Error('not ready'))
+            .mockResolvedValue('ABCD1234');
+        const zapo = makeZapo({ request });
+        const errors = [];
+        zapo.on('auth_pairing_error', (e) => errors.push(e.message));
+        requestPairingCodeWhenNeeded(zapo, '628000000001');
+        zapo.emit('auth_qr', { qr: 'x' });
+        await flush();
+        zapo.emit('auth_qr', { qr: 'y' });
+        await flush();
+        expect(request).toHaveBeenCalledTimes(2);
+        expect(errors).toEqual(['not ready']);
     });
 });

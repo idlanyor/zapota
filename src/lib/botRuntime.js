@@ -3,12 +3,14 @@ import cron from 'node-cron';
 import { messageHandler, clearSettingsCache } from '../handlers/messageHandler.js';
 import { groupParticipantsUpdate, handleMessagesUpdate } from '../handlers/groupHandler.js';
 import logger from '../utils/logger.js';
-import Server from '../database/models/Server.js';
-import Group from '../database/models/Group.js';
+import { settings } from '../config/settings.js';
+import { serverRepo } from '../database/repos/serverRepo.js';
+import { groupRepo } from '../database/repos/groupRepo.js';
 import { botSocket } from './socket.js';
 import { cleanupCaches } from '../handlers/messageFlow.js';
-import Poll from '../database/models/Poll.js';
+import { pollRepo } from '../database/repos/pollRepo.js';
 
+import { env } from '../config/env.js';
 const safeAck = (ack, payload) => {
     if (typeof ack === 'function') ack(payload);
 };
@@ -23,11 +25,7 @@ const runGroupSync = async (sock, data, ack) => {
         const targetJid = data.jid;
         if (targetJid) {
             const meta = await sock.groupMetadata(targetJid);
-            await Group.findOneAndUpdate(
-                { jid: targetJid },
-                { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict },
-                { upsert: true }
-            );
+            await groupRepo.upsert({ jid: targetJid }, { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict });
             botSocket.emitLog('Synced: ' + meta.subject, 'success');
             safeAck(ack, { ok: true });
             return;
@@ -38,17 +36,13 @@ const runGroupSync = async (sock, data, ack) => {
         let count = 0;
 
         for (const jid in groups) {
-            const dbGroup = await Group.findOne({ jid });
+            const dbGroup = await groupRepo.findOne({ jid });
             if (dbGroup && dbGroup.name) continue;
 
             await delay(5000);
             try {
                 const meta = await sock.groupMetadata(jid);
-                await Group.findOneAndUpdate(
-                    { jid },
-                    { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict },
-                    { upsert: true }
-                );
+                await groupRepo.upsert({ jid }, { name: meta.subject, announce: !!meta.announce, restrict: !!meta.restrict });
                 count++;
                 logger.info('Resolved: ' + meta.subject);
             } catch (e) {
@@ -113,9 +107,23 @@ export const registerSocketEvents = ({
     onOpen,
 }) => {
     sock.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect, qr } = update;
+        const { connection, lastDisconnect, qr, pairingCode, pairingError } = update;
 
-        if (qr) {
+        if (pairingError) logger.error(`Failed to request pairing code: ${pairingError.message}`);
+
+        if (pairingCode) {
+            const formatted = pairingCode.match(/.{1,4}/g).join('-');
+            logger.event({
+                scope: 'WA',
+                action: 'Pairing code',
+                details: `${formatted} → WhatsApp > Perangkat tertaut > Tautkan dengan nomor telepon`,
+                level: 'success',
+            });
+            logger.info(`PAIRING CODE: ${formatted}`);
+        }
+
+        // zapo + BOT_PHONE_NUMBER logs in by pairing code; Baileys still uses QR.
+        if (qr && !(settings.pairingNumber && settings.transport === 'zapo')) {
             import('qrcode-terminal').then(({ default: qrcode }) => {
                 qrcode.generate(qr, { small: true });
             });
@@ -202,17 +210,16 @@ const scheduleAutoSuspend = (sock) => {
         async () => {
             try {
                 const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                const expiredServers = await Server.find({
-                    expiredAt: { $lt: sevenDaysAgo },
+                const expiredServers = await serverRepo.findExpiredBefore(sevenDaysAgo, {
                     status: 'active',
                 });
                 if (expiredServers.length === 0) return;
 
                 const { default: axios } = await import('axios');
                 const ptero = axios.create({
-                    baseURL: `${process.env.PTERO_URL}/api/application`,
+                    baseURL: `${env.PTERO_URL}/api/application`,
                     headers: {
-                        Authorization: `Bearer ${process.env.PTERO_API_KEY}`,
+                        Authorization: `Bearer ${env.PTERO_API_KEY}`,
                         'Content-Type': 'application/json',
                         Accept: 'Application/vnd.pterodactyl.v1+json',
                     },
@@ -222,7 +229,7 @@ const scheduleAutoSuspend = (sock) => {
                     try {
                         await ptero.post(`/servers/${srv.pteroId}/suspend`);
                         srv.status = 'suspended';
-                        await srv.save();
+                        await serverRepo.save(srv);
                         await sock.sendMessage(srv.userId, {
                             text: `*LAYANAN DI-SUSPEND*\n\nServer Anda *${srv.planName}* (ID: ${srv.identifier}) telah ditangguhkan karena melewati jatuh tempo lebih dari 7 hari.\nSilakan perpanjang untuk mengaktifkan kembali.`,
                         });
@@ -250,8 +257,7 @@ const scheduleExpiryReminder = (sock) => {
                 const startOf5Days = new Date(fiveDaysLater.setHours(0, 0, 0, 0));
                 const endOf5Days = new Date(fiveDaysLater.setHours(23, 59, 59, 999));
 
-                const expiringServers = await Server.find({
-                    expiredAt: { $gte: startOf5Days, $lte: endOf5Days },
+                const expiringServers = await serverRepo.findExpiringBetween(startOf5Days, endOf5Days, {
                     status: 'active',
                 });
 
@@ -279,11 +285,9 @@ const scheduleCacheCleanup = () => {
                 const { cleanupChatHistories } = await import('../lib/ai.js');
                 const chatCleaned = cleanupChatHistories();
                 const cacheCleaned = cleanupCaches();
-                // Shim DB tidak mendukung TTL index — poll >7 hari dihapus manual.
+                // Polls are only needed to decrypt votes; drop them after 7 days.
                 const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                const pollsRemoved = (
-                    await Poll.deleteMany({ createdAt: { $lt: weekAgo } })
-                ).deletedCount;
+                const pollsRemoved = await pollRepo.removeOlderThan(weekAgo);
 
                 if (chatCleaned > 0 || cacheCleaned > 0 || pollsRemoved > 0) {
                     logger.info(
@@ -298,11 +302,17 @@ const scheduleCacheCleanup = () => {
     );
 };
 
+let recurringTasksRegistered = false;
+
+/**
+ * Register cron jobs once per process. Pass a live socket (see
+ * lib/liveSocket.js) so jobs keep working after reconnects.
+ */
 export const registerRecurringTasks = (sock) => {
-    if (global.isBackupScheduled) return;
+    if (recurringTasksRegistered) return;
+    recurringTasksRegistered = true;
     scheduleBackup(sock);
     // scheduleAutoSuspend(sock); // Dimatikan sementara karena menyebabkan error 404
     scheduleExpiryReminder(sock);
-    scheduleCacheCleanup(); // Add cache cleanup
-    global.isBackupScheduled = true;
+    scheduleCacheCleanup();
 };

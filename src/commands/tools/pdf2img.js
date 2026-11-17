@@ -6,6 +6,7 @@ import { settings } from '../../config/settings.js';
 import AdmZip from 'adm-zip';
 import { makeResultPath } from '../../utils/resultPath.js';
 
+import { env } from '../../config/env.js';
 const getRandom = (ext) => {
     return `${Math.floor(Math.random() * 10000)}${ext}`;
 };
@@ -16,7 +17,7 @@ export default {
     description: 'Convert PDF to Image (JPG) via iLovePDF',
     category: 'Tools',
     execute: async (sock, m, args) => {
-        if (!process.env.ILOVEPDF_PUBLIC_KEY || !process.env.ILOVEPDF_SECRET_KEY) {
+        if (!env.ILOVEPDF_PUBLIC_KEY || !env.ILOVEPDF_SECRET_KEY) {
             return m.reply('iLovePDF API keys are not set in .env file.');
         }
 
@@ -46,10 +47,7 @@ export default {
             const tempPdfPath = makeResultPath(getRandom('.pdf'));
             fs.writeFileSync(tempPdfPath, buffer);
 
-            const ilovepdf = new ILovePDfSdk(
-                process.env.ILOVEPDF_PUBLIC_KEY,
-                process.env.ILOVEPDF_SECRET_KEY
-            );
+            const ilovepdf = new ILovePDfSdk(env.ILOVEPDF_PUBLIC_KEY, env.ILOVEPDF_SECRET_KEY);
             const task = await ilovepdf.createTask('pdfjpg');
 
             await task.addFile(tempPdfPath);

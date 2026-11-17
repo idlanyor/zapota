@@ -1,4 +1,4 @@
-import Voucher from '../../database/models/Voucher.js';
+import { voucherRepo } from '../../database/repos/voucherRepo.js';
 import crypto from 'crypto';
 
 export default {
@@ -14,7 +14,7 @@ export default {
 
         const code = 'VCR-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 
-        await Voucher.create({
+        await voucherRepo.create({
             code,
             value: amount,
             quota,

@@ -1,15 +1,16 @@
 import { listRules, listDnsRecords } from '../../services/cloudflare.js';
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 
+import { env } from '../../config/env.js';
 export default {
     name: 'cftest',
     aliases: ['cfcheck', 'cft'],
     description: 'Menguji konektivitas API Cloudflare',
     category: 'Cloudflare',
     execute: async (sock, m, args) => {
-        const botSettings = await Settings.findOne({ id: 'bot_settings' });
+        const botSettings = await settingsRepo.get();
 
-        if (!botSettings || (!botSettings.cfToken && !process.env.CLOUDFLARE_API_TOKEN)) {
+        if (!botSettings || (!botSettings.cfToken && !env.CLOUDFLARE_API_TOKEN)) {
             return m.reply(
                 '❌ Token Cloudflare belum dikonfigurasi. Gunakan `.cfset token <key>`.'
             );

@@ -1,9 +1,10 @@
 import crypto from 'crypto';
 
+import { env } from '../config/env.js';
 const ALGO = 'aes-256-gcm';
 
 const getKey = () => {
-    const secret = process.env.TOKEN_ENCRYPTION_KEY || process.env.ACCESS_KEY;
+    const secret = env.TOKEN_ENCRYPTION_KEY || env.ACCESS_KEY;
     if (!secret) {
         throw new Error('TOKEN_ENCRYPTION_KEY (or ACCESS_KEY) is not set in env');
     }

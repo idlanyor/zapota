@@ -1,6 +1,6 @@
 import { getZoneId, addDnsRecord } from '../../services/cloudflare.js';
 import { sessionManager } from '../../utils/session.js';
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 import { getCachedSettings } from '../../handlers/messageFlow.js';
 
 export default {

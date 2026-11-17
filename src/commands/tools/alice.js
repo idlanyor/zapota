@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { settings } from '../../config/settings.js';
 
+import { env } from '../../config/env.js';
 const ALICE_API_BASE = 'https://app.alice.ws/cli/v1';
 
 const getApiKey = () => {
     // You can set ALICE_API_KEY in your .env file
-    return process.env.ALICE_API_KEY || '';
+    return env.ALICE_API_KEY || '';
 };
 
 const aliceApi = axios.create({

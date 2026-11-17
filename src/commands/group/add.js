@@ -4,30 +4,13 @@ export default {
     name: 'add',
     description: 'Add a member to the group',
     category: 'Group',
+    guards: ['admin', 'botAdmin'],
     execute: async (sock, m, args, text) => {
-        if (!m.isGroup) return m.reply('This command can only be used in groups.');
-
         const groupMetadata = await sock.groupMetadata(m.chat);
         const participants = groupMetadata.participants;
 
         const botJid = jidNormalizedUser(sock.user.id);
         const botLid = sock.user.lid ? jidNormalizedUser(sock.user.lid) : null;
-
-        const userAdmin = participants.find(
-            (p) => jidNormalizedUser(p.id) === jidNormalizedUser(m.sender)
-        );
-        const botAdmin = participants.find((p) => {
-            const pid = jidNormalizedUser(p.id);
-            return pid === botJid || pid === botLid;
-        });
-
-        const isAdmin =
-            userAdmin && (userAdmin.admin === 'admin' || userAdmin.admin === 'superadmin');
-        const botIsAdmin =
-            botAdmin && (botAdmin.admin === 'admin' || botAdmin.admin === 'superadmin');
-
-        if (!isAdmin) return m.reply('This command is only for group admins.');
-        if (!botIsAdmin) return m.reply('I need to be an admin to add members.');
 
         const users = new Set();
         const participantSet = new Set(participants.map((p) => jidNormalizedUser(p.id)));

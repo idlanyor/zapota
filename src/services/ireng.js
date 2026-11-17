@@ -1,8 +1,9 @@
 import axios from 'axios';
-import User from '../database/models/User.js';
+import { userRepo } from '../database/repos/userRepo.js';
 import { encrypt, decrypt } from '../utils/crypto.js';
 
-const BASE_URL = process.env.IRENG_API_URL || 'https://irengcloud.net/api';
+import { env } from '../config/env.js';
+const BASE_URL = env.IRENG_API_URL || 'https://irengcloud.net/api';
 
 const client = (token) =>
     axios.create({
@@ -27,19 +28,15 @@ const unwrap = (error) => {
 };
 
 export const saveUserToken = async (jid, token) => {
-    await User.findOneAndUpdate(
-        { jid },
-        { irengToken: encrypt(token) },
-        { upsert: true, new: true }
-    );
+    await userRepo.upsert({ jid }, { irengToken: encrypt(token) });
 };
 
 export const clearUserToken = async (jid) => {
-    await User.findOneAndUpdate({ jid }, { irengToken: null });
+    await userRepo.updateOne({ jid }, { irengToken: null });
 };
 
 export const getUserToken = async (jid) => {
-    const user = await User.findOne({ jid });
+    const user = await userRepo.findOne({ jid });
     if (!user?.irengToken) return null;
     try {
         return decrypt(user.irengToken);

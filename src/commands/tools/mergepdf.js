@@ -3,6 +3,7 @@ import ILovePDfSdk from 'ilovepdf-sdk';
 import fs from 'fs';
 import { makeResultPath } from '../../utils/resultPath.js';
 
+import { env } from '../../config/env.js';
 const getRandom = (ext) => `${Math.floor(Math.random() * 10000)}${ext}`;
 const TTL_MS = 15 * 60 * 1000;
 const MAX_FILES = 10;
@@ -43,7 +44,7 @@ export default {
     description: 'Gabung beberapa PDF. Kirim/reply PDF dgn .mergepdf, lalu .mergepdf done',
     category: 'Tools',
     execute: async (sock, m, args) => {
-        if (!process.env.ILOVEPDF_PUBLIC_KEY || !process.env.ILOVEPDF_SECRET_KEY) {
+        if (!env.ILOVEPDF_PUBLIC_KEY || !env.ILOVEPDF_SECRET_KEY) {
             return m.reply('iLovePDF API keys belum diset di .env.');
         }
 
@@ -64,10 +65,7 @@ export default {
             await m.react('⏳');
             const tempFiles = [];
             try {
-                const ilovepdf = new ILovePDfSdk(
-                    process.env.ILOVEPDF_PUBLIC_KEY,
-                    process.env.ILOVEPDF_SECRET_KEY
-                );
+                const ilovepdf = new ILovePDfSdk(env.ILOVEPDF_PUBLIC_KEY, env.ILOVEPDF_SECRET_KEY);
                 const task = await ilovepdf.createTask('merge');
 
                 for (const f of entry.files) {

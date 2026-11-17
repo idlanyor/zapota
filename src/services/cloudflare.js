@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+import { env } from '../config/env.js';
 /** Lazily import getCachedSettings to avoid pulling handlers/messageFlow at boot. */
 const getCachedSettings = async () => {
     const { getCachedSettings: get } = await import('../handlers/messageFlow.js');
@@ -8,7 +9,7 @@ const getCachedSettings = async () => {
 
 const getHeaders = async () => {
     const settings = await getCachedSettings();
-    const token = settings.cfToken || process.env.CLOUDFLARE_API_TOKEN;
+    const token = settings.cfToken || env.CLOUDFLARE_API_TOKEN;
     return {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -17,7 +18,7 @@ const getHeaders = async () => {
 
 const getAccountId = async () => {
     const settings = await getCachedSettings();
-    return settings.cfAccountId || process.env.CLOUDFLARE_ACCOUNT_ID;
+    return settings.cfAccountId || env.CLOUDFLARE_ACCOUNT_ID;
 };
 
 export const listRules = async (mode = null, page = 1) => {

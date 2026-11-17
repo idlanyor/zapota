@@ -11,8 +11,17 @@ import {
     calculateMinigameReward,
     MINIGAME_REWARD_TIERS,
 } from '../src/services/rpgService.js';
+import { rpgPlayerRepo, rpgProgressRepo } from '../src/database/repos/rpgRepos.js';
 
 describe('RPG daily missions and achievements', () => {
+    let saveProgress;
+    let savePlayer;
+    beforeEach(() => {
+        saveProgress = jest.spyOn(rpgProgressRepo, 'save').mockImplementation(async (r) => r);
+        savePlayer = jest.spyOn(rpgPlayerRepo, 'save').mockImplementation(async (r) => r);
+    });
+    afterEach(() => jest.restoreAllMocks());
+
     test('uses the Jakarta calendar date for daily resets', () => {
         expect(getRpgDateKey(new Date('2026-08-24T17:30:00.000Z'))).toBe('2026-08-25');
     });
@@ -33,7 +42,6 @@ describe('RPG daily missions and achievements', () => {
             totalShop: 10,
             totalWins: 25,
             unlockedAchievements: [],
-            save: jest.fn().mockResolvedValue(undefined),
         };
         const player = { level: 5, reputasiWarga: 90, bintangKorupsi: 3 };
         const user = { balance: 1000000 };
@@ -44,7 +52,8 @@ describe('RPG daily missions and achievements', () => {
         expect(firstUnlocks).toHaveLength(Object.keys(ACHIEVEMENTS).length);
         expect(secondUnlocks).toEqual([]);
         expect(progress.unlockedAchievements).toHaveLength(Object.keys(ACHIEVEMENTS).length);
-        expect(progress.save).toHaveBeenCalledTimes(1);
+        expect(saveProgress).toHaveBeenCalledTimes(1);
+        expect(saveProgress).toHaveBeenCalledWith(progress);
     });
 
     test('recalculates the EXP requirement after every level gained', async () => {
@@ -56,7 +65,6 @@ describe('RPG daily missions and achievements', () => {
             energi: 100,
             maxEnergi: 100,
             kewarasan: 50,
-            save: jest.fn().mockResolvedValue(undefined),
         };
 
         const result = await addExp(player, 220);
@@ -65,7 +73,8 @@ describe('RPG daily missions and achievements', () => {
         expect(player.exp).toBe(10);
         expect(player.maxHp).toBe(120);
         expect(player.maxEnergi).toBe(120);
-        expect(player.save).toHaveBeenCalledTimes(1);
+        expect(savePlayer).toHaveBeenCalledTimes(1);
+        expect(savePlayer).toHaveBeenCalledWith(player);
     });
 
     test.each([

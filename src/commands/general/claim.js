@@ -1,6 +1,6 @@
-import Voucher from '../../database/models/Voucher.js';
-import User from '../../database/models/User.js';
-import Transaction from '../../database/models/Transaction.js';
+import { voucherRepo } from '../../database/repos/voucherRepo.js';
+import { userRepo } from '../../database/repos/userRepo.js';
+import { transactionRepo } from '../../database/repos/transactionRepo.js';
 
 export default {
     name: 'claim',
@@ -11,28 +11,28 @@ export default {
         const code = args[0]?.toUpperCase();
         if (!code) return m.reply('Please provide a voucher code.');
 
-        const voucher = await Voucher.findOne({ code });
-        if (!voucher) return m.reply('Voucher code is invalid.');
+        const REJECTED = {
+            invalid: 'Voucher code is invalid.',
+            exhausted: 'This voucher has reached its usage limit.',
+            'already-claimed': 'You have already claimed this voucher.',
+        };
 
-        if (voucher.quota <= 0) return m.reply('This voucher has reached its usage limit.');
-        if (voucher.usedBy.includes(m.sender))
-            return m.reply('You have already claimed this voucher.');
+        if (!(await voucherRepo.findByCode(code))) return m.reply(REJECTED.invalid);
 
         try {
-            // Update User Balance
-            let user = await User.findOne({ jid: m.sender });
-            if (!user) user = await User.create({ jid: m.sender });
+            if (!(await userRepo.findOne({ jid: m.sender }))) await userRepo.create({ jid: m.sender });
 
-            user.balance += voucher.value;
-            await user.save();
-
-            // Update Voucher
-            voucher.usedBy.push(m.sender);
-            voucher.quota -= 1;
-            await voucher.save();
+            // Quota check, usage record and balance credit happen atomically.
+            const result = await voucherRepo.redeem(code, m.sender);
+            if (!result.ok) {
+                if (REJECTED[result.reason]) return m.reply(REJECTED[result.reason]);
+                throw new Error(`voucher redeem failed: ${result.reason}`);
+            }
+            const voucher = { value: result.value };
+            const user = { balance: result.balance };
 
             // Record Transaction
-            await Transaction.create({
+            await transactionRepo.create({
                 userId: m.sender,
                 userName: m.pushName || 'User',
                 type: 'income',

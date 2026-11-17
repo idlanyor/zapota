@@ -1,7 +1,8 @@
 import { JOBS, addExp, getOrCreatePlayer } from '../../services/rpgService.js';
-import RpgInventory from '../../database/models/RpgInventory.js';
+import { rpgInventoryRepo, rpgPlayerRepo } from '../../database/repos/rpgRepos.js';
 import { sendRpgReply } from '../../lib/rpgVisuals.js';
 import { recordRpgActivity } from '../../services/rpgProgressService.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 
 export default {
     name: 'kerja',
@@ -86,7 +87,7 @@ export default {
                 }
 
                 if (matchedJob.reqItem) {
-                    const hasItem = await RpgInventory.findOne({
+                    const hasItem = await rpgInventoryRepo.findOne({
                         userId: sender,
                         itemId: matchedJob.reqItem,
                     });
@@ -122,7 +123,7 @@ export default {
                     player.reputasiAparat = Math.min(100, player.reputasiAparat + 15);
                     player.job = matchedJob.name;
                     const { leveledUp, newLevel } = await addExp(player, 35);
-                    await player.save();
+                    await rpgPlayerRepo.save(player);
 
                     let successLatsarmil =
                         `🎖️ *LULUS PELATIHAN SEMI-MILITER KOPDES MERAH PUTIH!* 🪖🇮🇩\n` +
@@ -142,7 +143,7 @@ export default {
                 }
 
                 player.job = matchedJob.name;
-                await player.save();
+                await rpgPlayerRepo.save(player);
 
                 return sendRpgReply(
                     sock,
@@ -177,12 +178,12 @@ export default {
                 }
 
                 user.balance -= suapCost;
-                await user.save();
+                await userRepo.save(user);
 
                 player.job = matchedJob.name;
                 player.bintangKorupsi = Math.min(5, (player.bintangKorupsi || 0) + 1);
                 player.reputasiAparat = Math.max(0, player.reputasiAparat - 10);
-                await player.save();
+                await rpgPlayerRepo.save(player);
 
                 return sendRpgReply(
                     sock,
@@ -220,7 +221,7 @@ export default {
             // D. Routing .resign
             if (cmd === 'resign' || (cmd === 'kerja' && args[0]?.toLowerCase() === 'resign')) {
                 player.job = 'Pengangguran';
-                await player.save();
+                await rpgPlayerRepo.save(player);
                 return m.reply(
                     '👋 Kamu telah mengundurkan diri dan resmi menjadi *Pengangguran*. Waktunya rebahan!'
                 );
@@ -283,7 +284,7 @@ export default {
             }
             // 8% Chance kena Begal / Klitih
             else if (eventRoll < 0.23) {
-                const helm = await RpgInventory.findOne({
+                const helm = await rpgInventoryRepo.findOne({
                     userId: sender,
                     itemId: 'helm_sni',
                     isEquipped: true,
@@ -305,10 +306,10 @@ export default {
                     Math.random() * (currentJobInfo.salaryMax - currentJobInfo.salaryMin + 1)
                 ) + currentJobInfo.salaryMin;
             user.balance = (user.balance || 0) + salary;
-            await user.save();
+            await userRepo.save(user);
 
             const { leveledUp, newLevel } = await addExp(player, currentJobInfo.expGain);
-            await player.save();
+            await rpgPlayerRepo.save(player);
             await recordRpgActivity(sender, 'work');
 
             let replyMsg =

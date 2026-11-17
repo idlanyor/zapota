@@ -15,6 +15,7 @@ import {
     validateCodeSnippet,
 } from '../services/selfManagementService.js';
 import logger from '../utils/logger.js';
+import { env } from '../config/env.js';
 
 const CHAT_HISTORY_TTL_MS = 30 * 60 * 1000;
 const MAX_CHAT_HISTORY_SIZE = 15;
@@ -23,8 +24,8 @@ const MAX_TOOL_ITERATIONS = 20;
 const chatHistories = new Map();
 
 const getApiConfig = () => {
-    const apiKey = process.env.AI_AGENT_API_KEY;
-    const baseURL = process.env.AI_AGENT_BASE_URL?.replace(/\/+$/, '');
+    const apiKey = env.AI_AGENT_API_KEY;
+    const baseURL = env.AI_AGENT_BASE_URL?.replace(/\/+$/, '');
 
     if (!apiKey) throw new Error('AI_AGENT_API_KEY belum diset.');
     if (!baseURL) throw new Error('AI_AGENT_BASE_URL belum diset.');
@@ -477,7 +478,7 @@ export const generateAIResponse = async ({
     for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
         const response = await createStreamingMessage(
             {
-                model: process.env.AI_AGENT_MODEL || 'Kanata',
+                model: env.AI_AGENT_MODEL || 'Kanata',
                 max_tokens: 4096,
                 system: buildSystemInstruction(customSystemInstruction, isOwner, m),
                 tools: buildTools(isOwner),
@@ -616,7 +617,7 @@ export const generateAIResponse = async ({
                 content: [{ type: 'text', text: 'Berdasarkan semua langkah pengecekan dan investigasi di atas, berikan kesimpulan temuan dan solusinya kepada Owner sekarang.' }],
             });
             const summaryRes = await createStreamingMessage({
-                model: process.env.AI_AGENT_MODEL || 'Kanata',
+                model: env.AI_AGENT_MODEL || 'Kanata',
                 max_tokens: 4096,
                 system: buildSystemInstruction(customSystemInstruction, isOwner, m),
                 messages,

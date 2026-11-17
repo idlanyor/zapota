@@ -1,6 +1,7 @@
-import RpgBill from '../../database/models/RpgBill.js';
+import { rpgBillRepo, rpgPlayerRepo } from '../../database/repos/rpgRepos.js';
 import { getOrCreatePlayer } from '../../services/rpgService.js';
 import { sendRpgReply } from '../../lib/rpgVisuals.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 
 export default {
     name: 'ngutang',
@@ -15,7 +16,7 @@ export default {
 
         try {
             const { user, player } = await getOrCreatePlayer(sender, m.pushName);
-            const bills = await RpgBill.find({ userId: sender, isPaid: false });
+            const bills = await rpgBillRepo.find({ userId: sender, isPaid: false });
 
             // Helper: Tampilkan Daftar Tagihan
             const showTagihanList = () => {
@@ -60,7 +61,7 @@ export default {
                 if (!isNaN(num) && num >= 1 && num <= bills.length) {
                     bill = bills[num - 1];
                 } else {
-                    bill = await RpgBill.findOne({
+                    bill = await rpgBillRepo.findOne({
                         userId: sender,
                         id: targetInput,
                         isPaid: false,
@@ -80,14 +81,14 @@ export default {
                 }
 
                 user.balance -= bill.amount;
-                await user.save();
+                await userRepo.save(user);
 
                 bill.isPaid = true;
-                await bill.save();
+                await rpgBillRepo.save(bill);
 
                 player.kewarasan = Math.min(100, player.kewarasan + 20);
                 player.reputasiWarga = Math.min(100, player.reputasiWarga + 10);
-                await player.save();
+                await rpgPlayerRepo.save(player);
 
                 return sendRpgReply(
                     sock,
@@ -144,7 +145,7 @@ export default {
             }
 
             // Batasi maksimal 3 tagihan aktif
-            const activeBillsCount = await RpgBill.countDocuments({
+            const activeBillsCount = await rpgBillRepo.count({
                 userId: sender,
                 isPaid: false,
             });
@@ -161,12 +162,12 @@ export default {
             const totalRepayment = amount + interest;
 
             user.balance = (user.balance || 0) + amount;
-            await user.save();
+            await userRepo.save(user);
 
             const dueDate = new Date();
             dueDate.setDate(dueDate.getDate() + 7);
 
-            const newBill = await RpgBill.create({
+            const newBill = await rpgBillRepo.create({
                 userId: sender,
                 billType: 'pinjol',
                 amount: totalRepayment,
@@ -175,7 +176,7 @@ export default {
             });
 
             player.kewarasan = Math.max(10, player.kewarasan - 10);
-            await player.save();
+            await rpgPlayerRepo.save(player);
 
             return sendRpgReply(
                 sock,

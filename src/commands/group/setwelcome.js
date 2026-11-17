@@ -1,4 +1,4 @@
-import Group from '../../database/models/Group.js';
+import { groupRepo } from '../../database/repos/groupRepo.js';
 import { clearSettingsCache } from '../../handlers/messageHandler.js';
 
 export default [
@@ -11,7 +11,7 @@ export default [
             if (!m.isGroup) return m.reply('Hanya di grup!');
             if (!text) return m.reply(`Ketik pesannya!\nPlaceholder: @user, @group, @desc`);
 
-            await Group.findOneAndUpdate({ jid: m.chat }, { welcomeMsg: text }, { upsert: true });
+            await groupRepo.upsert({ jid: m.chat }, { welcomeMsg: text });
             clearSettingsCache();
             m.reply(` Berhasil mengatur pesan welcome:\n\n${text}`);
         },
@@ -25,7 +25,7 @@ export default [
             if (!m.isGroup) return m.reply('Hanya di grup!');
             if (!text) return m.reply(`Ketik pesannya!\nPlaceholder: @user, @group`);
 
-            await Group.findOneAndUpdate({ jid: m.chat }, { leaveMsg: text }, { upsert: true });
+            await groupRepo.upsert({ jid: m.chat }, { leaveMsg: text });
             clearSettingsCache();
             m.reply(` Berhasil mengatur pesan leave:\n\n${text}`);
         },
@@ -40,20 +40,15 @@ export default [
             const input = (text || '').trim();
 
             if (!input) {
-                const g = await Group.findOne({ jid: m.chat });
-                const bg =
-                    g?.welcomeBg || 'https://i.ibb.co/4YBNyvP/images-76.jpg (default)';
+                const g = await groupRepo.findOne({ jid: m.chat });
+                const bg = g?.welcomeBg || 'https://i.ibb.co/4YBNyvP/images-76.jpg (default)';
                 return m.reply(
                     `Background welcome saat ini:\n${bg}\n\nKetik URL baru untuk mengganti, atau \`setwelcomebg reset\` untuk balik ke default.`
                 );
             }
 
             if (input.toLowerCase() === 'reset') {
-                await Group.findOneAndUpdate(
-                    { jid: m.chat },
-                    { $unset: { welcomeBg: '' } },
-                    { upsert: true }
-                );
+                await groupRepo.resetWelcomeBg(m.chat);
                 clearSettingsCache();
                 return m.reply('✅ Background welcome direset ke default.');
             }
@@ -62,7 +57,7 @@ export default [
                 return m.reply('⚠️ URL tidak valid! Pastikan diawali http:// atau https://');
             }
 
-            await Group.findOneAndUpdate({ jid: m.chat }, { welcomeBg: input }, { upsert: true });
+            await groupRepo.upsert({ jid: m.chat }, { welcomeBg: input });
             clearSettingsCache();
             m.reply(`✅ Background welcome diatur ke:\n${input}`);
         },

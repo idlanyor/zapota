@@ -3,9 +3,10 @@ import os from 'os';
 import { execSync } from 'child_process';
 import { settings } from '../../config/settings.js';
 import { resolveLocationToAdm4, searchWilayah } from '../../services/wilayahResolver.js';
+import { env } from '../../config/env.js';
 
-const DS_BASE_URL = process.env.DS_BASE_URL || 'http://localhost:5050';
-const DS_API_KEY = process.env.DS_API_KEY || 'dseeker';
+const DS_BASE_URL = env.DS_BASE_URL || 'http://localhost:5050';
+const DS_API_KEY = env.DS_API_KEY || 'dseeker';
 const DEFAULT_MODEL = 'deepseek-chat-instant';
 const IRENG_BASE_URL = 'https://apiku.irengcloud.com';
 

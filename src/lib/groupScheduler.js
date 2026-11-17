@@ -1,4 +1,4 @@
-import Group from '../database/models/Group.js';
+import { groupRepo } from '../database/repos/groupRepo.js';
 import logger from '../utils/logger.js';
 
 const TIMEZONE = 'Asia/Jakarta';
@@ -31,7 +31,7 @@ const applyGroupState = async (sock, group, type, desiredState, stamp) => {
     try {
         await sock.groupSettingUpdate(group.jid, desiredState);
         group[key] = stamp;
-        await group.save();
+        await groupRepo.save(group);
         logger.info(`[GROUP-SCHEDULER] ${type.toUpperCase()} executed for ${group.jid}`);
     } catch (err) {
         const reason = err?.message || String(err);
@@ -60,9 +60,7 @@ export const startGroupScheduler = (getSocket) => {
 
             const now = nowInJakarta();
 
-            const groups = await Group.find({
-                $or: [{ autoOpen: true }, { autoClose: true }],
-            });
+            const groups = await groupRepo.findWithAutoSchedule();
 
             if (!groups.length) return;
 

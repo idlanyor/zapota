@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import menu from '../src/commands/info/menu.js';
 import { commands } from '../src/lib/commands.js';
-import Settings from '../src/database/models/Settings.js';
+import { settingsRepo } from '../src/database/repos/settingsRepo.js';
 
 const addCommand = (command) => {
     commands.set(command.name, command);
@@ -24,7 +24,7 @@ describe('menu command', () => {
             category: 'RPG',
             execute: jest.fn(),
         });
-        jest.spyOn(Settings, 'findOne').mockResolvedValue({ disabledCommands: [] });
+        jest.spyOn(settingsRepo, 'get').mockResolvedValue({ disabledCommands: [] });
         message.reply.mockClear();
     });
 

@@ -16,7 +16,7 @@ import {
     parseFailReason,
     getFailReasonText,
 } from '../../lib/order3.js';
-import User from '../../database/models/User.js';
+import { userRepo } from '../../database/repos/userRepo.js';
 
 export default {
     name: 'order3',
@@ -37,7 +37,7 @@ export default {
             if (index === -1) return false;
 
             const orderData = orders[index];
-            let userProfile = (await User.findOne({ jid })) || (await User.create({ jid }));
+            let userProfile = (await userRepo.findOne({ jid })) || (await userRepo.create({ jid }));
 
             if (userProfile.balance < orderData.finalPriceMyr) {
                 orders[index].status = 'CANCELLED';
@@ -49,7 +49,7 @@ export default {
             }
 
             userProfile.balance -= orderData.finalPriceMyr;
-            await userProfile.save();
+            await userRepo.save(userProfile);
 
             orders[index].status = 'PENDING';
             orders[index].paidAt = Date.now();
@@ -158,12 +158,12 @@ export default {
                 return m.reply('Sesi alasan gagal tidak ditemukan.');
 
             const orderData = orders[index];
-            const userProfile = await User.findOne({ jid: orderData.jid });
+            const userProfile = await userRepo.findOne({ jid: orderData.jid });
             const failReason = getFailReasonText(parsedFailReason.reasonCode);
 
             if (userProfile) {
                 userProfile.balance += orderData.finalPriceMyr;
-                await userProfile.save();
+                await userRepo.save(userProfile);
             }
 
             orders[index].status = 'FAILED';
@@ -187,7 +187,7 @@ export default {
         const nomor = jid.split('@')[0];
         const priceList = loadOrder3Prices();
 
-        let userProfile = (await User.findOne({ jid })) || (await User.create({ jid }));
+        let userProfile = (await userRepo.findOne({ jid })) || (await userRepo.create({ jid }));
         const markupPercentage = getMarkupByRole(userProfile.role);
 
         if (args.length === 0) {

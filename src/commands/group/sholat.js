@@ -1,4 +1,4 @@
-import Group from '../../database/models/Group.js';
+import { groupRepo } from '../../database/repos/groupRepo.js';
 import { get } from '../../lib/api.js';
 import { settings } from '../../config/settings.js';
 
@@ -19,7 +19,7 @@ ${settings.prefix}sholat info - Check current configuration
 ${settings.prefix}sholat search <city name> - Search for city ID`);
         }
 
-        const group = await Group.findOne({ jid: m.chat });
+        const group = await groupRepo.findOne({ jid: m.chat });
         if (!group) return m.reply('Group not found in database.');
 
         const action = args[0].toLowerCase();
@@ -29,7 +29,7 @@ ${settings.prefix}sholat search <city name> - Search for city ID`);
             case 'on':
                 if (group.prayerReminder) return m.reply('Prayer reminders are already enabled.');
                 group.prayerReminder = true;
-                await group.save();
+                await groupRepo.save(group);
                 m.reply(
                     `Prayer reminders enabled for city: ${group.cityName} (ID: ${group.cityId})`
                 );
@@ -39,7 +39,7 @@ ${settings.prefix}sholat search <city name> - Search for city ID`);
             case 'off':
                 if (!group.prayerReminder) return m.reply('Prayer reminders are already disabled.');
                 group.prayerReminder = false;
-                await group.save();
+                await groupRepo.save(group);
                 m.reply('Prayer reminders disabled.');
                 break;
 
@@ -55,7 +55,7 @@ Example: ${settings.prefix}sholat setcity 1420`);
                     if (res && res.lokasi) {
                         group.cityId = cityId;
                         group.cityName = res.lokasi;
-                        await group.save();
+                        await groupRepo.save(group);
                         m.reply(`City updated to: ${res.lokasi} (ID: ${cityId})`);
                     } else {
                         m.reply('Invalid city ID or data not found.');

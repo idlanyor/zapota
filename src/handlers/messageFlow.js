@@ -1,21 +1,17 @@
 import { jidNormalizedUser } from '../wa/helpers.js';
 import { createHash } from 'crypto';
-import { decodeJid } from '../utils/serialize.js';
 import { settings } from '../config/settings.js';
-import Settings from '../database/models/Settings.js';
-import Group from '../database/models/Group.js';
-import Poll from '../database/models/Poll.js';
+import { settingsRepo } from '../database/repos/settingsRepo.js';
+import { groupRepo } from '../database/repos/groupRepo.js';
+import { pollRepo } from '../database/repos/pollRepo.js';
 import { getMessage } from '../lib/msgStore.js';
 import { generateAIResponse } from '../lib/ai.js';
 import NodeCache from 'node-cache';
-import {
-    initAfkCache,
-    getAfk,
-    removeAfk,
-    formatAfkDuration,
-} from '../services/afkService.js';
+import { initAfkCache, getAfk, removeAfk, formatAfkDuration } from '../services/afkService.js';
 import logger from '../utils/logger.js';
+import { isAddressedToBot, stripBotMentions } from '../lib/botMention.js';
 
+import { env } from '../config/env.js';
 initAfkCache().catch(() => {});
 
 let settingsCache = null;
@@ -39,8 +35,7 @@ export const getCachedSettings = async () => {
     const now = Date.now();
     if (!settingsCache || now - lastCacheTime > SETTINGS_CACHE_TTL_MS) {
         settingsCache =
-            (await Settings.findOne({ id: 'bot_settings' })) ||
-            (await Settings.create({ id: 'bot_settings' }));
+            (await settingsRepo.get());
         lastCacheTime = now;
     }
     return settingsCache;
@@ -51,11 +46,11 @@ export const getGroupSettings = async (jid, subject = '') => {
     const cached = groupCache.get(jid);
     if (cached) return cached;
 
-    let data = await Group.findOne({ jid });
+    let data = await groupRepo.findOne({ jid });
     if (!data) {
-        data = await Group.create({ jid, name: subject || '' });
+        data = await groupRepo.create({ jid, name: subject || '' });
     } else if (subject && !data.name) {
-        data = await Group.findOneAndUpdate({ jid }, { name: subject }, { new: true });
+        data = await groupRepo.updateOne({ jid }, { name: subject });
     }
 
     groupCache.set(jid, data);
@@ -190,7 +185,7 @@ const handlePollUpdate = async (sock, m) => {
     try {
         const pollUpdate = m.message.pollUpdateMessage;
         const pollId = pollUpdate.pollCreationMessageKey.id;
-        const pollData = await Poll.findOne({ pollId });
+        const pollData = await pollRepo.findByPollId(pollId);
         if (!pollData) return;
 
         const voterJid = jidNormalizedUser(m.sender);
@@ -242,7 +237,8 @@ const handlePollUpdate = async (sock, m) => {
                     .toLowerCase();
                 selectedOptionName = pollData.options.find(
                     (opt) =>
-                        createHash('sha256').update(opt).digest('hex').toLowerCase() === selectedHash
+                        createHash('sha256').update(opt).digest('hex').toLowerCase() ===
+                        selectedHash
                 );
             }
         }
@@ -250,9 +246,7 @@ const handlePollUpdate = async (sock, m) => {
         if (selectedOptionName) {
             if (pollData.question.startsWith('CONFIRM_DELETE_SRV:')) {
                 const ownerJid = jidNormalizedUser(settings.ownerNumber);
-                const ownerLid = settings.ownerLid
-                    ? jidNormalizedUser(settings.ownerLid)
-                    : null;
+                const ownerLid = settings.ownerLid ? jidNormalizedUser(settings.ownerLid) : null;
                 if (![ownerJid, ownerLid].includes(voterJid)) {
                     return sock.sendMessage(m.chat, {
                         text: '❌ Hanya Owner yang bisa memberikan konfirmasi ini.',
@@ -267,8 +261,8 @@ const handlePollUpdate = async (sock, m) => {
                     await sock.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
 
                     try {
-                        const PTERO_URL = process.env.PTERO_URL;
-                        const PTERO_API_KEY = process.env.PTERO_API_KEY;
+                        const PTERO_URL = env.PTERO_URL;
+                        const PTERO_API_KEY = env.PTERO_API_KEY;
                         const axios = (await import('axios')).default;
 
                         const ptero = axios.create({
@@ -288,11 +282,11 @@ const handlePollUpdate = async (sock, m) => {
                             if (e.response?.status !== 404) throw e;
                         }
 
-                        const Server = (await import('../database/models/Server.js')).default;
-                        const deletedDb = await Server.deleteOne({ pteroId });
+                        const { serverRepo } = await import('../database/repos/serverRepo.js');
+                        const deletedDb = await serverRepo.remove({ pteroId });
 
                         await sock.sendMessage(m.chat, {
-                            text: `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb.deletedCount > 0 ? 'Terhapus' : 'Tidak di DB'}`,
+                            text: `✅ *SERVER BERHASIL DIHAPUS*\n\nID: ${pteroId}\nDB: ${deletedDb > 0 ? 'Terhapus' : 'Tidak di DB'}`,
                         });
                         await sock.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
                     } catch (err) {
@@ -307,7 +301,7 @@ const handlePollUpdate = async (sock, m) => {
                     });
                 }
 
-                await Poll.deleteOne({ pollId });
+                await pollRepo.remove(pollId);
                 return;
             }
 
@@ -329,7 +323,7 @@ export const handleAutoAiPrivate = async (sock, m, botSettings, isOwner = false)
     if (!(m.body || isMedia)) return;
 
     const textLength = m.body?.length || 50;
-    const configuredDelay = Number(process.env.AUTO_AI_TYPING_DELAY_MS);
+    const configuredDelay = Number(env.AUTO_AI_TYPING_DELAY_MS);
     // Reduced default delay: 10ms per char, min 100ms, max 1000ms (was 20ms, 300-2000ms)
     const typingDelay =
         Number.isFinite(configuredDelay) && configuredDelay >= 0
@@ -412,34 +406,10 @@ export const handleOwnerAgentTrigger = async (sock, m, isOwner, usedPrefix) => {
         }
     }
 
-    const botJid = decodeJid(sock.user?.id);
-    const botLid = sock.user?.lid ? decodeJid(sock.user.lid) : null;
-    const mentioned = (m.mentionedJid || []).map((jid) => decodeJid(jid) || jid);
-    const isBotMentioned = mentioned.some((jid) => jid === botJid || (botLid && jid === botLid));
-
-    const botNum = botJid ? botJid.split('@')[0].split(':')[0] : null;
-    const botLidNum = botLid ? botLid.split('@')[0].split(':')[0] : null;
-    const quotedSenderNum = m.quoted?.sender ? m.quoted.sender.split('@')[0].split(':')[0] : null;
-
-    const isReplyingBot = Boolean(
-        m.quoted && (
-            m.quoted.fromMe ||
-            m.quoted.sender === botJid ||
-            (botLid && m.quoted.sender === botLid) ||
-            (botNum && quotedSenderNum === botNum) ||
-            (botLidNum && quotedSenderNum === botLidNum)
-        )
-    );
-
-    if (!isBotMentioned && !isReplyingBot) return false;
+    if (!isAddressedToBot(sock, m).addressed) return false;
 
     // Bersihkan mention bot dari text prompt agar prompt bersih
-    if (botNum) {
-        m.body = m.body.replace(new RegExp(`@${botNum}`, 'g'), '').trim();
-    }
-    if (botLidNum) {
-        m.body = m.body.replace(new RegExp(`@${botLidNum}`, 'g'), '').trim();
-    }
+    m.body = stripBotMentions(sock, m.body);
 
     logger.agent({
         phase: 'PROMPT',

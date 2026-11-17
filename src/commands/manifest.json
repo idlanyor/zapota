@@ -12,6 +12,7 @@
     ],
     "description": "AI Assistant (Claude-compatible) dengan tool command dan shell khusus Owner",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -28,6 +29,7 @@
     ],
     "description": "Generate gambar AI dari prompt teks",
     "category": "ai",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -42,6 +44,7 @@
     ],
     "description": "Tanya DeepSeek AI dengan Web Search & Tool Suite IrengCloud (.ds <pertanyaan>)",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -56,6 +59,7 @@
     ],
     "description": "Tanya GLM 5.3 Flash AI (Teks & Vision)",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -69,6 +73,7 @@
     ],
     "description": "Ask Jemini AI (Jmail World Archive AI)",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -83,6 +88,7 @@
     ],
     "description": "9Router Manager Dashboard (Stats, Usage, Providers, Combos, Keys, Chat)",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -97,6 +103,7 @@
     ],
     "description": "Clear AI conversation history",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -113,6 +120,7 @@
     ],
     "description": "AI-powered translate (kanata). Reply teks atau inline: .translate <teks> atau --from <source> <teks>",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -127,6 +135,7 @@
     ],
     "description": "Analisis gambar menggunakan Elysia Vision API Gateway. Bisa set model kustom.",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -142,6 +151,7 @@
     ],
     "description": "Analisis gambar menggunakan DeepSeek Vision AI (.vision2 <prompt>)",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -156,6 +166,7 @@
     ],
     "description": "Buat postingan blog baru dari WhatsApp",
     "category": "Blog",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -170,6 +181,7 @@
     ],
     "description": "Hapus postingan blog berdasarkan ID atau Nomor",
     "category": "Blog",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -183,6 +195,7 @@
     ],
     "description": "Edit postingan blog",
     "category": "Blog",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -197,6 +210,7 @@
     ],
     "description": "Lihat semua daftar postingan blog",
     "category": "Blog",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -211,6 +225,7 @@
     ],
     "description": "Add DNS Record to Cloudflare (Interactive)",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -231,6 +246,7 @@
     ],
     "description": "Cloudflare Account Firewall Management",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -246,6 +262,7 @@
     ],
     "description": "Manage Cloudflare AS number rules (ban/unban/list)",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -257,6 +274,7 @@
     "aliases": [],
     "description": "Block IP in Cloudflare",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -268,6 +286,7 @@
     "aliases": [],
     "description": "List Cloudflare Access Rules",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -282,6 +301,7 @@
     ],
     "description": "Menguji konektivitas API Cloudflare",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -293,6 +313,7 @@
     "aliases": [],
     "description": "Unban IP in Cloudflare",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -304,6 +325,7 @@
     "aliases": [],
     "description": "Whitelist IP in Cloudflare",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -318,6 +340,7 @@
     ],
     "description": "Mengambil daftar domain dari Cloudflare",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -329,6 +352,7 @@
     "aliases": [],
     "description": "List DNS Records for a domain",
     "category": "Cloudflare",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -343,6 +367,7 @@
     ],
     "description": "Download video Facebook via API Utama",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -357,6 +382,7 @@
     ],
     "description": "Download Facebook video via Ammaricano API",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -371,6 +397,7 @@
     ],
     "description": "Clone a GitHub repository and send it as a ZIP file",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -385,6 +412,7 @@
     ],
     "description": "Download media Instagram via API Utama",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -398,6 +426,7 @@
     ],
     "description": "Jadwal rilis anime. 1=otakudesu 2=animasu. \"all\"=semua hari.",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -411,6 +440,7 @@
     ],
     "description": "Download file MediaFire via API Utama",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -426,6 +456,7 @@
     ],
     "description": "Download video/gambar dari Pinterest URL",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -440,6 +471,7 @@
     ],
     "description": "Cari gambar dari Pinterest dengan tampilan Carousel",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -453,6 +485,7 @@
     ],
     "description": "Search and play audio from YouTube via YTmp3",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -467,6 +500,7 @@
     ],
     "description": "Cari dan mainkan video YouTube via YTmp3",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -480,6 +514,7 @@
     ],
     "description": "Download Reddit video",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -495,6 +530,7 @@
     ],
     "description": "Download audio MP3 dari tautan Spotify",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -508,6 +544,7 @@
     ],
     "description": "Download media Threads via API Utama",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -524,6 +561,7 @@
     ],
     "description": "Download TikTok via API Utama",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -538,6 +576,7 @@
     ],
     "description": "Download media Twitter/X via API Utama",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -552,6 +591,7 @@
     ],
     "description": "Download YouTube audio",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -566,6 +606,7 @@
     ],
     "description": "Download YouTube video (via y2mate / savetube)",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -579,6 +620,7 @@
     ],
     "description": "Cari Video dari YouTube",
     "category": "Downloader",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -593,6 +635,7 @@
     ],
     "description": "Catat transaksi otomatis via suara/teks (Gemini 2.5 Flash)",
     "category": "Finance",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -608,6 +651,7 @@
     ],
     "description": "Hapus transaksi yang salah input",
     "category": "Finance",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -622,6 +666,7 @@
     ],
     "description": "Generate atau atur password untuk login ke Dashboard Web",
     "category": "Finance",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -636,6 +681,7 @@
     ],
     "description": "Lihat laporan transaksi keuangan (Bulanan/Harian)",
     "category": "Finance",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -649,6 +695,7 @@
     ],
     "description": "Bermain game tekateki",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -662,6 +709,7 @@
     ],
     "description": "Bermain game tebakkalimat",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -675,6 +723,7 @@
     ],
     "description": "Bermain game caklontong",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -688,6 +737,7 @@
     ],
     "description": "Bermain game susunkata",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -701,6 +751,7 @@
     ],
     "description": "Bermain game asahotak",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -714,6 +765,7 @@
     ],
     "description": "Bermain game tebaklirik",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -727,6 +779,7 @@
     ],
     "description": "Bermain game maths",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -740,6 +793,7 @@
     ],
     "description": "Bermain game tebakkata",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -753,6 +807,7 @@
     ],
     "description": "Bermain game tebakkimia",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -766,6 +821,7 @@
     ],
     "description": "Bermain game siapakahaku",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -779,6 +835,7 @@
     ],
     "description": "Bermain game tebakjkt",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -792,6 +849,7 @@
     ],
     "description": "Bermain game tebakwarna",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -805,6 +863,7 @@
     ],
     "description": "Bermain game tebakbendera",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -818,6 +877,7 @@
     ],
     "description": "Bermain game tebakkartun",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -831,6 +891,7 @@
     ],
     "description": "Bermain game tebakgame",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -844,6 +905,7 @@
     ],
     "description": "Bermain game karakter-freefire",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -857,6 +919,7 @@
     ],
     "description": "Bermain game tebakgambar",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -870,6 +933,7 @@
     ],
     "description": "Bermain game tebaklagu",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -883,6 +947,7 @@
     ],
     "description": "Bermain game tebakheroml",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -897,6 +962,7 @@
     ],
     "description": "Bermain game Cerdas Cermat (Pilihan Ganda)",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -911,6 +977,7 @@
     ],
     "description": "Bermain game Family 100 bersama-sama",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -925,6 +992,7 @@
     ],
     "description": "Menyerah dari game yang sedang berlangsung",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -939,6 +1007,7 @@
     ],
     "description": "Minta bantuan clue untuk game yang sedang berlangsung",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -954,6 +1023,7 @@
     ],
     "description": "Game Kuis Who Wants to Be a Millionaire 15 Level Bahasa Indonesia",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -968,6 +1038,7 @@
     ],
     "description": "Tic-Tac-Toe multiplayer dengan lobby maksimal 2 pemain",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": true
@@ -982,6 +1053,7 @@
     ],
     "description": "Game Tic Tac Toe interaktif berbasis Meta AI HTML Canvas",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -993,6 +1065,7 @@
     "aliases": [],
     "description": "Werewolf multiplayer untuk grup WhatsApp",
     "category": "Games",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1007,6 +1080,7 @@
     ],
     "description": "Mengaktifkan status AFK (Away From Keyboard)",
     "category": "General",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1020,6 +1094,7 @@
     ],
     "description": "Claim a voucher code",
     "category": "Finance",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1035,6 +1110,7 @@
     ],
     "description": "Minta akses WireGuard Sakura (butuh konfirmasi owner)",
     "category": "General",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1046,6 +1122,10 @@
     "aliases": [],
     "description": "Add a member to the group",
     "category": "Group",
+    "guards": [
+      "admin",
+      "botAdmin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1059,6 +1139,7 @@
     ],
     "description": "Delete a message",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1072,6 +1153,10 @@
     ],
     "description": "Demote an admin to member",
     "category": "Group",
+    "guards": [
+      "admin",
+      "botAdmin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1083,6 +1168,10 @@
     "aliases": [],
     "description": "Manage group settings (open/close)",
     "category": "Group",
+    "guards": [
+      "admin",
+      "botAdmin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1097,6 +1186,7 @@
     ],
     "description": "Kirim status teks/media ke grup (Full Media Support)",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1111,6 +1201,9 @@
     ],
     "description": "Tag all members in the group",
     "category": "Group",
+    "guards": [
+      "admin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1122,6 +1215,10 @@
     "aliases": [],
     "description": "Kick a member from the group",
     "category": "Group",
+    "guards": [
+      "admin",
+      "botAdmin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1135,6 +1232,10 @@
     ],
     "description": "Promote a member to admin",
     "category": "Group",
+    "guards": [
+      "admin",
+      "botAdmin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1149,6 +1250,7 @@
     ],
     "description": "Liat daftar calon member yang nunggu approval admin",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1162,6 +1264,7 @@
     ],
     "description": "Terima permintaan join member baru via nomor/JID",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1175,6 +1278,7 @@
     ],
     "description": "Tolak permintaan join member baru via nomor/JID",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1189,6 +1293,7 @@
     ],
     "description": "Lihat jadwal auto open/close grup",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1200,6 +1305,9 @@
     "aliases": [],
     "description": "Atur auto close grup",
     "category": "Group",
+    "guards": [
+      "admin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1211,6 +1319,9 @@
     "aliases": [],
     "description": "Atur auto open grup",
     "category": "Group",
+    "guards": [
+      "admin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1225,6 +1336,9 @@
     ],
     "description": "Atur opsi fitur grup (Antilink, Antitoxic, dll)",
     "category": "Group",
+    "guards": [
+      "admin"
+    ],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1238,6 +1352,7 @@
     ],
     "description": "Atur pesan welcome kustom",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1251,6 +1366,7 @@
     ],
     "description": "Atur pesan leave kustom",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1264,6 +1380,7 @@
     ],
     "description": "Atur background gambar welcome (URL gambar)",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1278,6 +1395,7 @@
     ],
     "description": "Manage group prayer time reminders",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1292,6 +1410,7 @@
     ],
     "description": "Cek info grup dari link invite WhatsApp",
     "category": "Group",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1307,6 +1426,7 @@
     ],
     "description": "Menampilkan informasi sistem bot",
     "category": "Info",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1321,6 +1441,7 @@
     ],
     "description": "Show available commands in text format",
     "category": "Info",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1335,6 +1456,7 @@
     ],
     "description": "Menampilkan kontak owner bot",
     "category": "Info",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1349,6 +1471,7 @@
     ],
     "description": "Check bot status and performance.",
     "category": "Info",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1362,6 +1485,7 @@
     ],
     "description": "Cari atau baca hadits 9 imam",
     "category": "Islamic",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1375,6 +1499,7 @@
     ],
     "description": "Lihat jadwal sholat berdasarkan kota",
     "category": "Islamic",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1386,6 +1511,7 @@
     "aliases": [],
     "description": "Daftar atau baca khutbah MUI",
     "category": "Islamic",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1397,6 +1523,7 @@
     "aliases": [],
     "description": "Akses koleksi wirid dari API Utama",
     "category": "Islamic",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1408,6 +1535,7 @@
     "aliases": [],
     "description": "Akses koleksi doa dari API Utama",
     "category": "Islamic",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1421,6 +1549,7 @@
     ],
     "description": "Transliterasi Latin dan Aksara Jawa",
     "category": "Culture",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1435,6 +1564,7 @@
     ],
     "description": "ACC Pendaftaran WireGuard Sakura (Khusus Owner)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1449,6 +1579,7 @@
     ],
     "description": "Add balance to a user via Ptero Email (Owner only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1463,6 +1594,7 @@
     ],
     "description": "Manage Auto-AI Mode for Private Chat (Owner Only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1474,6 +1606,7 @@
     "aliases": [],
     "description": "Manual Database Backup (Owner only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1485,6 +1618,7 @@
     "aliases": [],
     "description": "Cek metadata newsletter via link",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1498,6 +1632,7 @@
     ],
     "description": "Konfigurasi Cloudflare API",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1512,6 +1647,7 @@
     ],
     "description": "Debug message object structure",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1526,6 +1662,7 @@
     ],
     "description": "Delete a server from Panel and Database (Owner only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1541,6 +1678,7 @@
     ],
     "description": "Evaluate JavaScript code or execute shell commands (Owner Only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1554,6 +1692,7 @@
     ],
     "description": "Tampilkan source plugin menggunakan AI Rich code",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1568,6 +1707,7 @@
     ],
     "description": "Debug message object (m) to console",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1582,6 +1722,7 @@
     ],
     "description": "Mengintip isi objek m (Serialized Message)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1595,6 +1736,7 @@
     ],
     "description": "Undang admin ke Saluran/Newsletter (WA Beta Feature)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1608,6 +1750,7 @@
     ],
     "description": "Kelola IrengCloud (owner): server, user, invoice",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1624,6 +1767,7 @@
     ],
     "description": "Manajemen library/package & git synchronization bot (Owner Only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1637,6 +1781,7 @@
     ],
     "description": "List all servers and their owners (Owner only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1650,6 +1795,7 @@
     ],
     "description": "Ubah mode respon bot (Public/Self/Group)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1664,6 +1810,7 @@
     ],
     "description": "Toggle wajib gabung grup untuk chat pribadi",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1677,6 +1824,7 @@
     ],
     "description": "Menambahkan owner baru",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1690,6 +1838,7 @@
     ],
     "description": "Menghapus owner",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1704,6 +1853,7 @@
     ],
     "description": "Menampilkan daftar owner",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1718,6 +1868,7 @@
     ],
     "description": "Manajemen plugin bot: list, get, toggle, delete, save, reload (Owner Only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1732,6 +1883,7 @@
     ],
     "description": "Kirim pesan dengan label diteruskan dari Saluran",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1745,6 +1897,7 @@
     ],
     "description": "Manage Pterodactyl Users (CRUD)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1759,6 +1912,7 @@
     ],
     "description": "Tolak Pendaftaran WireGuard Sakura (Khusus Owner)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1770,6 +1924,7 @@
     "aliases": [],
     "description": "Reload environment variables from .env file (Owner Only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1785,6 +1940,7 @@
     ],
     "description": "Lihat dan repost postingan ML Leaks Facebook ke Saluran WhatsApp",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1799,6 +1955,7 @@
     ],
     "description": "Set, list, or sync server expiration (Owner only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1812,6 +1969,7 @@
     ],
     "description": "On/Off auto view status orang lain",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1826,6 +1984,7 @@
     ],
     "description": "Kirim pesan test interactive button (khusus owner)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1841,6 +2000,7 @@
     ],
     "description": "Disable or Enable a command",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1854,6 +2014,7 @@
     ],
     "description": "Generate voucher code (Owner only)",
     "category": "Owner",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1865,6 +2026,7 @@
     "aliases": [],
     "description": "Bind your existing Pterodactyl account to your WhatsApp number",
     "category": "Panel",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1879,6 +2041,7 @@
     ],
     "description": "Manage your ireng.uk hosting account, servers, invoices, and tickets",
     "category": "Panel",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1893,6 +2056,7 @@
     ],
     "description": "List your Pterodactyl servers",
     "category": "Panel",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1906,6 +2070,7 @@
     ],
     "description": "Manage your panel (start/stop/restart/status)",
     "category": "Panel",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1921,6 +2086,7 @@
     ],
     "description": "Melihat achievement dan memasang gelar karakter",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1936,6 +2102,7 @@
     ],
     "description": "Buka Kotak Rezeki Nomplok RPG dengan animasi gacha interaktif",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1953,6 +2120,7 @@
     ],
     "description": "Memulihkan HP dan Kewarasan melalui Warkop, Rumah Sakit, atau Liburan",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1970,6 +2138,7 @@
     ],
     "description": "Bekerja mencari nafkah atau mencari lowongan pekerjaan baru",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -1986,6 +2155,7 @@
     ],
     "description": "Belanja kebutuhan pokok di Minimarket Kopdes Merah Putih",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2001,6 +2171,7 @@
     ],
     "description": "Mengambil jalur pintas korupsi anggaran untuk profesi tertentu (High Risk High Reward)",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2016,6 +2187,7 @@
     ],
     "description": "Mengantre Program Makan Bergizi Gratis (MBG) 2026",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2031,6 +2203,7 @@
     ],
     "description": "Melihat dan mengambil hadiah misi harian RPG",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2048,6 +2221,7 @@
     ],
     "description": "Mengajukan pinjaman dana darurat atau membayar tagihan pinjol/kosan",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2064,6 +2238,7 @@
     ],
     "description": "Melihat status karakter RPG kehidupan Indonesia 2026",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2079,6 +2254,7 @@
     ],
     "description": "Tampilkan kartu status RPG interaktif (Meta AI Canvas)",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2096,6 +2272,7 @@
     ],
     "description": "Melihat isi tas dan menggunakan/memakai barang",
     "category": "RPG",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2109,6 +2286,7 @@
     ],
     "description": "Create a brat style sticker (Local)",
     "category": "Sticker",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2122,6 +2300,7 @@
     ],
     "description": "Create a brat typing sticker (Local)",
     "category": "Sticker",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2135,6 +2314,7 @@
     ],
     "description": "Create a sticker with top and bottom text",
     "category": "Sticker",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2149,6 +2329,7 @@
     ],
     "description": "Convert image/video to sticker",
     "category": "Sticker",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2163,6 +2344,7 @@
     ],
     "description": "Beri watermark pada sticker (Reply sticker/gambar)",
     "category": "Sticker",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2177,6 +2359,7 @@
     ],
     "description": "Buat stiker video transparan (Hapus background warna)",
     "category": "Sticker",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2191,6 +2374,7 @@
     ],
     "description": "Import Stickers from Telegram Pack",
     "category": "Sticker",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2205,6 +2389,7 @@
     ],
     "description": "Manage Alice Ephemera VPS",
     "category": "AI",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2219,6 +2404,7 @@
     ],
     "description": "Create a beautiful image of your code using Carbon",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2233,6 +2419,7 @@
     ],
     "description": "Validate bank account or e-wallet number",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2246,6 +2433,7 @@
     ],
     "description": "Kompres PDF. Reply PDF: .compresspdf [low|recommended|extreme]",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2259,6 +2447,7 @@
     ],
     "description": "Execute a curl command. Supports -X, -H, -d, --data-raw.",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2274,6 +2463,7 @@
     ],
     "description": "Cek data akun Free Fire berdasarkan UID",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2287,6 +2477,7 @@
     ],
     "description": "Make a GET request to a URL",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2302,6 +2493,7 @@
     ],
     "description": "Edit gambar via Nano Banana API dengan prompt",
     "category": "tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2316,6 +2508,7 @@
     ],
     "description": "Cari lirik lagu via API Utama",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2331,6 +2524,7 @@
     ],
     "description": "Ubah teks/markdown jadi PDF. .mdpdf <teks> atau reply pesan. Support heading, bold, italic, list, code, quote.",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2342,6 +2536,7 @@
     "aliases": [],
     "description": "Gabung beberapa PDF. Kirim/reply PDF dgn .mergepdf, lalu .mergepdf done",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2355,6 +2550,7 @@
     ],
     "description": "Extract text from image (OCR)",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2369,6 +2565,7 @@
     ],
     "description": "Convert PDF to Image (JPG) via iLovePDF",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2382,6 +2579,7 @@
     ],
     "description": "Make a POST request to a URL. Usage: !post <url> | <body>",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2397,6 +2595,7 @@
     ],
     "description": "Generate Dynamic QRIS GoBiz / GoPay toko IrengCloud dengan nominal tertentu",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2408,6 +2607,7 @@
     "aliases": [],
     "description": "Rename dokumen. Reply dokumen: .rename <nama_baru>",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2422,6 +2622,7 @@
     ],
     "description": "Ambil/Download media dari pesan View Once (Sekali Lihat)",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2433,6 +2634,7 @@
     "aliases": [],
     "description": "SMM Panel (IG & TikTok Services) - Owner Only",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2446,6 +2648,7 @@
     ],
     "description": "Tes kecepatan internet server bot.",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2461,6 +2664,7 @@
     ],
     "description": "Take a screenshot of a website",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2475,6 +2679,7 @@
     ],
     "description": "Debug sender JID/LID and owner status",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2488,6 +2693,7 @@
     ],
     "description": "Scan all video links from a TikTok profile (Owner Only)",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2502,6 +2708,7 @@
     ],
     "description": "Convert sticker to image",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2516,6 +2723,7 @@
     ],
     "description": "Convert Video/Audio to MP3",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2527,6 +2735,7 @@
     "aliases": [],
     "description": "Convert image or document to PDF via iLovePDF",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2541,6 +2750,7 @@
     ],
     "description": "Upload media (image, video, audio, sticker, document) to get a public URL",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2555,6 +2765,7 @@
     ],
     "description": "Convert Audio/Video to Voice Note (VN)",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2570,6 +2781,7 @@
     ],
     "description": "Upscale gambar via iLoveIMG (tanpa API Key, 2x atau 4x)",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2586,6 +2798,7 @@
     ],
     "description": "Convert web page to PDF or Markdown document",
     "category": "Tools",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2599,6 +2812,7 @@
     ],
     "description": "Private command for search and download.",
     "category": "Hidden",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2614,6 +2828,7 @@
     ],
     "description": "Check your current balance",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2628,6 +2843,7 @@
     ],
     "description": "View or edit your Pterodactyl profile",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2642,6 +2858,7 @@
     ],
     "description": "Sinkronisasi nomor WhatsApp ke database dan web dashboard",
     "category": "Users",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2655,6 +2872,7 @@
     ],
     "description": "Register a new Pterodactyl account",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2669,6 +2887,7 @@
     ],
     "description": "Tes fitur Meta AI Native Carousel (kartu video/reels swipe)",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2684,6 +2903,7 @@
     ],
     "description": "Send VPS details via PDF (No Emojis). Usage: .deliver <product> | <price> | <ip> | <user> | <pass> | <region> | <due_date>",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2698,6 +2918,7 @@
     ],
     "description": "Kirim interactive message minimal untuk debug render client",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2713,6 +2934,7 @@
     ],
     "description": "Create a PDF invoice instantly. Usage: .invoice <item> | <price> | <customer_name> | <qty>",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2727,6 +2949,7 @@
     ],
     "description": "Demo list message klasik dan interactive single_select",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2741,6 +2964,7 @@
     ],
     "description": "Manage Proxmox LXC containers from cloud.kanata.web.id",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2754,6 +2978,7 @@
     ],
     "description": "Order products manually via admin",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "order3",
     "hasHandleButton": true,
     "hasHandleSession": false
@@ -2769,6 +2994,7 @@
     ],
     "description": "Send Renewal Invoice (No Credentials). Usage: .renew <product/IP> | <price> | <customer> | <next_due_date>",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2783,6 +3009,7 @@
     ],
     "description": "Pterodactyl VPS Store",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2794,6 +3021,7 @@
     "aliases": [],
     "description": "Explore AI Rich Responses (Table & Code)",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2805,6 +3033,7 @@
     "aliases": [],
     "description": "Uji coba rich table via precise botForwardedMessage",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2816,6 +3045,7 @@
     "aliases": [],
     "description": "Mengirim Video Note (Circular Video)",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2829,6 +3059,7 @@
     ],
     "description": "Membuat pesan voting/poll",
     "category": "Utility",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false
@@ -2840,6 +3071,7 @@
     "aliases": [],
     "description": "Tes tombol Webview (Eksperimental)",
     "category": "Info",
+    "guards": [],
     "buttonPrefix": "",
     "hasHandleButton": false,
     "hasHandleSession": false

@@ -1,4 +1,4 @@
-import RpgInventory from '../../database/models/RpgInventory.js';
+import { rpgInventoryRepo, rpgPlayerRepo } from '../../database/repos/rpgRepos.js';
 import { KOPDES_ITEMS, getOrCreatePlayer } from '../../services/rpgService.js';
 import { sendRpgReply } from '../../lib/rpgVisuals.js';
 import { recordRpgActivity } from '../../services/rpgProgressService.js';
@@ -15,7 +15,7 @@ export default {
 
         try {
             const { player } = await getOrCreatePlayer(sender, m.pushName);
-            const userItems = await RpgInventory.find({ userId: sender });
+            const userItems = await rpgInventoryRepo.find({ userId: sender });
 
             // Helper: Cari item di inventory berdasarkan nomor urut atau ID/nama
             const findInvItemByInput = (input) => {
@@ -56,9 +56,9 @@ export default {
                 if (invItem.category === 'konsumsi') {
                     invItem.quantity -= 1;
                     if (invItem.quantity <= 0) {
-                        await RpgInventory.deleteOne({ _id: invItem._id });
+                        await rpgInventoryRepo.remove({ id: invItem.id });
                     } else {
-                        await invItem.save();
+                        await rpgInventoryRepo.save(invItem);
                     }
 
                     // Terapkan efek
@@ -67,7 +67,7 @@ export default {
                     player.gizi = Math.min(100, player.gizi + (eff.gizi || 0));
                     player.kewarasan = Math.min(100, player.kewarasan + (eff.kewarasan || 0));
                     player.energi = Math.min(player.maxEnergi, player.energi + (eff.energi || 0));
-                    await player.save();
+                    await rpgPlayerRepo.save(player);
                     await recordRpgActivity(sender, 'meal');
 
                     return sendRpgReply(
@@ -95,7 +95,7 @@ export default {
                 // Handle equipment (senjata/kendaraan)
                 if (invItem.category === 'senjata' || invItem.category === 'kendaraan') {
                     invItem.isEquipped = !invItem.isEquipped;
-                    await invItem.save();
+                    await rpgInventoryRepo.save(invItem);
 
                     return sendRpgReply(
                         sock,

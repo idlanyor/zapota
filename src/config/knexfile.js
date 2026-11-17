@@ -1,10 +1,11 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { env } from './env.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = process.env.SQLITE_PATH || path.resolve(__dirname, '../../data/bot.db');
+const dbPath = env.SQLITE_PATH || path.resolve(__dirname, '../../data/bot.db');
 
 const config = {
     client: 'sqlite3',

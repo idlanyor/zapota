@@ -1,9 +1,13 @@
-import mongoose from '../database/index.js';
+import { getKnex } from '../database/knexInstance.js';
+import { migrateIfSafe } from '../database/migrate.js';
 import logger from '../utils/logger.js';
 
-const connectDB = async (uri) => {
+/** Open the SQLite database and apply pending migrations (when safe). */
+const connectDB = async () => {
     try {
-        await mongoose.connect();
+        const knex = getKnex();
+        await knex.raw('select 1');
+        await migrateIfSafe(knex, logger);
         logger.info(' Connected to SQLite (Knex)');
     } catch (error) {
         logger.error(' Could not connect to SQLite:', error);

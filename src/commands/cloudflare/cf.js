@@ -1,5 +1,5 @@
 import { listRules, createRule, deleteRule } from '../../services/cloudflare.js';
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 import { getCachedSettings } from '../../handlers/messageFlow.js';
 
 export default {

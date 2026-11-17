@@ -7,6 +7,14 @@ import logger from '../utils/logger.js';
 
 let botIdentityCache = null;
 
+/** Resolved "must join" group for the configured invite link. */
+let requiredGroup = { inviteLink: null, jid: null };
+
+/** Forget the resolved group (call after the invite link changes). */
+export const resetRequiredGroupCache = () => {
+    requiredGroup = { inviteLink: null, jid: null };
+};
+
 export const getBotIdentity = (sock) => {
     if (botIdentityCache) return botIdentityCache;
 
@@ -80,14 +88,10 @@ export const checkOwner = (m, sock, botSettings) => {
 export const checkJoinGroup = async (sock, m, isOwner, botSettings, buildJidCandidates) => {
     if (!m.isGroup && !isOwner && botSettings?.mustJoinGroup) {
         try {
-            if (
-                !global.targetGroupJid ||
-                global.targetGroupInviteLink !== botSettings.groupInviteLink
-            ) {
+            if (!requiredGroup.jid || requiredGroup.inviteLink !== botSettings.groupInviteLink) {
                 const code = botSettings.groupInviteLink.split('chat.whatsapp.com/')[1];
                 const groupInfo = await sock.groupGetInviteInfo(code);
-                global.targetGroupJid = groupInfo.id;
-                global.targetGroupInviteLink = botSettings.groupInviteLink;
+                requiredGroup = { inviteLink: botSettings.groupInviteLink, jid: groupInfo.id };
             }
 
             const senderCandidates = buildJidCandidates(
@@ -95,13 +99,13 @@ export const checkJoinGroup = async (sock, m, isOwner, botSettings, buildJidCand
                 m.key?.participant,
                 m.key?.remoteJid
             );
-            let participants = await getRequiredGroupParticipants(sock, global.targetGroupJid);
+            let participants = await getRequiredGroupParticipants(sock, requiredGroup.jid);
             let isMember = senderCandidates.some((candidate) => participants.has(candidate));
 
             if (!isMember) {
                 participants = await getRequiredGroupParticipants(
                     sock,
-                    global.targetGroupJid,
+                    requiredGroup.jid,
                     true
                 );
                 isMember = senderCandidates.some((candidate) => participants.has(candidate));

@@ -1,4 +1,4 @@
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 import { commands } from '../../lib/commands.js';
 import { settings } from '../../config/settings.js';
 
@@ -17,8 +17,8 @@ export default {
 
         const commandStr = m.body.slice(settings.prefix.length).trim().split(' ')[0].toLowerCase();
 
-        let botSettings = await Settings.findOne({ id: 'bot_settings' });
-        if (!botSettings) botSettings = await Settings.create({ id: 'bot_settings' });
+        let botSettings = await settingsRepo.get();
+        if (!botSettings) botSettings = await settingsRepo.get();
 
         if (commandStr === 'listdisable') {
             if (botSettings.disabledCommands.length === 0)
@@ -43,7 +43,7 @@ export default {
                 return m.reply(`Command *${cmd.name}* is already disabled.`);
             }
             botSettings.disabledCommands.push(cmd.name);
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             await m.reply(`Successfully disabled command: *${cmd.name}*`);
         } else if (commandStr === 'enable') {
             if (!botSettings.disabledCommands.includes(cmd.name)) {
@@ -52,7 +52,7 @@ export default {
             botSettings.disabledCommands = botSettings.disabledCommands.filter(
                 (c) => c !== cmd.name
             );
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             await m.reply(`Successfully enabled command: *${cmd.name}*`);
         }
     },

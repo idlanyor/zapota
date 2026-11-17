@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getBlogFromSession } from '../../lib/blogSession.js';
 import dotenv from 'dotenv';
+import { env } from '../../config/env.js';
 dotenv.config();
 
 export default {
@@ -21,9 +22,9 @@ export default {
             }
             await m.react('⏳');
 
-            const response = await axios.delete(`${process.env.BLOG_API_URL}/posts/${id}`, {
+            const response = await axios.delete(`${env.BLOG_API_URL}/posts/${id}`, {
                 headers: {
-                    'x-api-key': process.env.BLOG_API_KEY,
+                    'x-api-key': env.BLOG_API_KEY,
                 },
             });
 

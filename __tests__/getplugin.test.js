@@ -20,7 +20,7 @@ describe('getplugin AI Rich command', () => {
 
     test('builds a renderable AI Rich payload with one code block', () => {
         const payload = buildAiRichCodeMessage({
-            content: 'export default { name: \'demo\' };',
+            content: "export default { name: 'demo' };",
             fileName: 'demo.js',
             m: message,
         });
@@ -30,7 +30,7 @@ describe('getplugin AI Rich command', () => {
         expect(rich.submessages[1].codeMetadata.codeBlocks).toEqual([
             {
                 highlightType: 0,
-                codeContent: 'export default { name: \'demo\' };',
+                codeContent: "export default { name: 'demo' };",
             },
         ]);
         expect(payload.messageContextInfo.botMetadata.messageDisclaimerText).toContain('AI Rich');

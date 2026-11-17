@@ -1,0 +1,26 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+jobs:
+    bot:
+        runs-on: ubuntu-latest
+        env:
+            PUPPETEER_SKIP_DOWNLOAD: '1'
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: npm
+            - run: npm ci --no-audit --no-fund
+            - run: npm run lint
+            - run: npm test
+            # Production loads commands from this manifest; a stale one hides new commands.
+            - name: Command manifest is up to date
+              run: |
+                  npm run manifest:build
+                  git diff --exit-code src/commands/manifest.json

@@ -1,6 +1,6 @@
-import User from '../../database/models/User.js';
-import Transaction from '../../database/models/Transaction.js';
-import Server from '../../database/models/Server.js';
+import { userRepo } from '../../database/repos/userRepo.js';
+import { transactionRepo } from '../../database/repos/transactionRepo.js';
+import { serverRepo } from '../../database/repos/serverRepo.js';
 import { createPteroServer } from '../../services/pterodactyl.js';
 import { settings } from '../../config/settings.js';
 
@@ -97,9 +97,9 @@ export default {
             }
 
             // Get user from DB
-            let user = await User.findOne({ jid: m.sender });
+            let user = await userRepo.findOne({ jid: m.sender });
             if (!user) {
-                user = await User.create({ jid: m.sender });
+                user = await userRepo.create({ jid: m.sender });
             }
 
             if (user.balance < plan.price) {
@@ -118,7 +118,7 @@ export default {
                 const expiredDate = new Date();
                 expiredDate.setDate(expiredDate.getDate() + 30);
 
-                await Server.create({
+                await serverRepo.create({
                     userId: m.sender,
                     pteroId: server.id,
                     identifier: server.identifier,
@@ -129,10 +129,10 @@ export default {
 
                 // 3. Deduct Balance
                 user.balance -= plan.price;
-                await user.save();
+                await userRepo.save(user);
 
                 // 3. Record Transaction
-                await Transaction.create({
+                await transactionRepo.create({
                     userId: m.sender,
                     userName: m.pushName || 'User',
                     type: 'expense',
@@ -175,7 +175,7 @@ export default {
         storeMsg += `\nTo buy, use: ${settings.prefix}buy <id>\nExample: ${settings.prefix}buy 1`;
 
         // Add user balance info
-        const user = await User.findOne({ jid: m.sender });
+        const user = await userRepo.findOne({ jid: m.sender });
         const balance = user ? user.balance : 0;
         storeMsg += `\n\nYour Balance: Rp ${balance.toLocaleString()}`;
 

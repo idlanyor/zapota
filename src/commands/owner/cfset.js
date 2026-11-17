@@ -1,4 +1,4 @@
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 import { clearSettingsCache } from '../../handlers/messageFlow.js';
 
 export default {
@@ -8,8 +8,7 @@ export default {
     category: 'Owner',
     execute: async (sock, m, args, text) => {
         const botSettings =
-            (await Settings.findOne({ id: 'bot_settings' })) ||
-            (await Settings.create({ id: 'bot_settings' }));
+            (await settingsRepo.get());
 
         if (!args[0]) {
             return m.reply(
@@ -32,7 +31,7 @@ export default {
             const value = args[1];
             if (!value) return m.reply('❌ Masukkan API Token!');
             botSettings.cfToken = value;
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             clearSettingsCache();
             return m.reply('✅ Cloudflare API Token berhasil diperbarui.');
         }
@@ -41,7 +40,7 @@ export default {
             const value = args[1];
             if (!value) return m.reply('❌ Masukkan Account ID!');
             botSettings.cfAccountId = value;
-            await botSettings.save();
+            await settingsRepo.save(botSettings);
             clearSettingsCache();
             return m.reply('✅ Cloudflare Account ID berhasil diperbarui.');
         }
@@ -63,7 +62,7 @@ export default {
                     botSettings.cfZones.push({ domain, zoneId });
                 }
 
-                await botSettings.save();
+                await settingsRepo.save(botSettings);
                 clearSettingsCache();
                 return m.reply(`✅ Berhasil menambahkan/memperbarui Zone ID untuk *${domain}*.`);
             }
@@ -73,7 +72,7 @@ export default {
                 if (!domain) return m.reply('❌ Format: .cfset zone del <domain.com>');
 
                 botSettings.cfZones = botSettings.cfZones.filter((z) => z.domain !== domain);
-                await botSettings.save();
+                await settingsRepo.save(botSettings);
                 clearSettingsCache();
                 return m.reply(`✅ Zone ID untuk *${domain}* berhasil dihapus.`);
             }

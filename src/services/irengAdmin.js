@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { env } from '../config/env.js';
 
-const BASE_URL = process.env.IRENG_ADMIN_BASE_URL || 'https://irengcloud.com/api';
-const TOKEN = process.env.IRENG_ADMIN_TOKEN || '';
+const BASE_URL = env.IRENG_ADMIN_BASE_URL || 'https://irengcloud.com/api';
+const TOKEN = env.IRENG_ADMIN_TOKEN || '';
 
 const client = () =>
     axios.create({

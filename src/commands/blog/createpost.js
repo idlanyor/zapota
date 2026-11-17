@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { uploadBufferToKanata } from '../../lib/mediaUpload.js';
 import dotenv from 'dotenv';
+import { env } from '../../config/env.js';
 dotenv.config();
 
 export default {
@@ -60,10 +61,10 @@ export default {
                     'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800', // default if no image
             };
 
-            const response = await axios.post(`${process.env.BLOG_API_URL}/posts`, postData, {
+            const response = await axios.post(`${env.BLOG_API_URL}/posts`, postData, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': process.env.BLOG_API_KEY,
+                    'x-api-key': env.BLOG_API_KEY,
                 },
             });
 

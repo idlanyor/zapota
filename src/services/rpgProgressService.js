@@ -1,4 +1,4 @@
-import RpgProgress from '../database/models/RpgProgress.js';
+import { rpgProgressRepo } from '../database/repos/rpgRepos.js';
 
 export const RPG_TIME_ZONE = 'Asia/Jakarta';
 
@@ -144,13 +144,13 @@ const resetDailyProgress = (progress, dateKey) => {
 
 export const getOrCreateRpgProgress = async (userId, now = new Date()) => {
     const dateKey = getRpgDateKey(now);
-    let progress = await RpgProgress.findOne({ userId });
+    let progress = await rpgProgressRepo.findOne({ userId });
     if (!progress) {
-        progress = await RpgProgress.create({ userId, dailyDate: dateKey });
+        progress = await rpgProgressRepo.create({ userId, dailyDate: dateKey });
         return progress;
     }
 
-    if (resetDailyProgress(progress, dateKey)) await progress.save();
+    if (resetDailyProgress(progress, dateKey)) await rpgProgressRepo.save(progress);
     return progress;
 };
 
@@ -163,7 +163,7 @@ export const recordRpgActivity = async (userId, activity, amount = 1, now = new 
     const [dailyField, totalField] = fields;
     progress[dailyField] = (progress[dailyField] || 0) + amount;
     progress[totalField] = (progress[totalField] || 0) + amount;
-    await progress.save();
+    await rpgProgressRepo.save(progress);
     return progress;
 };
 
@@ -180,7 +180,7 @@ export const syncAchievements = async (progress, player, user) => {
 
     if (newlyUnlocked.length > 0) {
         progress.unlockedAchievements = [...unlocked];
-        await progress.save();
+        await rpgProgressRepo.save(progress);
     }
     return newlyUnlocked;
 };

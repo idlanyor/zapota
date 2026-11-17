@@ -1,3 +1,4 @@
+import { env } from '../../config/env.js';
 const formatValue = (value) => {
     if (value === null || value === undefined || value === '') return '-';
     if (typeof value === 'object') {
@@ -116,7 +117,7 @@ export default {
             let api = null;
             if (typeof FreeFireAPI === 'function') {
                 api = new FreeFireAPI();
-                await api.login(process.env.FFSTALK_ID, process.env.FFSTALK_ACCOUNT);
+                await api.login(env.FFSTALK_ID, env.FFSTALK_ACCOUNT);
             }
 
             const fnCandidates = [

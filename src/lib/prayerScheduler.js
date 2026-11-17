@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import Group from '../database/models/Group.js';
+import { groupRepo } from '../database/repos/groupRepo.js';
 import { get } from './api.js';
 import logger from '../utils/logger.js';
 
@@ -52,7 +52,7 @@ export const startPrayerScheduler = (sock) => {
                 const todayDate = getWibDate();
 
                 // Find all groups with reminder enabled
-                const groups = await Group.find({ prayerReminder: true });
+                const groups = await groupRepo.find({ prayerReminder: true });
                 if (!groups.length) return;
 
                 // Group by cityId to minimize API calls

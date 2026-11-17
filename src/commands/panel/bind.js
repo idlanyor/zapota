@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { settings } from '../../config/settings.js';
 
-const PTERO_URL = process.env.PTERO_URL;
-const PTERO_API_KEY = process.env.PTERO_API_KEY;
+import { env } from '../../config/env.js';
+const PTERO_URL = env.PTERO_URL;
+const PTERO_API_KEY = env.PTERO_API_KEY;
 
 const ptero = axios.create({
     baseURL: `${PTERO_URL}/api/application`,

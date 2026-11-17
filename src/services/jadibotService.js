@@ -4,6 +4,7 @@ import logger from '../utils/logger.js';
 import { messageHandler } from '../handlers/messageHandler.js';
 import { createTransport } from '../wa/client.js';
 import { disconnectReason as DisconnectReason } from '../wa/reasons.js';
+import { env } from '../config/env.js';
 
 class JadibotService {
     constructor() {
@@ -26,7 +27,7 @@ class JadibotService {
     async startSession(phoneNumber) {
         const cleanNumber = phoneNumber.replace(/\D/g, '');
         const authPath = path.join(this.baseAuthPath, cleanNumber);
-        const sessionId = process.env.WA_TRANSPORT === 'zapo' ? `jadibot:${cleanNumber}` : cleanNumber;
+        const sessionId = env.WA_TRANSPORT === 'zapo' ? `jadibot:${cleanNumber}` : cleanNumber;
         const oldSession = this.sessions.get(cleanNumber);
 
         if (oldSession?.sock && oldSession.status !== 'open') {

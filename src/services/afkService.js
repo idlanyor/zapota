@@ -1,4 +1,4 @@
-import Afk from '../database/models/Afk.js';
+import { afkRepo } from '../database/repos/afkRepo.js';
 
 // In-memory cache for ultra-fast checks on every message
 const afkCache = new Map();
@@ -7,7 +7,7 @@ let isInitialized = false;
 export const initAfkCache = async () => {
     if (isInitialized) return;
     try {
-        const records = await Afk.find({});
+        const records = await afkRepo.all();
         for (const record of records) {
             afkCache.set(record.userId, {
                 userId: record.userId,
@@ -27,15 +27,7 @@ export const setAfk = async (userId, reason = 'Tanpa alasan', userName = '') => 
     afkCache.set(userId, { userId, userName, reason, time });
 
     try {
-        let doc = await Afk.findOne({ userId });
-        if (doc) {
-            doc.userName = userName;
-            doc.reason = reason;
-            doc.time = new Date(time);
-            await doc.save();
-        } else {
-            await Afk.create({ userId, userName, reason, time: new Date(time) });
-        }
+        await afkRepo.upsert({ userId, userName, reason, time: new Date(time) });
     } catch (e) {
         console.error('Error saving AFK to DB:', e);
     }
@@ -50,7 +42,7 @@ export const removeAfk = async (userId) => {
     afkCache.delete(userId);
 
     try {
-        await Afk.deleteOne({ userId });
+        await afkRepo.remove(userId);
     } catch (e) {
         console.error('Error removing AFK from DB:', e);
     }

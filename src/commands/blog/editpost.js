@@ -2,6 +2,7 @@ import axios from 'axios';
 import { uploadBufferToKanata } from '../../lib/mediaUpload.js';
 import { getBlogFromSession } from '../../lib/blogSession.js';
 import dotenv from 'dotenv';
+import { env } from '../../config/env.js';
 dotenv.config();
 
 export default {
@@ -55,16 +56,12 @@ export default {
                 }
             }
 
-            const response = await axios.put(
-                `${process.env.BLOG_API_URL}/posts/${id}`,
-                updateData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': process.env.BLOG_API_KEY,
-                    },
-                }
-            );
+            const response = await axios.put(`${env.BLOG_API_URL}/posts/${id}`, updateData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': env.BLOG_API_KEY,
+                },
+            });
 
             if (response.status === 200) {
                 await m.react('✅');

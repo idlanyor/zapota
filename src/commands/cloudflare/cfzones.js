@@ -1,5 +1,5 @@
 import { fetchAllZones } from '../../services/cloudflare.js';
-import Settings from '../../database/models/Settings.js';
+import { settingsRepo } from '../../database/repos/settingsRepo.js';
 import { clearSettingsCache } from '../../handlers/messageFlow.js';
 
 export default {
@@ -32,10 +32,9 @@ export default {
             // Handle Sync
             if (args[0] === 'sync') {
                 const botSettings =
-                    (await Settings.findOne({ id: 'bot_settings' })) ||
-                    (await Settings.create({ id: 'bot_settings' }));
+                    (await settingsRepo.get());
                 botSettings.cfZones = newZones;
-                await botSettings.save();
+                await settingsRepo.save(botSettings);
                 clearSettingsCache();
                 await m.react('✅');
                 return m.reply(`✅ Berhasil menyinkronkan ${newZones.length} domain ke database.`);

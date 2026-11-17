@@ -111,6 +111,7 @@ export default {
             const options = {
                 cwd: fs.existsSync(projectRoot) ? projectRoot : process.cwd(),
                 shell: '/bin/bash',
+                // eslint-disable-next-line no-restricted-properties -- child process inherits the full env
                 env: { ...process.env, PATH: process.env.PATH || '/usr/local/bin:/usr/bin:/bin' },
                 timeout: 10 * 60 * 1000,
                 maxBuffer: 10 * 1024 * 1024,

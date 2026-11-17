@@ -31,6 +31,22 @@ export default [
         },
     },
     {
+        // Read configuration through src/config/env.js (declared + validated).
+        files: ['src/**/*.js'],
+        ignores: ['src/config/env.js'],
+        rules: {
+            'no-restricted-properties': [
+                'error',
+                {
+                    object: 'process',
+                    property: 'env',
+                    message:
+                        'Use `env` from src/config/env.js (declare new variables in ENV_SPEC).',
+                },
+            ],
+        },
+    },
+    {
         ignores: [
             'node_modules/',
             'dist/',

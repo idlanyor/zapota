@@ -1,5 +1,5 @@
-import RpgPlayer from '../database/models/RpgPlayer.js';
-import User from '../database/models/User.js';
+import { rpgPlayerRepo } from '../database/repos/rpgRepos.js';
+import { userRepo } from '../database/repos/userRepo.js';
 import { getOrCreateRpgProgress, recordRpgActivity } from './rpgProgressService.js';
 
 export const KOPDES_ITEMS = {
@@ -171,18 +171,18 @@ export const JOBS = {
  * Get or create RPG player linked with User model
  */
 export const getOrCreatePlayer = async (jid, name = '') => {
-    let user = await User.findOne({ jid });
+    let user = await userRepo.findOne({ jid });
     if (!user) {
-        user = await User.create({
+        user = await userRepo.create({
             jid,
             name: name || jid.split('@')[0],
             balance: 50000, // Modal awal warga baru Rp 50.000
         });
     }
 
-    let player = await RpgPlayer.findOne({ userId: jid });
+    let player = await rpgPlayerRepo.findOne({ userId: jid });
     if (!player) {
-        player = await RpgPlayer.create({
+        player = await rpgPlayerRepo.create({
             userId: jid,
             level: 1,
             exp: 0,
@@ -213,7 +213,7 @@ export const getOrCreatePlayer = async (jid, name = '') => {
         if (player.gizi < 30) {
             player.hp = Math.max(20, player.hp - 20);
         }
-        await player.save();
+        await rpgPlayerRepo.save(player);
     }
 
     return { user, player };
@@ -238,7 +238,7 @@ export const addExp = async (player, expAmount) => {
         leveledUp = true;
     }
 
-    await player.save();
+    await rpgPlayerRepo.save(player);
     return { leveledUp, newLevel: player.level };
 };
 
@@ -313,7 +313,7 @@ export const awardMinigameWin = async (jid, customRupiah = null, customExp = nul
     const { earnedRupiah, earnedExp } = reward;
 
     user.balance = (user.balance || 0) + earnedRupiah;
-    await user.save();
+    await userRepo.save(user);
 
     const { leveledUp, newLevel } = await addExp(player, earnedExp);
     await recordRpgActivity(jid, 'win');

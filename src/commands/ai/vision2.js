@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { settings } from '../../config/settings.js';
+import { env } from '../../config/env.js';
 
-const DS_BASE_URL = process.env.DS_BASE_URL || 'http://localhost:5050';
-const DS_API_KEY = process.env.DS_API_KEY || 'dseeker';
+const DS_BASE_URL = env.DS_BASE_URL || 'http://localhost:5050';
+const DS_API_KEY = env.DS_API_KEY || 'dseeker';
 const VISION_MODEL = 'vision';
 
 /**

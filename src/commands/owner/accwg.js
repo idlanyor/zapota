@@ -1,6 +1,7 @@
 import QRCode from 'qrcode';
+import { env } from '../../config/env.js';
 
-const SAKURA_URL = process.env.SAKURA_API_URL || 'https://sakura.irengcloud.com';
+const SAKURA_URL = env.SAKURA_API_URL || 'https://sakura.irengcloud.com';
 
 export default {
     name: 'accwg',
