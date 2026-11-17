@@ -10,6 +10,7 @@ import { jadibotService } from './services/jadibotService.js';
 import { installProcessGuards } from './lib/appSetup.js';
 import { createTransport } from './wa/client.js';
 import { createLiveSocket } from './lib/liveSocket.js';
+import { archiveCredentials, createAttemptGuard } from './wa/sessionReset.js';
 import { assertEnv } from './config/env.js';
 
 try {
@@ -23,6 +24,8 @@ let activeSocket = null;
 /** Forwards to whichever socket is current; safe to hold in long-lived jobs. */
 const liveSock = createLiveSocket(() => activeSocket);
 let backgroundTasksStarted = false;
+/** At most 3 fresh logins per 10 minutes after WhatsApp logs the bot out. */
+const allowRelogin = createAttemptGuard({ max: 3, windowMs: 10 * 60_000 });
 let isApiStarted = false;
 let isAppInitialized = false;
 
@@ -48,6 +51,20 @@ const startBot = async () => {
         saveCreds: transport.saveCreds || (() => {}),
         connectToWhatsApp: startBot,
         authFolder: transport.authFolder,
+        onLoggedOut: async () => {
+            activeSocket = null;
+            if (!allowRelogin()) {
+                logger.error(
+                    'Logged out repeatedly; not reconnecting. Fix the device link, then restart the bot.'
+                );
+                return;
+            }
+            const backup = await archiveCredentials(transport);
+            logger.warn(
+                `Old WhatsApp credentials moved to ${backup ?? '(none found)'}; starting a new login.`
+            );
+            await startBot();
+        },
         onOpen: () => {
             if (!backgroundTasksStarted) {
                 backgroundTasksStarted = true;
