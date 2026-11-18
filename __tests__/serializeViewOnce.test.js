@@ -7,7 +7,7 @@ const msgQuoting = (quotedMessage) => ({
     key: { remoteJid: '123@g.us', fromMe: false, id: 'ABC', participant: '62811@s.whatsapp.net' },
     message: {
         extendedTextMessage: {
-            text: '.rvo',
+            text: 'hai',
             contextInfo: { stanzaId: 'Q1', participant: '62822@s.whatsapp.net', quotedMessage },
         },
     },
