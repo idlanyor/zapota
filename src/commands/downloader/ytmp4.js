@@ -10,7 +10,7 @@ const USAGE =
 
 export default {
     name: 'ytmp4',
-    aliases: ['ytvideo', 'ytdl'],
+    aliases: ['ytv', 'ytvideo', 'ytdl'],
     description: 'Download video YouTube (yt-dlp)',
     category: 'Downloader',
     execute: async (sock, m, args) => {

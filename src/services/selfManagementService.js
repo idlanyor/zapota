@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { exec, execSync } from 'child_process';
 import util from 'util';
-import { commands, reloadCommand, unloadCommand } from '../lib/commands.js';
+import { commands, reloadCommand, reloadFromManifest, unloadCommand } from '../lib/commands.js';
 import logger from '../utils/logger.js';
 
 const execAsync = util.promisify(exec);
@@ -45,6 +45,8 @@ export const rebuildManifest = async () => {
         const scriptPath = path.join(projectRoot, 'scripts/build-manifest.js');
         if (fs.existsSync(scriptPath)) {
             await execAsync(`node "${scriptPath}"`, { cwd: projectRoot });
+            // Production reads the registry from the manifest only at startup.
+            await reloadFromManifest();
             return true;
         }
     } catch (err) {

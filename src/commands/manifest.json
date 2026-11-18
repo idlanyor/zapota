@@ -613,6 +613,7 @@
     "index": 0,
     "name": "ytmp4",
     "aliases": [
+      "ytv",
       "ytvideo",
       "ytdl"
     ],
