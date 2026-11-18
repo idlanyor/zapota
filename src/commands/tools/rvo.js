@@ -6,11 +6,11 @@ export default {
     execute: async (sock, m, args, text) => {
         if (!m.quoted || !m.quoted.isViewOnce) {
             return m.reply(
-                ' Balas pada pesan *Sekali Lihat* (gambar/video/audio) untuk mengambil datanya.'
+                '⚠️ Balas pada pesan *Sekali Lihat* (gambar/video/audio) untuk mengambil datanya.'
             );
         }
 
-        await m.react('');
+        await m.react('⏳');
 
         try {
             const buffer = await m.quoted.download();
@@ -28,20 +28,21 @@ export default {
                     m.chat,
                     {
                         audio: buffer,
-                        mimetype: 'audio/mpeg',
+                        mimetype:
+                            m.quoted.mimetype || (isPtt ? 'audio/ogg; codecs=opus' : 'audio/mpeg'),
                         ptt: isPtt,
                     },
                     { quoted: m }
                 );
             } else {
-                return m.reply(` Tipe media (${m.quoted.mtype}) tidak didukung.`);
+                return m.reply(`❌ Tipe media (${m.quoted.mtype}) tidak didukung.`);
             }
 
-            await m.react('');
+            await m.react('✅');
         } catch (err) {
             console.error('RVO Error:', err);
-            await m.reply(` Gagal mengambil media: ${err.message}`);
-            await m.react('');
+            await m.reply(`❌ Gagal mengambil media: ${err.message}`);
+            await m.react('❌');
         }
     },
 };
