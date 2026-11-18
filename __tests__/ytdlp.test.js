@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +8,7 @@ import {
     downloadYouTubeAudio,
     downloadYouTubeVideo,
     isYouTubeUrl,
+    MAX_ATTEMPTS_ON_403,
     pickHeight,
     videoFormat,
 } from '../src/lib/ytdlp.js';
@@ -96,6 +97,30 @@ describe('downloadYouTubeVideo', () => {
         await expect(
             downloadYouTubeVideo('--exec=id', { bin: '/nonexistent/should-not-run' })
         ).rejects.toThrow('Link YouTube tidak valid');
+    });
+
+    describe('HTTP 403 from YouTube', () => {
+        let runsFile;
+        beforeEach(() => {
+            runsFile = path.join(os.tmpdir(), `fake-ytdlp-runs-${process.pid}-${Date.now()}`);
+        });
+        afterEach(() => rmSync(runsFile, { force: true }));
+        const runs = () => readFileSync(runsFile, 'utf8').length;
+
+        test('a one-off 403 is retried and the download succeeds', async () => {
+            const video = await fakeDownload(`403-once=${runsFile}`);
+            expect(video.title).toBe('retried');
+            expect(runs()).toBe(2);
+        });
+
+        test('a lasting 403 gives up after 3 runs with the error', async () => {
+            await expect(fakeDownload(`403-always=${runsFile}`)).rejects.toThrow(/HTTP Error 403/);
+            expect(runs()).toBe(MAX_ATTEMPTS_ON_403);
+        });
+
+        test('other errors are not retried', async () => {
+            await expect(fakeDownload('error')).rejects.toThrow('Video unavailable');
+        });
     });
 
     test("surfaces yt-dlp's own error message", async () => {

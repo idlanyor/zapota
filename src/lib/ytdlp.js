@@ -6,7 +6,7 @@
  * command.
  */
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { settings } from '../config/settings.js';
@@ -37,6 +37,9 @@ export const videoFormat = (height) =>
         `bv*[height<=${height}]+ba`,
         `b[height<=${height}]`,
     ].join('/');
+
+/** Runs of yt-dlp for one request when YouTube answers 403 (same as clipper-server). */
+export const MAX_ATTEMPTS_ON_403 = 3;
 
 export const LIMITS = Object.freeze({
     maxFilesize: '100M',
@@ -127,8 +130,19 @@ const download = async (url, opts, buildArgs, tooLargeHint) => {
     const outDir = await mkdtemp(path.join(os.tmpdir(), 'kanata-ytdlp-'));
     try {
         const args = [...extraArgs, ...buildArgs({ url: cleanUrl, outDir, limits })];
-        const { code, stdout, stderr } = await run(bin, args, limits.timeoutMs);
-        if (code !== 0) throw new Error(ytdlpError(stderr) || `yt-dlp gagal (kode ${code}).`);
+        let result;
+        for (let attempt = 1; ; attempt++) {
+            result = await run(bin, args, limits.timeoutMs);
+            if (result.code === 0) break;
+            const message = ytdlpError(result.stderr) || `yt-dlp gagal (kode ${result.code}).`;
+            // YouTube now and then answers one download with 403 that a fresh run does not get.
+            if (attempt >= MAX_ATTEMPTS_ON_403 || !/HTTP Error 403/i.test(message)) {
+                throw new Error(message);
+            }
+            await rm(outDir, { recursive: true, force: true });
+            await mkdir(outDir, { recursive: true });
+        }
+        const { stdout } = result;
 
         const line = stdout.trim().split('\n').filter(Boolean).at(-1);
         if (!line) {
