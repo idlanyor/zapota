@@ -1,3 +1,5 @@
+import logger from '../../utils/logger.js';
+
 export default {
     name: 'rvo',
     aliases: ['readviewonce', 'lihat'],
@@ -7,6 +9,23 @@ export default {
         if (!m.quoted || !m.quoted.isViewOnce) {
             return m.reply(
                 '⚠️ Balas pada pesan *Sekali Lihat* (gambar/video/audio) untuk mengambil datanya.'
+            );
+        }
+
+        // WhatsApp may deliver a view-once to linked devices (which this bot is)
+        // without its media key; then there is nothing to download.
+        if (!m.quoted.mediaKey || !m.quoted.directPath) {
+            logger.warn(
+                `RVO: quoted ${m.quoted.mtype} has no media key/path; fields: ${Object.keys(
+                    m.quoted
+                )
+                    .filter((k) => typeof m.quoted[k] !== 'function')
+                    .join(',')}`
+            );
+            await m.react('❌');
+            return m.reply(
+                '❌ Media sekali lihat ini tidak bisa diambil: WhatsApp tidak mengirim ' +
+                    'kunci medianya ke bot (perangkat tertaut).'
             );
         }
 
