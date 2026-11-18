@@ -1,4 +1,5 @@
-import { downloadYouTubeYtmp3 } from '../../lib/ytmp3Mobi.js';
+import { downloadYouTubeVideo, isYouTubeUrl, pickHeight } from '../../lib/ytdlp.js';
+import { optimizeVideoForWa } from '../../lib/videoHelper.js';
 import { videoQueue } from '../../lib/queue.js';
 import { searchYouTube } from '../../lib/youtubeSearch.js';
 import logger from '../../utils/logger.js';
@@ -8,57 +9,54 @@ const safeFileName = (value) => value.replace(/[\\/:*?"<>|]/g, '_').slice(0, 120
 export default {
     name: 'playv',
     aliases: ['playvideo', 'pv'],
-    description: 'Cari dan mainkan video YouTube via YTmp3',
+    description: 'Cari dan putar video YouTube (yt-dlp)',
     category: 'Downloader',
     execute: async (sock, m, args, text) => {
         if (!text)
-            return m.reply('Kirim judul lagu atau link YouTube.\nContoh: *.playv 12 seconds*');
+            return m.reply(
+                'Kirim judul atau link YouTube.\nContoh: *.playv 12 seconds* atau *.playv 12 seconds --720*'
+            );
 
-        const resolutionFlag = args.find((arg) => /^--\d+$/.test(arg));
-        const cleanQuery = resolutionFlag ? text.replace(resolutionFlag, '').trim() : text.trim();
+        const resolutionFlag = args.find((arg) => /^--\d+p?$/.test(arg));
+        const query = resolutionFlag ? text.replace(resolutionFlag, '').trim() : text.trim();
+        const height = pickHeight(resolutionFlag ? resolutionFlag.replace(/\D/g, '') : undefined);
         await m.react('⏳').catch(() => {});
 
         try {
-            const [video] = await searchYouTube(cleanQuery, 1);
-            if (!video) throw new Error('Video tidak ditemukan.');
+            let video = { url: query };
+            if (!isYouTubeUrl(query)) {
+                [video] = await searchYouTube(query, 1);
+                if (!video) throw new Error('Video tidak ditemukan.');
+            }
 
-            let statusMessage = null;
+            let queued = false;
             const onQueueStatus = async (position) => {
-                try {
-                    if (position > 0 && !statusMessage) {
-                        statusMessage = await m.reply(
-                            `Masuk antrean downloader. Posisi: *#${position}*.`
-                        );
-                    }
-                } catch (err) {
-                    logger.warn(`Gagal mengirim status antrean: ${err.message}`, 'PLAYV');
+                if (position > 0 && !queued) {
+                    queued = true;
+                    await m
+                        .reply(`⏳ Masuk antrean downloader. Posisi: *#${position}*.`)
+                        .catch(() => {});
                 }
             };
 
             const task = async () => {
-                if (!statusMessage) {
-                    statusMessage = await m.reply(`Mengonversi video "${video.title}"...`);
-                }
-
-                const data = await downloadYouTubeYtmp3(video.url, 'mp4');
-                const videoTitle = data.title || video.title;
-                const requestedQuality = resolutionFlag
-                    ? '\n*Catatan:* YTmp3 menentukan kualitas secara otomatis.'
-                    : '';
+                const result = await downloadYouTubeVideo(video.url, { height });
+                const buffer = await optimizeVideoForWa(result.buffer);
+                const title = result.title || video.title;
                 const caption =
                     `*YouTube Video*\n\n` +
-                    `*Title:* ${videoTitle}\n` +
-                    `*Channel:* ${video.author.name}\n` +
-                    `*Duration:* ${video.timestamp}\n` +
-                    `*Source:* YTmp3${requestedQuality}`;
+                    `*Judul:* ${title}\n` +
+                    (video.author?.name ? `*Channel:* ${video.author.name}\n` : '') +
+                    (video.timestamp ? `*Durasi:* ${video.timestamp}\n` : '') +
+                    `*Kualitas:* ${result.height ? `${result.height}p` : `≤${height}p`}`;
 
                 await sock.sendMessage(
                     m.chat,
                     {
-                        video: { url: data.url },
+                        video: buffer,
                         mimetype: 'video/mp4',
                         caption: caption.slice(0, 1000),
-                        fileName: `${safeFileName(videoTitle)}.mp4`,
+                        fileName: `${safeFileName(title)}.mp4`,
                     },
                     { quoted: m }
                 );
@@ -67,9 +65,9 @@ export default {
 
             await videoQueue.push(task, onQueueStatus);
         } catch (err) {
-            logger.error(err, 'PLAYV');
+            logger.error(`[playv] ${err.message}`, 'PLAYV');
             await m.react('❌').catch(() => {});
-            await m.reply(`Gagal memproses video: ${err.message || 'Unknown error'}`);
+            await m.reply(`❌ Gagal memproses video: ${err.message || 'Unknown error'}`);
         }
     },
 };

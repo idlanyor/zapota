@@ -44,17 +44,8 @@ export const LIMITS = Object.freeze({
     timeoutMs: 5 * 60_000,
 });
 
-/** yt-dlp arguments for one video download into `outDir`. */
-export const buildVideoArgs = ({ url, height, outDir, limits = LIMITS }) => [
-    '--no-playlist',
-    '--no-warnings',
-    '--no-progress',
-    '--no-part',
-    '--no-mtime',
-    '-f',
-    videoFormat(height),
-    '--merge-output-format',
-    'mp4',
+/** Arguments shared by every download: limits, output, result line, URL last. */
+const commonArgs = ({ url, outDir, limits }) => [
     '--max-filesize',
     limits.maxFilesize,
     '--match-filter',
@@ -65,6 +56,31 @@ export const buildVideoArgs = ({ url, height, outDir, limits = LIMITS }) => [
     'after_move:%(.{title,height,duration,filepath})j',
     '--',
     url,
+];
+
+const BASE_ARGS = ['--no-playlist', '--no-warnings', '--no-progress', '--no-part', '--no-mtime'];
+
+/** yt-dlp arguments for one video download into `outDir`. */
+export const buildVideoArgs = ({ url, height, outDir, limits = LIMITS }) => [
+    ...BASE_ARGS,
+    '-f',
+    videoFormat(height),
+    '--merge-output-format',
+    'mp4',
+    ...commonArgs({ url, outDir, limits }),
+];
+
+/** yt-dlp arguments for one audio download, converted to MP3 by ffmpeg. */
+export const buildAudioArgs = ({ url, outDir, limits = LIMITS }) => [
+    ...BASE_ARGS,
+    '-f',
+    'ba[ext=m4a]/ba/b',
+    '-x',
+    '--audio-format',
+    'mp3',
+    '--audio-quality',
+    '128K',
+    ...commonArgs({ url, outDir, limits }),
 ];
 
 /** Last `ERROR:` line yt-dlp printed, without the prefix. */
@@ -100,25 +116,17 @@ const run = (bin, args, timeoutMs) =>
     });
 
 /**
- * Download one YouTube video as an MP4 buffer.
- *
- * @param {string} url
- * @param {{ height?: number, bin?: string, extraArgs?: string[], limits?: typeof LIMITS }} [opts]
- * @returns {Promise<{ buffer: Buffer, title: string, height: number | null, duration: number | null }>}
+ * Run yt-dlp with `buildArgs(outDir)` in a fresh temp folder and return the
+ * one file it produced. The folder is always removed afterwards.
  */
-export const downloadYouTubeVideo = async (url, opts = {}) => {
+const download = async (url, opts, buildArgs, tooLargeHint) => {
     const cleanUrl = String(url ?? '').trim();
     if (!isYouTubeUrl(cleanUrl)) throw new Error('Link YouTube tidak valid.');
 
-    const {
-        height = DEFAULT_HEIGHT,
-        bin = settings.ytdlpBin,
-        extraArgs = settings.ytdlpArgs,
-        limits = LIMITS,
-    } = opts;
+    const { bin = settings.ytdlpBin, extraArgs = settings.ytdlpArgs, limits = LIMITS } = opts;
     const outDir = await mkdtemp(path.join(os.tmpdir(), 'kanata-ytdlp-'));
     try {
-        const args = [...extraArgs, ...buildVideoArgs({ url: cleanUrl, height, outDir, limits })];
+        const args = [...extraArgs, ...buildArgs({ url: cleanUrl, outDir, limits })];
         const { code, stdout, stderr } = await run(bin, args, limits.timeoutMs);
         if (code !== 0) throw new Error(ytdlpError(stderr) || `yt-dlp gagal (kode ${code}).`);
 
@@ -127,7 +135,7 @@ export const downloadYouTubeVideo = async (url, opts = {}) => {
             // yt-dlp exits 0 but skips videos rejected by --match-filter / --max-filesize.
             throw new Error(
                 `Video terlalu panjang (maks ${limits.maxDurationSec / 60} menit) ` +
-                    `atau terlalu besar (maks ${limits.maxFilesize}B). Coba resolusi lebih kecil.`
+                    `atau terlalu besar (maks ${limits.maxFilesize}B).${tooLargeHint}`
             );
         }
         const info = JSON.parse(line);
@@ -138,7 +146,7 @@ export const downloadYouTubeVideo = async (url, opts = {}) => {
         await stat(filePath);
         return {
             buffer: await readFile(filePath),
-            title: info.title || 'video',
+            title: info.title || 'YouTube',
             height: info.height ?? null,
             duration: info.duration ?? null,
         };
@@ -146,3 +154,27 @@ export const downloadYouTubeVideo = async (url, opts = {}) => {
         await rm(outDir, { recursive: true, force: true });
     }
 };
+
+/**
+ * Download one YouTube video as an MP4 buffer.
+ *
+ * @param {string} url
+ * @param {{ height?: number, bin?: string, extraArgs?: string[], limits?: typeof LIMITS }} [opts]
+ * @returns {Promise<{ buffer: Buffer, title: string, height: number | null, duration: number | null }>}
+ */
+export const downloadYouTubeVideo = (url, opts = {}) =>
+    download(
+        url,
+        opts,
+        (base) => buildVideoArgs({ ...base, height: opts.height ?? DEFAULT_HEIGHT }),
+        ' Coba resolusi lebih kecil.'
+    );
+
+/**
+ * Download one YouTube video's audio as an MP3 buffer.
+ *
+ * @param {string} url
+ * @param {{ bin?: string, extraArgs?: string[], limits?: typeof LIMITS }} [opts]
+ * @returns {Promise<{ buffer: Buffer, title: string, duration: number | null }>}
+ */
+export const downloadYouTubeAudio = (url, opts = {}) => download(url, opts, buildAudioArgs, '');

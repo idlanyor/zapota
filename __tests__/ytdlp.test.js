@@ -3,7 +3,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+    buildAudioArgs,
     buildVideoArgs,
+    downloadYouTubeAudio,
     downloadYouTubeVideo,
     isYouTubeUrl,
     pickHeight,
@@ -55,6 +57,30 @@ test('arguments: H.264 first, URL after "--", limits applied', () => {
     expect(args).toEqual(expect.arrayContaining(['--no-playlist', '--max-filesize', '100M']));
     expect(args[args.indexOf('--match-filter') + 1]).toBe('duration<=3600');
     expect(args[args.indexOf('-o') + 1]).toBe('/tmp/x/%(id)s.%(ext)s');
+});
+
+test('audio arguments: extract to MP3, URL after "--", same limits', () => {
+    const args = buildAudioArgs({ url: URL, outDir: '/tmp/x' });
+    expect(args.slice(-2)).toEqual(['--', URL]);
+    expect(args).toEqual(expect.arrayContaining(['-x', '--audio-format', 'mp3', '--no-playlist']));
+    expect(args[args.indexOf('--match-filter') + 1]).toBe('duration<=3600');
+});
+
+describe('downloadYouTubeAudio', () => {
+    test('returns the file and its title', async () => {
+        const audio = await downloadYouTubeAudio(URL, {
+            bin: process.execPath,
+            extraArgs: [FAKE, 'ok'],
+        });
+        expect(audio.buffer.toString()).toBe('VIDEO');
+        expect(audio.title).toBe('Me at the zoo');
+    });
+
+    test('refuses non-YouTube input', async () => {
+        await expect(
+            downloadYouTubeAudio('-o/etc/x', { bin: '/nonexistent/should-not-run' })
+        ).rejects.toThrow('Link YouTube tidak valid');
+    });
 });
 
 describe('downloadYouTubeVideo', () => {

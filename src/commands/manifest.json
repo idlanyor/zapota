@@ -483,7 +483,7 @@
     "aliases": [
       "p"
     ],
-    "description": "Search and play audio from YouTube via YTmp3",
+    "description": "Cari dan putar audio dari YouTube (yt-dlp)",
     "category": "Downloader",
     "guards": [],
     "buttonPrefix": "",
@@ -498,7 +498,7 @@
       "playvideo",
       "pv"
     ],
-    "description": "Cari dan mainkan video YouTube via YTmp3",
+    "description": "Cari dan putar video YouTube (yt-dlp)",
     "category": "Downloader",
     "guards": [],
     "buttonPrefix": "",
