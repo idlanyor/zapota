@@ -16,27 +16,35 @@ const getZapoAdapter = async () => {
     return createZapoAdapter;
 };
 
+/** zapo credential store of a sub-bot session (next to the main one). */
+export const subBotStorePath = (sessionId) =>
+    path.join(path.dirname(settings.zapoDbPath), `jadibot-${sessionId}.sqlite`);
+
+/** Baileys auth folder of a sub-bot session. */
+export const subBotAuthFolder = (sessionId) => path.join('sessions_jadibot', sessionId);
+
 /**
  * Satu pintu pembuatan koneksi WhatsApp.
  * WA_TRANSPORT=baileys (default) | zapo
+ *
+ * `pairingNumber` (sub-bot sessions, zapo): log in with a pairing code for
+ * that number instead of a QR. The main session uses BOT_PHONE_NUMBER.
+ * Baileys sockets request their code themselves (`requestPairingCode`).
  */
-export const createTransport = async ({ sessionId = 'default' } = {}) => {
+export const createTransport = async ({ sessionId = 'default', pairingNumber } = {}) => {
     const transport = settings.transport === 'zapo' ? 'zapo' : 'baileys';
 
     if (transport === 'baileys') {
         const createBaileysAdapter = await getBaileysAdapter();
         if (sessionId !== 'default') {
             return createBaileysAdapter({
-                authFolder: path.join('sessions_jadibot', sessionId),
+                authFolder: subBotAuthFolder(sessionId),
             });
         }
         return createBaileysAdapter({ authFolder: 'auth_info_baileys' });
     }
 
-    const dbPath =
-        sessionId === 'default'
-            ? settings.zapoDbPath
-            : path.join(path.dirname(settings.zapoDbPath), `jadibot-${sessionId}.sqlite`);
+    const dbPath = sessionId === 'default' ? settings.zapoDbPath : subBotStorePath(sessionId);
 
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
@@ -44,6 +52,6 @@ export const createTransport = async ({ sessionId = 'default' } = {}) => {
     return createZapoAdapter({
         storePath: dbPath,
         sessionId,
-        pairingNumber: sessionId === 'default' ? settings.pairingNumber : undefined,
+        pairingNumber: sessionId === 'default' ? settings.pairingNumber : pairingNumber,
     });
 };

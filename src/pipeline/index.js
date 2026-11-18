@@ -15,6 +15,7 @@ import {
     joinGroupGate,
     ownerAgent,
 } from './steps/interceptors.js';
+import { subBotGate } from './steps/subBot.js';
 import { routeCommand } from './steps/routeCommand.js';
 import { mentionChat, autoAiPrivate } from './steps/ai.js';
 
@@ -22,6 +23,7 @@ export const steps = [
     // intake
     dedupe,
     loadMessage,
+    subBotGate,
     buildContext,
     // interceptors
     routeActiveSession,

@@ -67,11 +67,12 @@ export const serialize = (m, sock) => {
                 'ephemeralMessage',
                 'viewOnceMessage',
                 'viewOnceMessageV2',
+                'viewOnceMessageV2Extension',
                 'documentWithCaptionMessage',
                 'editedMessage',
             ].includes(m.mtype)
         ) {
-            if (m.mtype === 'viewOnceMessage' || m.mtype === 'viewOnceMessageV2') isViewOnce = true;
+            if (m.mtype.startsWith('viewOnceMessage')) isViewOnce = true;
             if (m.mtype === 'editedMessage') isEdited = true;
 
             m.message = m.message[m.mtype].message || m.message[m.mtype];
@@ -124,11 +125,12 @@ export const serialize = (m, sock) => {
                     'ephemeralMessage',
                     'viewOnceMessage',
                     'viewOnceMessageV2',
+                    'viewOnceMessageV2Extension',
                     'documentWithCaptionMessage',
                     'editedMessage',
                 ].includes(type)
             ) {
-                if (type === 'viewOnceMessage' || type === 'viewOnceMessageV2') qViewOnce = true;
+                if (type.startsWith('viewOnceMessage')) qViewOnce = true;
                 if (type === 'editedMessage') qEdited = true;
 
                 q = q[type].message || q[type];

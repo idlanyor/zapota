@@ -1,50 +1,53 @@
-import { downloadYouTubeYtmp3 } from '../../lib/ytmp3Mobi.js';
-import { downloadAudioForWa } from '../../lib/audioHelper.js';
+import { downloadYouTubeAudio, isYouTubeUrl } from '../../lib/ytdlp.js';
 import { searchYouTube } from '../../lib/youtubeSearch.js';
 import logger from '../../utils/logger.js';
 
 const safeFileName = (value) => value.replace(/[\\/:*?"<>|]/g, '_').slice(0, 120);
 
+/** A YouTube link is used as is; anything else is searched (first result). */
+const resolveVideo = async (query) => {
+    if (isYouTubeUrl(query)) return { url: query };
+    const [video] = await searchYouTube(query, 1);
+    if (!video) throw new Error('Lagu tidak ditemukan.');
+    return video;
+};
+
 export default {
     name: 'play',
     aliases: ['p'],
-    description: 'Search and play audio from YouTube via YTmp3',
+    description: 'Cari dan putar audio dari YouTube (yt-dlp)',
     category: 'Downloader',
     execute: async (sock, m, args, text) => {
-        if (!text) return m.reply('Kirim judul lagu atau link YouTube.');
+        if (!text) return m.reply('Kirim judul lagu atau link YouTube.\nContoh: *.play sukish*');
 
         await m.react('⏳').catch(() => {});
 
         try {
-            const [video] = await searchYouTube(text, 1);
-            if (!video) throw new Error('Lagu tidak ditemukan.');
-
-            const data = await downloadYouTubeYtmp3(video.url, 'mp3');
-            const audioTitle = data.title || video.title;
-            const audioBuffer = await downloadAudioForWa(data.url);
+            const video = await resolveVideo(text.trim());
+            const audio = await downloadYouTubeAudio(video.url);
+            const title = audio.title || video.title;
 
             const caption =
                 `*YouTube Play*\n\n` +
-                `*Title:* ${audioTitle}\n` +
-                `*Channel:* ${video.author.name}\n` +
-                `*Duration:* ${video.timestamp}\n` +
-                `*Source:* YTmp3`;
+                `*Judul:* ${title}\n` +
+                (video.author?.name ? `*Channel:* ${video.author.name}\n` : '') +
+                (video.timestamp ? `*Durasi:* ${video.timestamp}\n` : '');
 
-            await sock.sendMessage(m.chat, { text: caption }, { quoted: m });
+            await sock.sendMessage(m.chat, { text: caption.trim() }, { quoted: m });
             await sock.sendMessage(
                 m.chat,
                 {
-                    audio: audioBuffer,
+                    audio: audio.buffer,
                     mimetype: 'audio/mpeg',
-                    fileName: `${safeFileName(audioTitle)}.mp3`,
+                    fileName: `${safeFileName(title)}.mp3`,
                 },
                 { quoted: m }
             );
             await m.react('✅').catch(() => {});
         } catch (err) {
-            logger.error(err, 'PLAY');
+            logger.error(`[play] ${err.message}`, 'PLAY');
             await m.react('❌').catch(() => {});
-            await m.reply(`Gagal memutar audio: ${err.message || 'Unknown error'}`);
+            await m.reply(`❌ Gagal memutar audio: ${err.message || 'Unknown error'}`);
         }
     },
 };

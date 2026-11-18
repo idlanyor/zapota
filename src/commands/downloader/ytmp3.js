@@ -1,46 +1,38 @@
-import { fetchAPI } from '../../lib/api.js';
+import { downloadYouTubeAudio, isYouTubeUrl } from '../../lib/ytdlp.js';
 import logger from '../../utils/logger.js';
+
+const safeFileName = (value) => value.replace(/[\\/:*?"<>|]/g, '_').slice(0, 120);
+
+const USAGE =
+    'Kirim link YouTube.\nContoh: *.ytmp3 https://youtu.be/xxxx*\nCari lagu pakai judul: *.play <judul>*';
 
 export default {
     name: 'ytmp3',
     aliases: ['ytaudio', 'yta'],
-    description: 'Download YouTube audio',
+    description: 'Download audio YouTube sebagai MP3 (yt-dlp)',
     category: 'Downloader',
-    execute: async (sock, m, args, text) => {
-        if (!text) return m.reply('Please provide a YouTube URL.');
+    execute: async (sock, m, args) => {
+        const url = args[0];
+        if (!url) return m.reply(USAGE);
+        if (!isYouTubeUrl(url)) return m.reply(`❌ Itu bukan link YouTube.\n\n${USAGE}`);
 
-        // logger.info(`[DEBUG] ytmp3 triggered for URL: ${text}`);
-        await m.react('⏳');
-
+        await m.react('⏳').catch(() => {});
         try {
-            // logger.info(`[DEBUG] Fetching audio API for: ${text}`);
-            const data = await fetchAPI('https://kanata-api.irengcloud.com/youtube2/download-audio', {
-                url: text,
-            });
-
-            if (!data || typeof data.url !== 'string' || !data.url.startsWith('http')) {
-                // logger.info(`[DEBUG] ytmp3 API Failure:`, data);
-                await m.react('❌');
-                return m.reply('Failed to fetch YouTube audio. Make sure the URL is valid.');
-            }
-
-            // logger.info(`[DEBUG] ytmp3 success, sending audio from: ${data.url.substring(0, 50)}...`);
+            const audio = await downloadYouTubeAudio(url);
             await sock.sendMessage(
                 m.chat,
                 {
-                    audio: { url: data.url },
+                    audio: audio.buffer,
                     mimetype: 'audio/mpeg',
-                    fileName: `${data.title || 'audio'}.mp3`,
+                    fileName: `${safeFileName(audio.title)}.mp3`,
                 },
                 { quoted: m }
             );
-            await m.react('✅');
-
-            // logger.info(`[DEBUG] ytmp3 sent successfully`);
+            await m.react('✅').catch(() => {});
         } catch (err) {
-            logger.error(`[DEBUG] ytmp3 error:`, err);
-            await m.react('❌');
-            await m.reply(' An error occurred while fetching the audio.');
+            logger.error(`[ytmp3] ${err.message}`, 'YTMP3');
+            await m.react('❌').catch(() => {});
+            await m.reply(`❌ Gagal mengunduh audio: ${err.message || 'Unknown error'}`);
         }
     },
 };

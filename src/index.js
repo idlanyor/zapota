@@ -10,6 +10,7 @@ import { jadibotService } from './services/jadibotService.js';
 import { installProcessGuards } from './lib/appSetup.js';
 import { createTransport } from './wa/client.js';
 import { createLiveSocket } from './lib/liveSocket.js';
+import { setMainSocketGetter } from './lib/botProfile.js';
 import { archiveCredentials, createAttemptGuard } from './wa/sessionReset.js';
 import { assertEnv } from './config/env.js';
 
@@ -23,6 +24,8 @@ try {
 let activeSocket = null;
 /** Forwards to whichever socket is current; safe to hold in long-lived jobs. */
 const liveSock = createLiveSocket(() => activeSocket);
+// Sub-bots notify their owners and report errors through the main bot.
+setMainSocketGetter(() => activeSocket);
 let backgroundTasksStarted = false;
 /** At most 3 fresh logins per 10 minutes after WhatsApp logs the bot out. */
 const allowRelogin = createAttemptGuard({ max: 3, windowMs: 10 * 60_000 });
@@ -70,7 +73,7 @@ const startBot = async () => {
                 backgroundTasksStarted = true;
                 startPrayerScheduler(liveSock);
                 startGroupScheduler(() => activeSocket);
-                jadibotService.init();
+                jadibotService.init().catch((err) => logger.error(err, 'Jadibot init failed'));
             }
         },
     });

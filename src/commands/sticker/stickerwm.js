@@ -16,7 +16,7 @@ export default {
             );
         }
 
-        await m.react('');
+        await m.react('⏳');
 
         try {
             // Gunakan helper download() yang baru kita buat di serialize.js
@@ -39,11 +39,11 @@ export default {
             // Gunakan helper reply() yang sudah support media (via options)
             await sock.sendMessage(m.chat, { sticker: result }, { quoted: m });
 
-            await m.react('');
+            await m.react('✅');
         } catch (err) {
             console.error(err);
-            await m.reply(' Gagal memproses watermark.');
-            await m.react('');
+            await m.reply('❌ Gagal memproses watermark.');
+            await m.react('❌');
         }
     },
 };

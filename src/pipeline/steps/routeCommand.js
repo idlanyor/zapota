@@ -2,6 +2,7 @@ import logger from '../../utils/logger.js';
 import { commands } from '../../lib/commands.js';
 import { getBotIdentity } from '../../middlewares/auth.js';
 import { checkGuards } from '../guards.js';
+import { mainSocket } from '../../lib/botProfile.js';
 
 const chatLabel = (m) => (m.isGroup ? m.metadata?.subject || m.chat : m.chat);
 
@@ -21,13 +22,15 @@ const reportFailure = async (ctx, cmdName, err) => {
     logger.error(err, `Error in command: ${cmdName}`);
 
     const { ownerJid } = getBotIdentity(sock);
+    // A sub-bot is a user's own number: report through the main bot instead.
+    const reporter = ctx.subBot ? mainSocket() : sock;
     const report =
         ` *COMMAND ERROR REPORT*\n\n` +
         `➛ *Command:* ${cmdName}\n` +
         `➛ *Sender:* @${m.sender.split('@')[0]}\n` +
         `➛ *Error:* ${err.message}\n\n` +
         `\`\`\`${err.stack}\`\`\``;
-    await sock.sendMessage(ownerJid, { text: report, mentions: [m.sender] }).catch(() => {});
+    await reporter?.sendMessage(ownerJid, { text: report, mentions: [m.sender] }).catch(() => {});
     m.reply(` Terjadi kesalahan. Detail error telah dikirim ke Owner.`);
 };
 

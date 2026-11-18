@@ -41,6 +41,15 @@ export const ENV_SPEC = Object.freeze({
         desc: "Bot's own number; zapo logs in by pairing code instead of QR",
         format: 'digits',
     },
+    JADIBOT_MAX: {
+        group: 'core',
+        desc: 'Max free sub-bot (jadibot) sessions; premium ones are not counted (default: 15)',
+    },
+    YTDLP_BIN: { group: 'core', desc: 'yt-dlp binary for YouTube downloads (default: yt-dlp on PATH)' },
+    YTDLP_ARGS: {
+        group: 'core',
+        desc: 'Extra yt-dlp args, space separated (default: --js-runtimes node), e.g. add --cookies <file>',
+    },
     BOT_PREFIX: { group: 'core', desc: 'Command prefix (default: .)' },
     BOT_NAME: { group: 'core', desc: 'Display name (default: KANATA_BOT)' },
     OWNER_NUMBER: {

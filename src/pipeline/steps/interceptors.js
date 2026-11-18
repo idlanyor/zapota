@@ -60,9 +60,13 @@ export const buttons = async (ctx, next) => {
     await next();
 };
 
-/** The bot's own outgoing messages only act as input in self mode. */
+/**
+ * The bot's own outgoing messages only act as input in self mode. On a
+ * sub-bot, `fromMe` messages that reach this step were typed by its owner
+ * (subBotGate already dropped the bot's own replies).
+ */
 export const ignoreOwnMessages = async (ctx, next) => {
-    if (ctx.m.key.fromMe && ctx.botSettings?.mode !== 'self') return;
+    if (ctx.m.key.fromMe && !ctx.subBot && ctx.botSettings?.mode !== 'self') return;
     await next();
 };
 
@@ -86,12 +90,14 @@ const buildJidCandidates = (...values) => {
 /** "Must join the official group" gate for private chats. */
 export const joinGroupGate = async (ctx, next) => {
     const { sock, m, isOwner, botSettings } = ctx;
+    if (ctx.subBot) return next();
     if (!(await checkJoinGroup(sock, m, isOwner, botSettings, buildJidCandidates))) return;
     await next();
 };
 
 export const ownerAgent = async (ctx, next) => {
     const { sock, m, isOwner, usedPrefix } = ctx;
+    if (ctx.subBot) return next();
     if (await handleOwnerAgentTrigger(sock, m, isOwner, usedPrefix)) return;
     await next();
 };

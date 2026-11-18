@@ -25,6 +25,18 @@ export const settings = {
     get pairingNumber() {
         return (env.BOT_PHONE_NUMBER || '').replace(/\D/g, '');
     },
+    get ytdlpBin() {
+        return env.YTDLP_BIN || 'yt-dlp';
+    },
+    /** @returns {string[]} */
+    get ytdlpArgs() {
+        return (env.YTDLP_ARGS ?? '--js-runtimes node').split(' ').filter(Boolean);
+    },
+    /** Max free sub-bot (jadibot) sessions; premium sub-bots are not counted. */
+    get jadibotMax() {
+        const n = Number.parseInt(env.JADIBOT_MAX ?? '', 10);
+        return Number.isInteger(n) && n >= 0 ? n : 15;
+    },
     get prefix() {
         return env.BOT_PREFIX || '.';
     },
