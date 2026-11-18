@@ -1555,6 +1555,52 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/jadibot/jadibot.js",
+    "index": 0,
+    "name": "jadibot",
+    "aliases": [
+      "subbot"
+    ],
+    "description": "Jadikan nomor WhatsApp kamu sebagai bot (Free / Premium)",
+    "category": "Jadibot",
+    "guards": [
+      "private"
+    ],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/jadibot/listjadibot.js",
+    "index": 0,
+    "name": "listjadibot",
+    "aliases": [
+      "listsubbot"
+    ],
+    "description": "Daftar semua jadibot (Owner)",
+    "category": "Jadibot",
+    "guards": [
+      "owner"
+    ],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/jadibot/stopjadibot.js",
+    "index": 0,
+    "name": "stopjadibot",
+    "aliases": [
+      "stopsubbot"
+    ],
+    "description": "Hentikan jadibot kamu (Owner: .stopjadibot <nomor>)",
+    "category": "Jadibot",
+    "guards": [],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/owner/accwg.js",
     "index": 0,
     "name": "accwg",

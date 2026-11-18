@@ -49,6 +49,18 @@ describe('WhatsApp transport factory', () => {
         });
     });
 
+    test('sub-bot zapo session pairs with its own number, not the main one', async () => {
+        process.env.WA_TRANSPORT = 'zapo';
+        process.env.ZAPO_DB_PATH = 'data/test-zapo.sqlite';
+        process.env.BOT_PHONE_NUMBER = '62 800-0000-001';
+        await createTransport({ sessionId: '628000000002', pairingNumber: '628000000002' });
+        expect(createZapoAdapter).toHaveBeenCalledWith({
+            storePath: 'data/jadibot-628000000002.sqlite',
+            sessionId: '628000000002',
+            pairingNumber: '628000000002',
+        });
+    });
+
     test('main zapo session gets the pairing number (digits only)', async () => {
         process.env.WA_TRANSPORT = 'zapo';
         process.env.ZAPO_DB_PATH = 'data/test-zapo.sqlite';

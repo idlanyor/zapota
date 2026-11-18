@@ -22,8 +22,12 @@ export const mentionChat = async (ctx, next) => {
     await next();
 };
 
-/** Private-chat auto AI (enabled via bot settings). */
+/**
+ * Private-chat auto AI (enabled via bot settings). Main bot only: a sub-bot
+ * is someone's personal number and must not auto-answer their contacts.
+ */
 export const autoAiPrivate = async (ctx) => {
     const { sock, m, botSettings, isOwner } = ctx;
+    if (ctx.subBot) return;
     await handleAutoAiPrivate(sock, m, botSettings, isOwner);
 };

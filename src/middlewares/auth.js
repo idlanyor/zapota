@@ -3,9 +3,7 @@ import { decodeJid } from '../utils/serialize.js';
 import { settings } from '../config/settings.js';
 import { getRequiredGroupParticipants } from '../handlers/messageFlow.js';
 import logger from '../utils/logger.js';
-
-
-let botIdentityCache = null;
+import { isSubBot } from '../lib/botProfile.js';
 
 /** Resolved "must join" group for the configured invite link. */
 let requiredGroup = { inviteLink: null, jid: null };
@@ -15,21 +13,24 @@ export const resetRequiredGroupCache = () => {
     requiredGroup = { inviteLink: null, jid: null };
 };
 
+/**
+ * Owner and bot JIDs for `sock`. Computed per call: each socket (main bot or
+ * a sub-bot) has its own identity, and it changes after a re-login.
+ */
 export const getBotIdentity = (sock) => {
-    if (botIdentityCache) return botIdentityCache;
-
     const ownerJid = decodeJid(settings.ownerNumber);
     const ownerLid = settings.ownerLid ? decodeJid(settings.ownerLid) : null;
-    const botJid = decodeJid(sock.user.id);
-    const botLid = sock.user.lid ? decodeJid(sock.user.lid) : null;
-
-    botIdentityCache = { ownerJid, ownerLid, botJid, botLid };
-    return botIdentityCache;
+    const botJid = sock?.user?.id ? decodeJid(sock.user.id) : null;
+    const botLid = sock?.user?.lid ? decodeJid(sock.user.lid) : null;
+    return { ownerJid, ownerLid, botJid, botLid };
 };
 
 export const checkOwner = (m, sock, botSettings) => {
     const { ownerJid, ownerLid, botJid, botLid } = getBotIdentity(sock);
-    const staticOwners = [ownerJid, ownerLid, botJid, botLid].filter(Boolean);
+    // The main bot's own number acts as owner. A sub-bot's number belongs to a
+    // regular user and must never gain owner rights on this server.
+    const selfOwners = isSubBot(sock) ? [] : [botJid, botLid];
+    const staticOwners = [ownerJid, ownerLid, ...selfOwners].filter(Boolean);
 
     let dbOwners = botSettings?.owners || [];
     if (typeof dbOwners === 'string') {
@@ -178,4 +179,3 @@ export const isOwnerAdminInGroup = async (sock, m, botSettings) => {
         );
     });
 };
-

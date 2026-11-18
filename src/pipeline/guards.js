@@ -7,8 +7,8 @@
  *   - `{ reply: '...' }` → denied, tell the user why
  *   - `{}`               → denied silently
  *
- * DEFAULT_GUARDS apply to every command and encode bot-wide policy (mute,
- * bot mode, Owner/RPG categories). Commands opt into extra checks with
+ * DEFAULT_GUARDS apply to every command and encode bot-wide policy (sub-bot
+ * tier, mute, bot mode, Owner/RPG categories). Commands opt into extra checks with
  * `guards: ['group', 'admin', 'botAdmin', ...]` in their export.
  */
 import { isOwnerAdminInGroup } from '../middlewares/auth.js';
@@ -28,7 +28,35 @@ export const MESSAGES = Object.freeze({
     private: 'Perintah ini hanya bisa digunakan di chat pribadi.',
     admin: 'Perintah ini khusus admin grup.',
     botAdmin: 'Jadikan bot sebagai admin grup terlebih dahulu.',
+    mainOnly: '🔒 Fitur ini hanya tersedia di bot utama.',
+    premiumOnly:
+        '🔒 Fitur manajemen grup hanya untuk *Jadibot Premium*.\nUpgrade lewat bot utama: *.jadibot premium*',
 });
+
+/** Command categories that only run on the main bot, never on a sub-bot. */
+export const MAIN_ONLY_CATEGORIES = new Set([
+    'Owner',
+    'Cloudflare',
+    'Panel',
+    'Blog',
+    'Hidden',
+    'Jadibot',
+]);
+
+/** Single commands that only run on the main bot (payments, server access). */
+export const MAIN_ONLY_COMMANDS = new Set([
+    'store',
+    'order3',
+    'renew',
+    'invoice',
+    'deliver',
+    'smm',
+    'qris',
+    'lxc',
+]);
+
+/** Categories a free sub-bot may not run (premium only). */
+export const PREMIUM_CATEGORIES = new Set(['Group']);
 
 /**
  * Group participants, fetched at most once per message.
@@ -55,8 +83,9 @@ const mutedGroup = async (ctx) => {
     return isParticipantAdmin(participants, ctx.m.sender) ? null : SILENT;
 };
 
-const botMode = async ({ botSettings, isOwner, m }) => {
-    if (isOwner) return null;
+/** Main bot's public/self/group mode. Sub-bots follow their tier instead. */
+const botMode = async ({ botSettings, isOwner, m, subBot }) => {
+    if (isOwner || subBot) return null;
     if (botSettings?.mode === 'self') return SILENT;
     if (botSettings?.mode === 'group' && !m.isGroup) return SILENT;
     return null;
@@ -81,7 +110,26 @@ const rpgInGroup = async (ctx, command) => {
         : deny(MESSAGES.rpg);
 };
 
-export const DEFAULT_GUARDS = [mutedGroup, botMode, disabledCommand, ownerCategory, rpgInGroup];
+/** What a sub-bot may run: never main-only commands; free tier has no group management. */
+const subBotPolicy = async ({ subBot }, command) => {
+    if (!subBot) return null;
+    if (MAIN_ONLY_CATEGORIES.has(command.category) || MAIN_ONLY_COMMANDS.has(command.name)) {
+        return deny(MESSAGES.mainOnly);
+    }
+    if (subBot.tier !== 'premium' && PREMIUM_CATEGORIES.has(command.category)) {
+        return deny(MESSAGES.premiumOnly);
+    }
+    return null;
+};
+
+export const DEFAULT_GUARDS = [
+    subBotPolicy,
+    mutedGroup,
+    botMode,
+    disabledCommand,
+    ownerCategory,
+    rpgInGroup,
+];
 
 /* ---------------------------- declarative --------------------------- */
 

@@ -41,6 +41,10 @@ export const ENV_SPEC = Object.freeze({
         desc: "Bot's own number; zapo logs in by pairing code instead of QR",
         format: 'digits',
     },
+    JADIBOT_MAX: {
+        group: 'core',
+        desc: 'Max free sub-bot (jadibot) sessions; premium ones are not counted (default: 15)',
+    },
     BOT_PREFIX: { group: 'core', desc: 'Command prefix (default: .)' },
     BOT_NAME: { group: 'core', desc: 'Display name (default: KANATA_BOT)' },
     OWNER_NUMBER: {

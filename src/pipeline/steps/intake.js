@@ -11,6 +11,7 @@ import { CACHE_TTL, CACHE_CHECK_PERIOD } from '../../constants/config.js';
 import { getCachedSettings, getGroupSettings } from '../../handlers/messageFlow.js';
 import { checkOwner } from '../../middlewares/auth.js';
 import { getCachedGroupMetadata, refreshGroupMetadata } from '../../middlewares/group.js';
+import { getBotProfile } from '../../lib/botProfile.js';
 import { recordWerewolfPrivateContact } from '../../games/werewolf/service.js';
 
 const inFlight = new NodeCache({
@@ -19,12 +20,15 @@ const inFlight = new NodeCache({
 });
 
 /**
- * Drop a message id that is already being processed, and act as the
- * pipeline's error boundary.
+ * Drop a message id that is already being processed by the same socket, and
+ * act as the pipeline's error boundary. The key includes the socket's bot id:
+ * the main bot and a sub-bot in the same chat receive the same message id.
  */
 export const dedupe = async (ctx, next) => {
-    const id = ctx.raw?.key?.id;
-    if (!id || inFlight.has(id)) return;
+    const msgId = ctx.raw?.key?.id;
+    if (!msgId) return;
+    const id = `${getBotProfile(ctx.sock).id}:${msgId}`;
+    if (inFlight.has(id)) return;
     inFlight.set(id, true);
     try {
         await next();
