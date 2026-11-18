@@ -589,7 +589,7 @@
       "ytaudio",
       "yta"
     ],
-    "description": "Download YouTube audio",
+    "description": "Download audio YouTube sebagai MP3 (yt-dlp)",
     "category": "Downloader",
     "guards": [],
     "buttonPrefix": "",
