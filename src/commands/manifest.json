@@ -604,7 +604,7 @@
       "ytvideo",
       "ytdl"
     ],
-    "description": "Download YouTube video (via y2mate / savetube)",
+    "description": "Download video YouTube (yt-dlp)",
     "category": "Downloader",
     "guards": [],
     "buttonPrefix": "",
@@ -619,6 +619,20 @@
       "ytsearch"
     ],
     "description": "Cari Video dari YouTube",
+    "category": "Downloader",
+    "guards": [],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/downloader/ytv2.js",
+    "index": 0,
+    "name": "ytv2",
+    "aliases": [
+      "ytmp4v2"
+    ],
+    "description": "Download YouTube video, cadangan lewat scraper (y2mate / ytmp3 / savetube)",
     "category": "Downloader",
     "guards": [],
     "buttonPrefix": "",
