@@ -27,7 +27,7 @@ export const uploadBufferToKanata = async (
         contentType: mimeType || 'application/octet-stream',
     });
 
-    const response = await axios.post('https://kanata-api.irengcloud.com/upload', formData, {
+    const response = await axios.post('https://apiku.irengcloud.com/api/v1/upload', formData, {
         headers: {
             ...formData.getHeaders(),
             accept: 'application/json',

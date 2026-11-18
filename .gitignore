@@ -40,3 +40,6 @@ AGENTS.md
 /werewolf/
 /unused/
 test-*
+# Microsoft Core Fonts may not be redistributed as loose files (see assets/fonts/impact/README.md)
+assets/fonts/impact/*.TTF
+assets/fonts/impact/*.ttf
