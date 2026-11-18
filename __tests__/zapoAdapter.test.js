@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { jest } from '@jest/globals';
-import { createZapoFacade } from '../src/wa/zapoAdapter.js';
+import { createZapoFacade, sanitizeCustomNodes } from '../src/wa/zapoAdapter.js';
 
 const makeFacade = () => {
     const zapo = new EventEmitter();
@@ -391,5 +391,66 @@ describe('requestPairingCodeWhenNeeded', () => {
         await flush();
         expect(request).toHaveBeenCalledTimes(2);
         expect(errors).toEqual(['not ready']);
+    });
+});
+
+/**
+ * Interactive-message stanza nodes, as verified on phones on 2026-11-18
+ * (.btntest): duplicate <biz> → dropped; <bot biz_bot> → dropped in private
+ * chats; a carousel without <biz> → dropped.
+ */
+describe('interactive message nodes on zapo', () => {
+    const biz = { tag: 'biz', attrs: {}, content: [] };
+    const bot = { tag: 'bot', attrs: { biz_bot: '1' } };
+    const nativeFlow = (button) => ({
+        viewOnceMessage: {
+            message: {
+                interactiveMessage: {
+                    body: { text: 'x' },
+                    nativeFlowMessage: { buttons: [{ name: button, buttonParamsJson: '{}' }] },
+                },
+            },
+        },
+    });
+    const carousel = {
+        viewOnceMessage: {
+            message: { interactiveMessage: { carouselMessage: { cards: [] } } },
+        },
+    };
+
+    test.each(['single_select', 'quick_reply'])(
+        '%s: drops the caller <biz> (zapo adds its own) and the <bot> node',
+        (button) => {
+            expect(sanitizeCustomNodes(nativeFlow(button), [biz, bot])).toBeUndefined();
+        }
+    );
+
+    test('list and buttons messages: zapo adds <biz>, so the caller one goes', () => {
+        expect(sanitizeCustomNodes({ listMessage: {} }, [biz])).toBeUndefined();
+        expect(sanitizeCustomNodes({ buttonsMessage: {} }, [biz])).toBeUndefined();
+    });
+
+    test('carousel: keeps the caller <biz> (zapo adds none), drops <bot>', () => {
+        expect(sanitizeCustomNodes(carousel, [biz, bot])).toEqual([biz]);
+    });
+
+    test('other nodes on interactive messages are kept', () => {
+        const meta = { tag: 'meta', attrs: { x: '1' } };
+        expect(sanitizeCustomNodes(nativeFlow('quick_reply'), [biz, meta])).toEqual([meta]);
+    });
+
+    test('non-interactive messages keep every node unchanged', () => {
+        const nodes = [biz, bot];
+        expect(sanitizeCustomNodes({ conversation: 'hi' }, nodes)).toBe(nodes);
+        expect(sanitizeCustomNodes({ conversation: 'hi' }, undefined)).toBeUndefined();
+    });
+
+    test('relayMessage sends the sanitized nodes (the .yts shape)', async () => {
+        const { zapo, facade } = makeFacade();
+        await facade.relayMessage('chat@s.whatsapp.net', carousel, {
+            messageId: 'yts-id',
+            additionalNodes: [biz, bot],
+        });
+        expect(zapo.message.send.mock.calls[0][2].customNodes).toEqual([biz]);
     });
 });

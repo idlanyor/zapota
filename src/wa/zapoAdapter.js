@@ -3,7 +3,7 @@ import { EventEmitter } from 'node:events';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { createSqliteStore } from '@zapo-js/store-sqlite';
-import { createNoopLogger, createStore, WaClient } from 'zapo-js';
+import { createNoopLogger, createStore, unwrapMessage, WaClient } from 'zapo-js';
 import { attachGroupMetadataPatch } from '../lib/groupMetadataPatch.js';
 import { attachGroupStatusCompat } from '../lib/groupStatusCompat.js';
 import { attachListMessageCompat } from '../lib/listMessageCompat.js';
@@ -117,6 +117,33 @@ const zapoContent = async (content) => {
     }
 
     return content;
+};
+
+/**
+ * Extra stanza nodes callers pass for interactive messages (written for
+ * Baileys), adjusted for zapo-js 1.12. Checked on phones on 2026-11-18:
+ *   - zapo already adds its own <biz> node for list, buttons and native-flow
+ *     messages; a second <biz> makes WhatsApp clients drop the message.
+ *     Carousels get no <biz> from zapo (their buttons sit inside the cards),
+ *     so the caller's <biz> is kept there.
+ *   - <bot biz_bot="1"> makes private chats drop interactive messages.
+ * Other messages keep their nodes unchanged.
+ */
+export const sanitizeCustomNodes = (message, nodes) => {
+    if (!Array.isArray(nodes) || nodes.length === 0) return nodes;
+    const inner = unwrapMessage(message || {});
+    const interactive = Boolean(
+        inner.listMessage || inner.buttonsMessage || inner.interactiveMessage
+    );
+    if (!interactive) return nodes;
+    const zapoAddsBiz = Boolean(
+        inner.listMessage || inner.buttonsMessage || inner.interactiveMessage?.nativeFlowMessage
+    );
+    const kept = nodes.filter(
+        (node) =>
+            !(node?.tag === 'bot' && node.attrs?.biz_bot) && !(zapoAddsBiz && node?.tag === 'biz')
+    );
+    return kept.length > 0 ? kept : undefined;
 };
 
 const ensureAiRichTextEnvelope = (message, options = {}) => {
@@ -265,7 +292,10 @@ export const createZapoFacade = ({
             const messageToSend = ensureAiRichTextEnvelope(message, options);
             const result = await zapo.message.send(jid, messageToSend, {
                 id: options.messageId,
-                customNodes: options.additionalNodes ?? options.customNodes,
+                customNodes: sanitizeCustomNodes(
+                    messageToSend,
+                    options.additionalNodes ?? options.customNodes
+                ),
                 additionalAttributes: options.additionalAttributes,
             });
             return {
