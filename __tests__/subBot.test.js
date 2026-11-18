@@ -107,6 +107,22 @@ describe('free sub-bot', () => {
         expect(cmd.execute).toHaveBeenCalledTimes(1);
     });
 
+    test("stays out of its owner's chat with the main bot (phone and LID address)", async () => {
+        const cmd = addCommand({ name: 'ping' });
+        const { sock } = subBot('premium');
+        await messageHandler(sock, raw({ text: '.ping', chat: MAIN_BOT, fromMe: true }));
+
+        const viaLid = raw({ text: '.ping', chat: '999000@lid', fromMe: true });
+        viaLid.key.remoteJidAlt = MAIN_BOT;
+        await messageHandler(sock, viaLid);
+
+        mainSock.user.lid = '999001@lid';
+        await messageHandler(sock, raw({ text: '.ping', chat: '999001@lid', fromMe: true }));
+        delete mainSock.user.lid;
+
+        expect(cmd.execute).not.toHaveBeenCalled();
+    });
+
     test('ignores other people, even in private chats', async () => {
         const cmd = addCommand({ name: 'ping' });
         const { sock } = subBot('free');

@@ -5,11 +5,12 @@
  *   free     → only its owner (messages typed on the linked phone), only in
  *              private chats
  *   premium  → everyone, private chats and groups
- *   any tier → never its own outgoing replies; silent in groups the main
- *              bot is in
+ *   any tier → never its own outgoing replies; silent in its private chat
+ *              with the main bot and in groups the main bot is in
  */
 import { getBotProfile, mainSocket, sentBySubBot } from '../../lib/botProfile.js';
 import { findParticipant } from '../../lib/groupRoles.js';
+import { jidNormalizedUser } from '../../wa/helpers.js';
 import { getCachedGroupMetadata, refreshGroupMetadata } from '../../middlewares/group.js';
 
 /** Last known main-bot identity, so the check still works while it reconnects. */
@@ -38,12 +39,24 @@ export const mainBotInGroup = async (sock, jid) => {
     return Boolean(findParticipant(await groupParticipants(sock, jid), main.id, main.lid));
 };
 
+/**
+ * True for a private chat with the main bot. The sub-bot's owner talks to the
+ * main bot from the same phone, so those messages also reach the sub-bot.
+ */
+export const isChatWithMainBot = (m) => {
+    const main = mainBotUser();
+    if (!main || m.isGroup) return false;
+    const mainJids = new Set([main.id, main.lid].filter(Boolean).map(jidNormalizedUser));
+    return [m.chat, m.chatAlt].some((jid) => jid && mainJids.has(jidNormalizedUser(jid)));
+};
+
 export const subBotGate = async (ctx, next) => {
     const profile = getBotProfile(ctx.sock);
     if (profile.kind !== 'sub') return next();
 
     const { sock, m } = ctx;
     if (m.key.fromMe && sentBySubBot(sock, m.key.id)) return;
+    if (isChatWithMainBot(m)) return;
 
     if (profile.tier !== 'premium') {
         if (m.isGroup || !m.key.fromMe) return;
