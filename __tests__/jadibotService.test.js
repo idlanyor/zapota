@@ -68,10 +68,24 @@ const makeService = (transport, overrides = {}) =>
 const notices = () => mainSock.sendMessage.mock.calls.map(([jid, c]) => [jid, c.text]);
 const flush = () => new Promise((r) => setTimeout(r, 10));
 
+/**
+ * Wait until the fake transport's client #`count` listens for connection
+ * updates. requestPairing first does a few DB round trips, so a fixed sleep
+ * is not enough on a slow CI runner.
+ */
+const untilListening = async (transport, count) => {
+    const ready = () =>
+        transport.created.length >= count &&
+        transport.created[count - 1].client.ev.listenerCount('connection.update') > 0;
+    for (let i = 0; i < 500 && !ready(); i++) await flush();
+    if (!ready()) throw new Error(`fake transport #${count} never started listening`);
+};
+
 /** Run requestPairing while the fake transport hands out a code. */
 const pairWithCode = async (service, transport, req = { number: NUMBER, ownerJid: OWNER_JID }) => {
+    const count = transport.created.length + 1;
     const pending = service.requestPairing(req);
-    await flush();
+    await untilListening(transport, count);
     transport.emit({ pairingCode: 'ABCD1234' });
     return pending;
 };
@@ -134,7 +148,7 @@ describe('pairing', () => {
         const transport = fakeTransport('baileys');
         const service = makeService(transport);
         const pending = service.requestPairing({ number: NUMBER, ownerJid: OWNER_JID });
-        await flush();
+        await untilListening(transport, 1);
         transport.emit({ qr: 'qr-data' });
         expect(await pending).toEqual({ ok: true, code: 'BAIL3YS1' });
         expect(transport.created[0].client.requestPairingCode).toHaveBeenCalledWith(NUMBER);
@@ -186,7 +200,7 @@ describe('pairing', () => {
             ok: false,
             reason: 'busy',
         });
-        await flush();
+        await untilListening(transport, 1);
         transport.emit({ pairingCode: 'ABCD1234' });
         expect((await first).ok).toBe(true);
         await service.closeSession(NUMBER);
