@@ -7,6 +7,7 @@ import {
     rebuildManifest,
 } from '../../services/selfManagementService.js';
 import logger from '../../utils/logger.js';
+import { commands } from '../../lib/commands.js';
 
 export default {
     name: 'plugin',
@@ -144,8 +145,14 @@ export default {
             await m.react('⏳');
             try {
                 const ok = await rebuildManifest();
+                if (!ok) {
+                    await m.react('❌');
+                    return m.reply('❌ Gagal membangun ulang manifest. Cek log server.');
+                }
                 await m.react('✅');
-                return m.reply(`✅ Manifest command bot berhasil diperbarui.`);
+                return m.reply(
+                    `✅ Manifest dibangun ulang dan ${commands.size} perintah/alias dimuat ulang.`
+                );
             } catch (err) {
                 await m.react('❌');
                 return m.reply(`❌ Gagal reload manifest: ${err.message}`);

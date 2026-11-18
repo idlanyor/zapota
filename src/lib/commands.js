@@ -148,6 +148,27 @@ export const loadCommands = async () => {
         .on('error', (error) => logger.error(`Watcher error: ${error}`));
 };
 
+/**
+ * Production only: re-read manifest.json and rebuild the registry, dropping
+ * cached modules so edited command files load fresh on next use. (Dev mode
+ * hot-reloads per file instead.) The manifest is parsed before anything is
+ * cleared, so a broken manifest leaves the current registry untouched.
+ *
+ * @returns {Promise<number | null>} registered names, or null outside production
+ */
+export const reloadFromManifest = async () => {
+    if (env.NODE_ENV !== 'production') return null;
+    const next = JSON.parse(await readFile(manifestPath, 'utf8'));
+    if (!Array.isArray(next)) throw new Error('manifest.json is not an array');
+    commands.clear();
+    buttonHandlers.clear();
+    exportsCache.clear();
+    manifest = next;
+    for (const entry of manifest) registerEntry(entry);
+    logger.info(`Commands reloaded from manifest: ${commands.size} names`);
+    return commands.size;
+};
+
 const importCommand = async (filePath) => {
     try {
         unloadCommand(filePath);
