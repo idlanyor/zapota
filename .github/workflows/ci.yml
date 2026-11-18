@@ -16,6 +16,13 @@ jobs:
               with:
                   node-version: 24
                   cache: npm
+            # getMedia tests run real ffmpeg/ffprobe conversions, as the bot does in production.
+            - name: Install ffmpeg
+              # A slow Ubuntu mirror once made this hang for 10+ minutes: fail fast instead.
+              timeout-minutes: 5
+              run: |
+                  sudo apt-get update -q
+                  sudo apt-get install -y -q --no-install-recommends -o Acquire::Retries=3 ffmpeg
             - run: npm ci --no-audit --no-fund
             - run: npm run lint
             - run: npm test

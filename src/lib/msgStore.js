@@ -4,6 +4,7 @@ export const saveMessage = (m) => {
     if (!m || !m.id) return;
     messages.set(m.id, {
         body: m.body,
+        pushName: m.pushName,
         sender: m.sender,
         senderAlt: m.key?.participantAlt || m.key?.remoteJidAlt || null,
         chat: m.chat,

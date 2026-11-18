@@ -1,73 +1,36 @@
 import { jest } from '@jest/globals';
-import getPlugin, {
-    buildAiRichCodeMessage,
-    fitCodeForAiRich,
-} from '../src/commands/owner/getplugin.js';
+import getPlugin from '../src/commands/owner/getplugin.js';
 
-describe('getplugin AI Rich command', () => {
-    const message = {
+describe('getplugin', () => {
+    const message = () => ({
         chat: '120363000000000000@g.us',
-        sender: '628123@s.whatsapp.net',
-        key: { id: 'source-message-id' },
-        message: { conversation: '.gp testbutton' },
-        reply: jest.fn(),
-        react: jest.fn().mockResolvedValue({}),
-    };
-
-    beforeEach(() => {
-        jest.clearAllMocks();
+        sender: '628000000002@s.whatsapp.net',
+        reply: jest.fn().mockResolvedValue({}),
     });
 
-    test('builds a renderable AI Rich payload with one code block', () => {
-        const payload = buildAiRichCodeMessage({
-            content: "export default { name: 'demo' };",
-            fileName: 'demo.js',
-            m: message,
-        });
+    test('sends an existing plugin source as plain text', async () => {
+        const m = message();
+        await getPlugin.execute({}, m, ['getplugin'], 'getplugin');
 
-        const rich = payload.botForwardedMessage.message.richResponseMessage;
-        expect(rich.contextInfo.forwardingScore).toBe(1);
-        expect(rich.submessages[1].codeMetadata.codeBlocks).toEqual([
-            {
-                highlightType: 0,
-                codeContent: "export default { name: 'demo' };",
-            },
-        ]);
-        expect(payload.messageContextInfo.botMetadata.messageDisclaimerText).toContain('AI Rich');
+        expect(m.reply).toHaveBeenCalledTimes(1);
+        expect(m.reply.mock.calls[0][0]).toContain("name: 'getplugin'");
     });
 
-    test('limits oversized source code for AI Rich compatibility', () => {
-        const result = fitCodeForAiRich('x'.repeat(30_000));
-
-        expect(result.truncated).toBe(true);
-        expect(result.code).toContain('output dipotong');
-        expect(result.code.length).toBeLessThan(25_000);
+    test('accepts the name with a .js suffix', async () => {
+        const m = message();
+        await getPlugin.execute({}, m, ['getplugin.js'], 'getplugin.js');
+        expect(m.reply.mock.calls[0][0]).toContain("name: 'getplugin'");
     });
 
-    test('publishes an existing plugin as AI Rich', async () => {
-        const sock = {
-            relayMessage: jest.fn().mockResolvedValue({}),
-            generateMessageTag: jest.fn().mockReturnValue('generated-id'),
-        };
-
-        await getPlugin.execute(sock, message, ['testbutton'], 'testbutton');
-
-        expect(sock.relayMessage).toHaveBeenCalledTimes(1);
-        const [chat, payload, options] = sock.relayMessage.mock.calls[0];
-        expect(chat).toBe(message.chat);
-        expect(options).toEqual({ messageId: 'generated-id' });
-        expect(
-            payload.botForwardedMessage.message.richResponseMessage.submessages[1].codeMetadata
-                .codeBlocks
-        ).toHaveLength(1);
-        expect(message.react).not.toHaveBeenCalled();
+    test('reports an unknown plugin', async () => {
+        const m = message();
+        await getPlugin.execute({}, m, ['nope-not-here'], 'nope-not-here');
+        expect(m.reply).toHaveBeenCalledWith("Plugin 'nope-not-here' tidak ditemukan.");
     });
 
     test('shows usage when plugin name is omitted', async () => {
-        await getPlugin.execute({}, message, [], '');
-
-        expect(message.reply).toHaveBeenCalledWith(
-            'Masukkan nama plugin. Contoh: `.gp testbutton`'
-        );
+        const m = message();
+        await getPlugin.execute({}, m, [], '');
+        expect(m.reply).toHaveBeenCalledWith('Masukkan nama plugin. Contoh: `.gp testbutton`');
     });
 });

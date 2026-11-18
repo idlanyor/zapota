@@ -45,7 +45,10 @@ export const ENV_SPEC = Object.freeze({
         group: 'core',
         desc: 'Max free sub-bot (jadibot) sessions; premium ones are not counted (default: 15)',
     },
-    YTDLP_BIN: { group: 'core', desc: 'yt-dlp binary for YouTube downloads (default: yt-dlp on PATH)' },
+    YTDLP_BIN: {
+        group: 'core',
+        desc: 'yt-dlp binary for YouTube downloads (default: yt-dlp on PATH)',
+    },
     YTDLP_ARGS: {
         group: 'core',
         desc: 'Extra yt-dlp args, space separated (default: --js-runtimes node), e.g. add --cookies <file>',
@@ -105,6 +108,20 @@ export const ENV_SPEC = Object.freeze({
         secret: true,
     },
     DS_BASE_URL: { group: 'deepseek', desc: 'DeepSeek-compatible base URL', format: 'url' },
+    DS2_API_KEY: {
+        group: 'ds2',
+        desc: 'OpenAI-compatible router key for .ds2 (DeepSeek V4.1 Flash)',
+        secret: true,
+    },
+    DS2_BASE_URL: {
+        group: 'ds2',
+        desc: 'OpenAI-compatible router base URL for .ds2, e.g. https://router.example.com/v1',
+        format: 'url',
+    },
+    DS2_MODEL: {
+        group: 'ds2',
+        desc: 'Model for .ds2 (default: hv/deepseek-ai/deepseek-v4.1-flash-1017)',
+    },
     GLM_API_KEY: { group: 'glm', desc: 'GLM key', secret: true },
     GLM_BASE_URL: { group: 'glm', desc: 'GLM base URL', format: 'url' },
     GLM_MODEL: { group: 'glm', desc: 'GLM model' },
@@ -167,6 +184,7 @@ export const FEATURE_REQUIREMENTS = Object.freeze({
     aiAgent: ['AI_AGENT_API_KEY', 'AI_AGENT_BASE_URL'],
     ownerAgent: ['OWNER_AGENT_API_KEY', 'OWNER_AGENT_BASE_URL'],
     deepseek: ['DS_API_KEY', 'DS_BASE_URL'],
+    ds2: ['DS2_API_KEY', 'DS2_BASE_URL'],
     glm: ['GLM_API_KEY', 'GLM_BASE_URL'],
     pterodactyl: ['PTERO_URL', 'PTERO_API_KEY'],
     cloudflare: ['CLOUDFLARE_API_TOKEN'],

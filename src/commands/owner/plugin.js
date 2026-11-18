@@ -6,7 +6,6 @@ import {
     savePlugin,
     rebuildManifest,
 } from '../../services/selfManagementService.js';
-import { buildAiRichCodeMessage } from './getplugin.js';
 import logger from '../../utils/logger.js';
 
 export default {
@@ -23,7 +22,7 @@ export default {
 • *.plugin list [kategori]*
   _Melihat daftar seluruh plugin/command_
 • *.plugin get <nama>*
-  _Melihat source code plugin (AI Rich Code)_
+  _Melihat source code plugin (Teks Biasa)_
 • *.plugin toggle <nama>*
   _Aktifkan / nonaktifkan plugin_
 • *.plugin del <nama>*
@@ -44,7 +43,9 @@ export default {
                 : list;
 
             if (!filtered.length) {
-                return m.reply(`Tidak ada plugin yang cocok${filterCat ? ` untuk kategori "${target}"` : ''}.`);
+                return m.reply(
+                    `Tidak ada plugin yang cocok${filterCat ? ` untuk kategori "${target}"` : ''}.`
+                );
             }
 
             // Group by category
@@ -72,14 +73,7 @@ export default {
             if (!target) return m.reply('❌ Tentukan nama plugin. Contoh: `.plugin get eval`');
             try {
                 const data = readPlugin(target);
-                const message = buildAiRichCodeMessage({
-                    content: data.content,
-                    fileName: data.fileName,
-                    m,
-                });
-                return await sock.relayMessage(m.chat, message, {
-                    messageId: sock.generateMessageTag(),
-                });
+                return await m.reply(data.content);
             } catch (err) {
                 return m.reply(`❌ ${err.message}`);
             }
@@ -89,9 +83,12 @@ export default {
         if (subCmd === 'toggle' || subCmd === 'enable' || subCmd === 'disable') {
             if (!target) return m.reply('❌ Tentukan nama plugin. Contoh: `.plugin toggle tiktok`');
             try {
-                const isExplicitEnable = subCmd === 'enable' ? true : subCmd === 'disable' ? false : null;
+                const isExplicitEnable =
+                    subCmd === 'enable' ? true : subCmd === 'disable' ? false : null;
                 const result = await togglePlugin(target, isExplicitEnable);
-                return m.reply(`✅ ${result.message || (result.enabled ? `Plugin *${target}* diaktifkan.` : `Plugin *${target}* dinonaktifkan.`)}`);
+                return m.reply(
+                    `✅ ${result.message || (result.enabled ? `Plugin *${target}* diaktifkan.` : `Plugin *${target}* dinonaktifkan.`)}`
+                );
             } catch (err) {
                 return m.reply(`❌ ${err.message}`);
             }
@@ -102,7 +99,9 @@ export default {
             if (!target) return m.reply('❌ Tentukan nama plugin. Contoh: `.plugin del testcmd`');
             try {
                 const result = await deletePlugin(target);
-                return m.reply(`✅ Plugin *${target}* berhasil dihapus.\n📦 Backup disimpan di: \`${result.backupPath}\``);
+                return m.reply(
+                    `✅ Plugin *${target}* berhasil dihapus.\n📦 Backup disimpan di: \`${result.backupPath}\``
+                );
             } catch (err) {
                 return m.reply(`❌ ${err.message}`);
             }
@@ -115,7 +114,9 @@ export default {
             const rawCode = args.slice(3).join(' ') || m.quoted?.text || '';
 
             if (!category || !pluginName || !rawCode) {
-                return m.reply('❌ Format salah.\nContoh: `.plugin save tools ping <kode>`\nAtau quote/reply pesan berisi kode: `.plugin save tools ping`');
+                return m.reply(
+                    '❌ Format salah.\nContoh: `.plugin save tools ping <kode>`\nAtau quote/reply pesan berisi kode: `.plugin save tools ping`'
+                );
             }
 
             await m.react('⏳');
@@ -127,10 +128,14 @@ export default {
 
             if (result.success) {
                 await m.react('✅');
-                return m.reply(`✅ Plugin *${pluginName}* berhasil disimpan!\n📁 Kategori: *${result.category}*\n📄 Lokasi: \`${result.filePath}\`\n\n_Plugin sudah aktif dan siap digunakan._`);
+                return m.reply(
+                    `✅ Plugin *${pluginName}* berhasil disimpan!\n📁 Kategori: *${result.category}*\n📄 Lokasi: \`${result.filePath}\`\n\n_Plugin sudah aktif dan siap digunakan._`
+                );
             } else {
                 await m.react('❌');
-                return m.reply(`❌ Gagal menyimpan plugin:\n${result.error}\n\n${result.rolledBack ? '⚠️ _Perubahan dibatalkan / di-rollback secara otomatis._' : ''}`);
+                return m.reply(
+                    `❌ Gagal menyimpan plugin:\n${result.error}\n\n${result.rolledBack ? '⚠️ _Perubahan dibatalkan / di-rollback secara otomatis._' : ''}`
+                );
             }
         }
 

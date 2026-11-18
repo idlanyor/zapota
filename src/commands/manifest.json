@@ -50,6 +50,18 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/ai/ds2.js",
+    "index": 0,
+    "name": "ds2",
+    "aliases": [],
+    "description": "Tanya DeepSeek V4.1 Flash (streaming)",
+    "category": "AI",
+    "guards": [],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/ai/glm.js",
     "index": 0,
     "name": "glm",
@@ -1213,10 +1225,10 @@
       "ht",
       "tagall"
     ],
-    "description": "Tag all members in the group",
+    "description": "Tag semua anggota grup (teks, atau reply media untuk mengirim ulang)",
     "category": "Group",
     "guards": [
-      "admin"
+      "group"
     ],
     "buttonPrefix": "",
     "hasHandleButton": false,
@@ -1750,7 +1762,7 @@
     "aliases": [
       "gp"
     ],
-    "description": "Tampilkan source plugin menggunakan AI Rich code",
+    "description": "Tampilkan source plugin sebagai teks biasa",
     "category": "Owner",
     "guards": [],
     "buttonPrefix": "",
@@ -2366,6 +2378,21 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/sticker/qc.js",
+    "index": 0,
+    "name": "qc",
+    "aliases": [
+      "quotly",
+      "quotesticker"
+    ],
+    "description": "Buat stiker kutipan: reply pesan dengan .qc atau .qc <teks>",
+    "category": "Sticker",
+    "guards": [],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/sticker/smeme.js",
     "index": 0,
     "name": "smeme",
@@ -2535,7 +2562,7 @@
     "aliases": [
       "get"
     ],
-    "description": "Make a GET request to a URL",
+    "description": "Ambil URL dan siapkan video/audio untuk pemutar WhatsApp",
     "category": "Tools",
     "guards": [],
     "buttonPrefix": "",
@@ -2779,6 +2806,18 @@
     "name": "topdf",
     "aliases": [],
     "description": "Convert image or document to PDF via iLovePDF",
+    "category": "Tools",
+    "guards": [],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/tools/touppercase.js",
+    "index": 0,
+    "name": "touppercase",
+    "aliases": [],
+    "description": "Ubah seluruh teks pesan atau reply menjadi huruf kapital",
     "category": "Tools",
     "guards": [],
     "buttonPrefix": "",

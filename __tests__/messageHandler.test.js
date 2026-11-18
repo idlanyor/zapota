@@ -439,7 +439,8 @@ describe('group commands declare their guards', () => {
         ['promote', ['admin', 'botAdmin']],
         ['demote', ['admin', 'botAdmin']],
         ['group', ['admin', 'botAdmin']],
-        ['hidetag', ['admin']],
+        // hidetag checks admin itself: the owner may use it without being an admin.
+        ['hidetag', ['group']],
         ['setoption', ['admin']],
         ['setopen', ['admin']],
         ['setclose', ['admin']],

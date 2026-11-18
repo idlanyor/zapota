@@ -32,12 +32,15 @@ export default {
             });
 
             if (url) {
-                const { filename: responseFilename, content_type, original_filename } = response;
+                const resData = response.data || response;
+                const fileInfo = resData.original_name || resData.original_filename || resData.filename || filename;
+                const mimeInfo = resData.mimetype || resData.content_type || mime;
+
                 const caption =
-                    ` *Upload Success*\n\n` +
-                    ` *URL:* ${url}\n` +
-                    ` *File Name:* ${original_filename || responseFilename || filename}\n` +
-                    ` *Mime Type:* ${content_type}`;
+                    `*Upload Success*\n\n` +
+                    `*URL:* ${url}\n` +
+                    `*File Name:* ${fileInfo}\n` +
+                    `*Mime Type:* ${mimeInfo}`;
 
                 const payload = {
                     text: caption,
@@ -70,7 +73,7 @@ export default {
         } catch (error) {
             console.error('Error in tourl command:', error);
             await m.react('❌');
-            await m.reply(' Failed to upload media. Please try again later.');
+            await m.reply('Failed to upload media. Please try again later.');
         }
     },
 };
