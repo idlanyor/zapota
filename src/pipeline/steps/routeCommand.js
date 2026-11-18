@@ -2,13 +2,13 @@ import logger from '../../utils/logger.js';
 import { commands } from '../../lib/commands.js';
 import { getBotIdentity } from '../../middlewares/auth.js';
 import { checkGuards } from '../guards.js';
+import { parseCommandInput } from '../../utils/commandInput.js';
 import { mainSocket } from '../../lib/botProfile.js';
 
 const chatLabel = (m) => (m.isGroup ? m.metadata?.subject || m.chat : m.chat);
 
 /** Parse the command name after the prefix (case-insensitive). */
-export const parseCommandName = (body, prefix) =>
-    body.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase();
+export const parseCommandName = (body, prefix) => parseCommandInput(body, prefix).name;
 
 const reportFailure = async (ctx, cmdName, err) => {
     const { sock, m } = ctx;
@@ -42,9 +42,12 @@ export const routeCommand = async (ctx, next) => {
     const { sock, m, usedPrefix, botSettings } = ctx;
     if (!usedPrefix) return next();
 
-    const cmdName = parseCommandName(m.body, usedPrefix);
+    const { name: cmdName, args, text } = parseCommandInput(m.body, usedPrefix);
     const command = commands.get(cmdName);
     if (!command) return;
+    // serialize() splits the whole body, so ". ping a" would give ['ping', 'a'].
+    m.args = args;
+    m.text = text;
 
     const denial = await checkGuards(ctx, command);
     if (denial) {
