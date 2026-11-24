@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import {
     createQueue,
     removeBackground,
-    resolveOutput,
+    parseOptions,
     runRembg,
 } from '../src/commands/sticker/removebg.js';
 
@@ -51,7 +51,10 @@ describe('.removebg', () => {
             .jpeg()
             .toBuffer();
         const cutout = await rgba(200, 100, (x, y) => x >= 50 && x < 90 && y >= 20 && y < 80);
-        const out = await removeBackground(photo, async () => cutout, createQueue());
+        const out = await removeBackground(photo, {
+            runner: async () => cutout,
+            jobs: createQueue(),
+        });
         const meta = await sharp(out).metadata();
         expect([meta.width, meta.height]).toEqual([40, 60]);
         expect(meta.hasAlpha).toBe(true);
@@ -64,7 +67,9 @@ describe('.removebg', () => {
             .png()
             .toBuffer();
         const empty = await rgba(50, 50, () => false);
-        await expect(removeBackground(photo, async () => empty, createQueue())).resolves.toBeNull();
+        await expect(
+            removeBackground(photo, { runner: async () => empty, jobs: createQueue() })
+        ).resolves.toBeNull();
     });
 
     test('reports a missing rembg install clearly', async () => {
@@ -73,11 +78,29 @@ describe('.removebg', () => {
         );
     });
 
-    test('output follows the input unless asked', () => {
-        expect(resolveOutput({ isImage: true })).toBe('image');
-        expect(resolveOutput({ isSticker: true })).toBe('sticker');
-        expect(resolveOutput({ isImage: true }, ['s'])).toBe('sticker');
-        expect(resolveOutput({ isSticker: true }, ['PNG'])).toBe('png');
-        expect(resolveOutput({ isImage: true }, ['doc'])).toBe('png');
+    test('keeps the full frame when trim is off (colour backdrops)', async () => {
+        const photo = await sharp({
+            create: { width: 200, height: 100, channels: 3, background: '#888' },
+        })
+            .jpeg()
+            .toBuffer();
+        const cutout = await rgba(200, 100, (x, y) => x >= 50 && x < 90 && y >= 20 && y < 80);
+        const out = await removeBackground(photo, {
+            trim: false,
+            runner: async () => cutout,
+            jobs: createQueue(),
+        });
+        const meta = await sharp(out).metadata();
+        expect([meta.width, meta.height]).toEqual([200, 100]);
+    });
+
+    test('options: PNG by default, colour names/hex, sticker', () => {
+        expect(parseOptions([])).toEqual({ output: 'png' });
+        expect(parseOptions(['biru'])).toEqual({ output: 'color', color: '#1565c0' });
+        expect(parseOptions(['MERAH'])).toEqual({ output: 'color', color: '#d50000' });
+        expect(parseOptions(['#FF8800'])).toEqual({ output: 'color', color: '#ff8800' });
+        expect(parseOptions(['ff8800'])).toEqual({ output: 'color', color: '#ff8800' });
+        expect(parseOptions(['s'])).toEqual({ output: 'sticker' });
+        expect(parseOptions(['ungu'])).toEqual({ output: 'png' });
     });
 });

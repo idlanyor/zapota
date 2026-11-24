@@ -66,10 +66,14 @@ export const runRembg = (input, { python = PYTHON, script = SCRIPT } = {}) =>
     });
 
 /**
- * Removes the background and trims the transparent border. Null when (almost)
+ * Removes the background; by default also trims the transparent border (keep
+ * the frame with `trim: false`, e.g. for pas-foto colours). Null when (almost)
  * nothing was kept. Note u2net always keeps *something* on featureless images.
  */
-export const removeBackground = async (image, runner = runRembg, jobs = queue) => {
+export const removeBackground = async (
+    image,
+    { trim = true, runner = runRembg, jobs = queue } = {}
+) => {
     const input = await sharp(image)
         .rotate()
         .resize(MAX_SIDE, MAX_SIDE, { fit: 'inside', withoutEnlargement: true })
@@ -84,39 +88,67 @@ export const removeBackground = async (image, runner = runRembg, jobs = queue) =
     let kept = 0;
     for (let i = channels - 1; i < data.length; i += channels) if (data[i] > 128) kept += 1;
     if (kept < (data.length / channels) * 0.005) return null;
-    return sharp(png).trim().png().toBuffer();
+    return trim ? sharp(png).trim().png().toBuffer() : png;
 };
 
-/** Output follows the input (photo -> photo, sticker -> sticker) unless asked. */
-export const resolveOutput = (target, args = []) => {
-    if (args.some((a) => /^(png|doc|file)$/i.test(a))) return 'png';
-    if (args.some((a) => /^(s|stiker|sticker)$/i.test(a))) return 'sticker';
-    return target.isSticker ? 'sticker' : 'image';
+// Pas-foto style backdrops; any #rrggbb works too.
+export const COLORS = {
+    merah: '#d50000',
+    red: '#d50000',
+    biru: '#1565c0',
+    blue: '#1565c0',
+    kuning: '#ffd600',
+    yellow: '#ffd600',
+    hijau: '#2e7d32',
+    green: '#2e7d32',
+    putih: '#ffffff',
+    white: '#ffffff',
+    hitam: '#000000',
+    black: '#000000',
+    abu: '#9e9e9e',
+    gray: '#9e9e9e',
+};
+
+/**
+ * Default: transparent PNG file. A colour (name or #hex) -> photo on that
+ * colour. `s` -> sticker.
+ */
+export const parseOptions = (args = []) => {
+    for (const arg of args) {
+        const word = arg.toLowerCase();
+        if (COLORS[word]) return { output: 'color', color: COLORS[word] };
+        if (/^#?[0-9a-f]{6}$/.test(word))
+            return { output: 'color', color: `#${word.replace('#', '')}` };
+    }
+    if (args.some((a) => /^(s|stiker|sticker)$/i.test(a))) return { output: 'sticker' };
+    return { output: 'png' };
 };
 
 export default {
     name: 'removebg',
     aliases: ['nobg', 'rembg', 'hapusbg'],
-    description: 'Hapus background foto/stiker (AI lokal). Opsi: png (file), s (stiker)',
+    description: 'Hapus background foto/stiker (AI lokal). Opsi: warna (merah/biru/..), s (stiker)',
     category: 'Sticker',
     execute: async (sock, m, args = []) => {
         const target = m.quoted?.isImage || m.quoted?.isSticker ? m.quoted : m;
         if (!target.isImage && !target.isSticker) {
             return m.reply(
-                'Kirim/balas *foto* atau *stiker* dengan caption .removebg\n' +
-                    'Hasil ikut jenis aslinya (foto → foto, stiker → stiker).\n' +
-                    '• *.removebg png* → file PNG (transparan pasti terjaga)\n' +
-                    '• *.removebg s* → jadikan stiker'
+                'Kirim/balas *foto* atau *stiker* dengan caption .rembg\n' +
+                    '• *.rembg* → file PNG transparan\n' +
+                    '• *.rembg merah* / *biru* / *kuning* / *hijau* / *putih* / *hitam* / *#ff8800* → foto dengan latar warna (cocok buat pas foto)\n' +
+                    '• *.rembg s* → jadikan stiker'
             );
         }
         if (target.isSticker && (target.msg || target).isAnimated) {
             return m.reply('Stiker animasi belum didukung, pakai stiker biasa atau foto.');
         }
 
-        const output = resolveOutput(target, args);
+        const { output, color } = parseOptions(args);
         try {
             await m.react('⏳');
-            const result = await removeBackground(await target.download());
+            const result = await removeBackground(await target.download(), {
+                trim: output !== 'color',
+            });
             if (!result) {
                 await m.react('❌');
                 return m.reply('Nggak ada objek yang terdeteksi di gambar itu.');
@@ -127,10 +159,14 @@ export default {
                     { document: result, mimetype: 'image/png', fileName: 'removebg.png' },
                     { quoted: m }
                 );
-            } else if (output === 'image') {
+            } else if (output === 'color') {
+                const photo = await sharp(result)
+                    .flatten({ background: color })
+                    .jpeg({ quality: 92 })
+                    .toBuffer();
                 await sock.sendMessage(
                     m.chat,
-                    { image: result, mimetype: 'image/png' },
+                    { image: photo, mimetype: 'image/jpeg' },
                     { quoted: m }
                 );
             } else {
