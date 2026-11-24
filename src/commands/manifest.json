@@ -1504,6 +1504,22 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/info/repo.js",
+    "index": 0,
+    "name": "repo",
+    "aliases": [
+      "sc",
+      "script",
+      "sourcecode"
+    ],
+    "description": "Info source code bot (repo GitHub)",
+    "category": "Info",
+    "guards": [],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/islamic/utama.js",
     "index": 0,
     "name": "hadits",
