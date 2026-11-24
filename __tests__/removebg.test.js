@@ -1,5 +1,10 @@
 import sharp from 'sharp';
-import { createQueue, removeBackground, runRembg } from '../src/commands/sticker/removebg.js';
+import {
+    createQueue,
+    removeBackground,
+    resolveOutput,
+    runRembg,
+} from '../src/commands/sticker/removebg.js';
 
 const rgba = (width, height, paint) => {
     const data = Buffer.alloc(width * height * 4);
@@ -66,5 +71,13 @@ describe('.removebg', () => {
         await expect(runRembg(Buffer.from('x'), { python: '/nonexistent/python' })).rejects.toThrow(
             'REMBG_MISSING'
         );
+    });
+
+    test('output follows the input unless asked', () => {
+        expect(resolveOutput({ isImage: true })).toBe('image');
+        expect(resolveOutput({ isSticker: true })).toBe('sticker');
+        expect(resolveOutput({ isImage: true }, ['s'])).toBe('sticker');
+        expect(resolveOutput({ isSticker: true }, ['PNG'])).toBe('png');
+        expect(resolveOutput({ isImage: true }, ['doc'])).toBe('png');
     });
 });

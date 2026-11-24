@@ -87,24 +87,33 @@ export const removeBackground = async (image, runner = runRembg, jobs = queue) =
     return sharp(png).trim().png().toBuffer();
 };
 
+/** Output follows the input (photo -> photo, sticker -> sticker) unless asked. */
+export const resolveOutput = (target, args = []) => {
+    if (args.some((a) => /^(png|doc|file)$/i.test(a))) return 'png';
+    if (args.some((a) => /^(s|stiker|sticker)$/i.test(a))) return 'sticker';
+    return target.isSticker ? 'sticker' : 'image';
+};
+
 export default {
     name: 'removebg',
     aliases: ['nobg', 'rembg', 'hapusbg'],
-    description: 'Hapus background foto/stiker (AI lokal). Tambah "png" untuk file PNG',
+    description: 'Hapus background foto/stiker (AI lokal). Opsi: png (file), s (stiker)',
     category: 'Sticker',
     execute: async (sock, m, args = []) => {
         const target = m.quoted?.isImage || m.quoted?.isSticker ? m.quoted : m;
         if (!target.isImage && !target.isSticker) {
             return m.reply(
                 'Kirim/balas *foto* atau *stiker* dengan caption .removebg\n' +
-                    'Tambah *png* untuk hasil berupa file PNG: .removebg png'
+                    'Hasil ikut jenis aslinya (foto → foto, stiker → stiker).\n' +
+                    '• *.removebg png* → file PNG (transparan pasti terjaga)\n' +
+                    '• *.removebg s* → jadikan stiker'
             );
         }
         if (target.isSticker && (target.msg || target).isAnimated) {
             return m.reply('Stiker animasi belum didukung, pakai stiker biasa atau foto.');
         }
 
-        const asPng = args.some((a) => /^(png|doc|file)$/i.test(a));
+        const output = resolveOutput(target, args);
         try {
             await m.react('⏳');
             const result = await removeBackground(await target.download());
@@ -112,10 +121,16 @@ export default {
                 await m.react('❌');
                 return m.reply('Nggak ada objek yang terdeteksi di gambar itu.');
             }
-            if (asPng) {
+            if (output === 'png') {
                 await sock.sendMessage(
                     m.chat,
                     { document: result, mimetype: 'image/png', fileName: 'removebg.png' },
+                    { quoted: m }
+                );
+            } else if (output === 'image') {
+                await sock.sendMessage(
+                    m.chat,
+                    { image: result, mimetype: 'image/png' },
                     { quoted: m }
                 );
             } else {
