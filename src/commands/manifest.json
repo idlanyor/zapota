@@ -2453,21 +2453,6 @@
     "hasHandleSession": false
   },
   {
-    "file": "src/commands/sticker/svt.js",
-    "index": 0,
-    "name": "svt",
-    "aliases": [
-      "stickervideotransparan",
-      "sgreen"
-    ],
-    "description": "Buat stiker video transparan (Hapus background warna)",
-    "category": "Sticker",
-    "guards": [],
-    "buttonPrefix": "",
-    "hasHandleButton": false,
-    "hasHandleSession": false
-  },
-  {
     "file": "src/commands/sticker/telestick.js",
     "index": 0,
     "name": "telestick",

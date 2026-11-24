@@ -41,19 +41,10 @@ const isAnimatedImage = (buffer) => {
     );
 };
 
-// `preFilter` (e.g. a colorkey) runs before scaling; the output then keeps an
-// alpha channel so keyed-out areas stay transparent.
-const videoToWebp = async (
-    buffer,
-    quality,
-    { crop = false, fps = 15, maxSeconds, preFilter } = {}
-) => {
+const videoToWebp = async (buffer, quality, { crop = false, fps = 15, maxSeconds } = {}) => {
     const scale = crop
         ? 'scale=512:512:force_original_aspect_ratio=increase,crop=512:512'
         : 'scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000';
-    const filters = [preFilter, scale, `fps=${fps}`, preFilter && 'format=yuva420p'].filter(
-        Boolean
-    );
     const tempDir = await mkdtemp(path.join(os.tmpdir(), 'mybot-sticker-'));
     const input = path.join(tempDir, 'input');
     const output = path.join(tempDir, 'output.webp');
@@ -70,7 +61,7 @@ const videoToWebp = async (
                     '-loop 0',
                     '-vsync 0',
                     `-q:v ${quality}`,
-                    `-vf ${filters.join(',')}`,
+                    `-vf ${scale},fps=${fps}`,
                 ])
                 .on('error', reject)
                 .on('end', resolve)
@@ -135,7 +126,6 @@ export class Sticker {
                 crop: this.metadata.type === StickerTypes.CROPPED,
                 fps: this.metadata.fps,
                 maxSeconds: this.metadata.maxSeconds,
-                preFilter: this.metadata.preFilter,
             });
         } else {
             const animated = Boolean(this.metadata.animated) || isAnimatedImage(input);
