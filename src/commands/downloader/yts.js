@@ -1,4 +1,5 @@
-import { proto, prepareWAMessageMedia, generateWAMessageFromContent } from 'baileys';
+import { proto, generateWAMessageFromContent } from 'baileys';
+import { prepareImageMedia } from '../../wa/prepareMedia.js';
 import { searchYouTube } from '../../lib/youtubeSearch.js';
 
 export default {
@@ -28,10 +29,7 @@ Contoh: *.yts bagai cinta pertama*`);
             try {
                 const cards = await Promise.all(
                     results.map(async (video) => {
-                        const media = await prepareWAMessageMedia(
-                            { image: { url: video.thumbnail } },
-                            { upload: sock.waUploadToServer }
-                        );
+                        const media = await prepareImageMedia(sock, { url: video.thumbnail });
 
                         return {
                             body: proto.Message.InteractiveMessage.Body.fromObject({

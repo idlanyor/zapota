@@ -1,6 +1,6 @@
 import os from 'os';
 import fs from 'fs';
-import { prepareWAMessageMedia } from 'baileys';
+import { prepareImageMedia } from '../../wa/prepareMedia.js';
 import { settings } from '../../config/settings.js';
 
 export default {
@@ -51,13 +51,9 @@ export default {
 
         if (thumbnail) {
             try {
-                const media = await prepareWAMessageMedia(
-                    { image: thumbnail },
-                    {
-                        upload: sock.waUploadToServer,
-                        mediaTypeOverride: 'thumbnail-link',
-                    }
-                );
+                const media = await prepareImageMedia(sock, thumbnail, {
+                    mediaType: 'thumbnail-link',
+                });
 
                 const { imageMessage: thumb } = media;
 

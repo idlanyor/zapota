@@ -29,16 +29,31 @@ const isVideo = (buffer) => {
     return (
         header.subarray(4, 8).toString() === 'ftyp' ||
         header.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])) ||
-        (header.subarray(0, 4).toString() === 'RIFF' && header.subarray(8, 12).toString() === 'AVI ')
+        (header.subarray(0, 4).toString() === 'RIFF' &&
+            header.subarray(8, 12).toString() === 'AVI ')
     );
 };
 
 const isAnimatedImage = (buffer) => {
     const signature = buffer.subarray(0, 12).toString('ascii');
-    return signature.startsWith('GIF8') || (signature.startsWith('RIFF') && signature.endsWith('WEBP'));
+    return (
+        signature.startsWith('GIF8') || (signature.startsWith('RIFF') && signature.endsWith('WEBP'))
+    );
 };
 
-const videoToWebp = async (buffer, quality) => {
+// `preFilter` (e.g. a colorkey) runs before scaling; the output then keeps an
+// alpha channel so keyed-out areas stay transparent.
+const videoToWebp = async (
+    buffer,
+    quality,
+    { crop = false, fps = 15, maxSeconds, preFilter } = {}
+) => {
+    const scale = crop
+        ? 'scale=512:512:force_original_aspect_ratio=increase,crop=512:512'
+        : 'scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000';
+    const filters = [preFilter, scale, `fps=${fps}`, preFilter && 'format=yuva420p'].filter(
+        Boolean
+    );
     const tempDir = await mkdtemp(path.join(os.tmpdir(), 'mybot-sticker-'));
     const input = path.join(tempDir, 'input');
     const output = path.join(tempDir, 'output.webp');
@@ -50,11 +65,12 @@ const videoToWebp = async (buffer, quality) => {
             ffmpeg(input)
                 .noAudio()
                 .outputOptions([
+                    ...(maxSeconds ? [`-t ${maxSeconds}`] : []),
                     '-vcodec libwebp',
                     '-loop 0',
                     '-vsync 0',
                     `-q:v ${quality}`,
-                    '-vf scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000,fps=15',
+                    `-vf ${filters.join(',')}`,
                 ])
                 .on('error', reject)
                 .on('end', resolve)
@@ -75,8 +91,8 @@ const addMetadata = async (buffer, metadata) => {
     });
     const exif = Buffer.concat([
         Buffer.from([
-            0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57,
-            0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00,
+            0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00,
         ]),
         Buffer.from(data),
     ]);
@@ -96,10 +112,14 @@ export class Sticker {
 
     async parse() {
         if (Buffer.isBuffer(this.data)) return this.data;
-        if (typeof this.data !== 'string') throw new TypeError('Sticker source must be a Buffer or string');
+        if (typeof this.data !== 'string')
+            throw new TypeError('Sticker source must be a Buffer or string');
         if (this.data.trimStart().startsWith('<svg')) return Buffer.from(this.data);
         if (/^https?:\/\//i.test(this.data)) {
-            const response = await axios.get(this.data, { responseType: 'arraybuffer', timeout: 30000 });
+            const response = await axios.get(this.data, {
+                responseType: 'arraybuffer',
+                timeout: 30000,
+            });
             return Buffer.from(response.data);
         }
         return readFile(this.data);
@@ -111,7 +131,12 @@ export class Sticker {
         let webp;
 
         if (isVideo(input)) {
-            webp = await videoToWebp(input, quality);
+            webp = await videoToWebp(input, quality, {
+                crop: this.metadata.type === StickerTypes.CROPPED,
+                fps: this.metadata.fps,
+                maxSeconds: this.metadata.maxSeconds,
+                preFilter: this.metadata.preFilter,
+            });
         } else {
             const animated = Boolean(this.metadata.animated) || isAnimatedImage(input);
             const type = this.metadata.type || StickerTypes.DEFAULT;
@@ -133,3 +158,32 @@ export class Sticker {
 }
 
 export const createSticker = async (...args) => new Sticker(...args).toBuffer();
+
+// WhatsApp's sticker upload rejects big files with HTTP 413; stay well under it.
+export const MAX_STICKER_BYTES = 1024 * 1024;
+const FIT_ATTEMPTS = [
+    { quality: 50, fps: 15 },
+    { quality: 30, fps: 12 },
+    { quality: 20, fps: 10 },
+    { quality: 10, fps: 8, maxSeconds: 6 },
+];
+
+/**
+ * Builds the sticker, stepping quality/fps (and finally duration) down until it
+ * fits MAX_STICKER_BYTES. Throws Error('STICKER_TOO_BIG') if nothing fits.
+ */
+export const fitSticker = async (input, metadata = {}, attempts = FIT_ATTEMPTS) => {
+    for (const attempt of attempts) {
+        const maxSeconds = Math.min(
+            attempt.maxSeconds ?? Infinity,
+            metadata.maxSeconds ?? Infinity
+        );
+        const buffer = await new Sticker(input, {
+            ...metadata,
+            ...attempt,
+            maxSeconds: Number.isFinite(maxSeconds) ? maxSeconds : undefined,
+        }).toBuffer();
+        if (buffer.length <= MAX_STICKER_BYTES) return buffer;
+    }
+    throw new Error('STICKER_TOO_BIG');
+};

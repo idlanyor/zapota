@@ -44,3 +44,13 @@ describe('serialize view-once unwrapping', () => {
         expect(m.quoted.isViewOnce).toBe(false);
     });
 });
+
+describe('serialize quotes of unknown content', () => {
+    test('quoting a message with only raw $unknowns (audio sticker) does not throw', () => {
+        const quotedMessage = { $unknowns: [Uint8Array.from([0xb2, 0x08, 0x00])] };
+        const m = serialize(msgQuoting(quotedMessage), sock);
+        expect(m.quoted.mtype).toBeUndefined();
+        expect(m.quoted.isSticker).toBe(false);
+        expect(m.quoted.id).toBe('Q1');
+    });
+});

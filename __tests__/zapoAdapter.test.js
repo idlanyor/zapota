@@ -453,4 +453,20 @@ describe('interactive message nodes on zapo', () => {
         });
         expect(zapo.message.send.mock.calls[0][2].customNodes).toEqual([biz]);
     });
+
+    test('relayMessage can turn off ephemeral auto-inject (raw $unknowns bodies, .saudio)', async () => {
+        const { zapo, facade } = makeFacade();
+        await facade.relayMessage(
+            'chat@s.whatsapp.net',
+            { $unknowns: [] },
+            {
+                disableEphemeralAutoInject: true,
+            }
+        );
+        await facade.relayMessage('chat@s.whatsapp.net', { conversation: 'hi' });
+        const [first, second] = zapo.message.send.mock.calls.map((call) => call[2]);
+        expect(first.disableDirectEphemeralAutoInject).toBe(true);
+        expect(first.disableGroupEphemeralAutoInject).toBe(true);
+        expect(second.disableDirectEphemeralAutoInject).toBeUndefined();
+    });
 });

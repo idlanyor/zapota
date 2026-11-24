@@ -297,6 +297,12 @@ export const createZapoFacade = ({
                     options.additionalNodes ?? options.customNodes
                 ),
                 additionalAttributes: options.additionalAttributes,
+                // For bodies zapo can't attach contextInfo to (raw $unknowns), the caller
+                // sets the disappearing-message expiration itself and turns this off.
+                ...(options.disableEphemeralAutoInject && {
+                    disableDirectEphemeralAutoInject: true,
+                    disableGroupEphemeralAutoInject: true,
+                }),
             });
             return {
                 key: { remoteJid: jid, fromMe: true, id: result.id },

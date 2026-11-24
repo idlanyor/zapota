@@ -137,10 +137,15 @@ export const serialize = (m, sock) => {
                 type = getContentType(q);
             }
 
-            m.quoted = q[type];
+            // Quotes of content our proto doesn't know (e.g. audio stickers, which only
+            // exist as raw $unknowns) have no content type; keep an empty shell instead
+            // of crashing on `undefined.mtype` below.
+            m.quoted = type ? q[type] : {};
 
             if (typeof m.quoted === 'string') {
                 m.quoted = { text: m.quoted };
+            } else if (!m.quoted || typeof m.quoted !== 'object') {
+                m.quoted = {};
             }
 
             m.quoted.mtype = type;

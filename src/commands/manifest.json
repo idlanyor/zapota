@@ -2394,6 +2394,21 @@
     "hasHandleSession": false
   },
   {
+    "file": "src/commands/sticker/saudio.js",
+    "index": 0,
+    "name": "saudio",
+    "aliases": [
+      "stickeraudio",
+      "stikeraudio"
+    ],
+    "description": "Gabungkan stiker + suara jadi audio sticker",
+    "category": "Sticker",
+    "guards": [],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
     "file": "src/commands/sticker/smeme.js",
     "index": 0,
     "name": "smeme",
