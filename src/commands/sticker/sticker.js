@@ -1,4 +1,4 @@
-import { Sticker, StickerTypes } from '../../lib/stickerFormatter.js';
+import { StickerTypes, fitSticker } from '../../lib/stickerFormatter.js';
 import axios from 'axios';
 import { scrapeTwitter } from '../../lib/twitterScraper.js';
 
@@ -80,22 +80,23 @@ export default {
                 buffer = await target.download();
             }
 
-            const sticker = new Sticker(buffer, {
+            const stickerBuffer = await fitSticker(buffer, {
                 pack: 'MyBot Pack',
                 author: m.pushName || 'MyBot',
                 type: StickerTypes.FULL,
                 categories: ['', ''],
                 id: m.id,
-                quality: 50,
                 animated: isAnimatedSource,
+                maxSeconds: 10,
             });
-
-            const stickerBuffer = await sticker.toBuffer();
             await sock.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m });
             await m.react('✅');
         } catch (err) {
             console.error(`[DEBUG] Sticker command failed:`, err);
             await m.react('❌');
+            if (err.message === 'STICKER_TOO_BIG') {
+                return m.reply('Medianya terlalu besar buat jadi stiker. Coba potong/kecilkan dulu.');
+            }
             await m.reply('Gagal membuat sticker dari media tersebut.');
         }
     },

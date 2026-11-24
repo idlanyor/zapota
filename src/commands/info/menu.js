@@ -1,7 +1,7 @@
 import { getBotSettings } from '../../services/settingsService.js';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { prepareWAMessageMedia } from 'baileys';
+import { prepareImageMedia } from '../../wa/prepareMedia.js';
 import sharp from 'sharp';
 import { commands } from '../../lib/commands.js';
 import { settings } from '../../config/settings.js';
@@ -65,10 +65,7 @@ const getMenuHeaderImage = (sock, thumbnail) => {
             }
 
             if (typeof sock.waUploadToServer === 'function') {
-                const media = await prepareWAMessageMedia(
-                    { image: thumbnail },
-                    { upload: sock.waUploadToServer }
-                );
+                const media = await prepareImageMedia(sock, thumbnail);
                 return media.imageMessage || null;
             }
         } catch {

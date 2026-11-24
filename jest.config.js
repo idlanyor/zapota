@@ -12,6 +12,8 @@ export default {
         '/src/lib/__tests__/getMedia.test.js',
         '/src/utils/__tests__/commandInput.test.js',
         '/__tests__/smeme.test.js',
+        '/__tests__/saudio.test.js',
+        '/__tests__/prepareMedia.test.js',
         '/core/test/',
         '<rootDir>/werewolf/',
     ],
