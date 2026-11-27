@@ -1,7 +1,6 @@
 import { getBotSettings } from '../../services/settingsService.js';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { prepareImageMedia } from '../../wa/prepareMedia.js';
 import sharp from 'sharp';
 import { commands } from '../../lib/commands.js';
 import { settings } from '../../config/settings.js';
@@ -15,7 +14,6 @@ const SUBMENU_IMAGE_PATH = fileURLToPath(
 const KANATA_SITE_URL = 'https://kanata.irengcloud.com';
 let mainMenuThumbnailPromise;
 let submenuThumbnailPromise;
-const menuHeaderImageCache = new WeakMap();
 
 const prepareThumbnail = (imagePath, quality = 76) =>
     readFile(imagePath)
@@ -36,46 +34,6 @@ const getMainMenuThumbnail = () => {
 const getSubmenuThumbnail = () => {
     submenuThumbnailPromise ??= prepareThumbnail(SUBMENU_IMAGE_PATH, 80);
     return submenuThumbnailPromise;
-};
-
-const getMenuHeaderImage = (sock, thumbnail) => {
-    if (!thumbnail || !sock || typeof sock !== 'object') return Promise.resolve(null);
-    if (menuHeaderImageCache.has(sock)) return menuHeaderImageCache.get(sock);
-
-    const prepared = (async () => {
-        try {
-            if (sock.__zapo?.message?.upload) {
-                const media = await sock.__zapo.message.upload(thumbnail, {
-                    type: 'image',
-                    mimetype: 'image/jpeg',
-                });
-                return {
-                    url: media.url,
-                    directPath: media.directPath,
-                    mediaKey: media.mediaKey,
-                    fileSha256: media.fileSha256,
-                    fileEncSha256: media.fileEncSha256,
-                    fileLength: media.fileLength,
-                    mediaKeyTimestamp: media.mediaKeyTimestamp,
-                    mimetype: 'image/jpeg',
-                    height: 400,
-                    width: 600,
-                    jpegThumbnail: thumbnail,
-                };
-            }
-
-            if (typeof sock.waUploadToServer === 'function') {
-                const media = await prepareImageMedia(sock, thumbnail);
-                return media.imageMessage || null;
-            }
-        } catch {
-            return null;
-        }
-        return null;
-    })();
-
-    menuHeaderImageCache.set(sock, prepared);
-    return prepared;
 };
 
 // Category mapping for better organization
@@ -120,19 +78,6 @@ const categoryIcons = {
     Games: '♜',
     Owner: '♛',
 };
-
-const categoryGroups = [
-    { title: 'Kreasi & Konten', categories: ['AI', 'Downloader', 'Sticker', 'Tools'] },
-    {
-        title: 'Komunitas & Layanan',
-        categories: ['Islamic', 'Culture', 'Group', 'Finance', 'Blog', 'Utility'],
-    },
-    {
-        title: 'Sistem & Akun',
-        categories: ['Panel', 'Cloudflare', 'Users', 'General', 'Info'],
-    },
-    { title: 'Hiburan & Akses', categories: ['RPG', 'Games', 'Owner'] },
-];
 
 export default {
     name: 'menu',
@@ -200,7 +145,6 @@ export default {
 
         if (!inputCategory) {
             const thumbnail = await getMainMenuThumbnail();
-            const imageMessage = await getMenuHeaderImage(sock, thumbnail);
             const categoryRows = sortedCategories.map((cat) => {
                 const icon = categoryIcons[cat] || '•';
                 const command = `${settings.prefix}menu ${cat.toLowerCase()}`;
@@ -218,74 +162,27 @@ export default {
                 `└ Mulai dari \`${settings.prefix}menu rpg\``,
             ].join('\n');
 
-            const listedCategories = new Set(categoryGroups.flatMap((group) => group.categories));
-            const sectionSpecs = [
-                ...categoryGroups,
-                {
-                    title: 'Lainnya',
-                    categories: sortedCategories.filter((cat) => !listedCategories.has(cat)),
-                },
-            ];
-            const sections = sectionSpecs
-                .map((group) => ({
-                    title: group.title,
-                    rows: group.categories
-                        .filter((cat) => categories[cat])
-                        .map((cat) => ({
-                            title: `${categoryIcons[cat] || '•'} ${cat}`,
-                            description: `${categories[cat].length} perintah tersedia`,
-                            id: `${settings.prefix}menu ${cat.toLowerCase()}`,
-                        })),
-                }))
-                .filter((section) => section.rows.length > 0);
-
-            try {
-                return await sock.sendMessage(
-                    m.chat,
-                    {
-                        interactiveMessage: {
-                            ...(imageMessage
-                                ? {
-                                      header: {
-                                          hasMediaAttachment: true,
-                                          imageMessage,
-                                      },
-                                  }
-                                : {}),
-                            body: {
-                                text: `${header}\n\nPilih kategori yang ingin kamu buka.`,
-                            },
-                            contextInfo: {
-                                mentionedJid: [m.sender],
-                            },
-                            footer: {
-                                text: `${botName} · ${sortedCategories.length} kategori`,
-                            },
-                            nativeFlowMessage: {
-                                messageVersion: 1,
-                                buttons: [
-                                    {
-                                        name: 'single_select',
-                                        buttonParamsJson: JSON.stringify({
-                                            title: 'Buka direktori',
-                                            sections,
-                                        }),
-                                    },
-                                ],
-                            },
-                        },
-                    },
-                    { quoted: m }
-                );
-            } catch {
-                // Fall through to the readable text directory for unsupported clients/transports.
-            }
-
             return sock.sendMessage(
                 m.chat,
                 {
                     text: menuText,
                     mentions: [m.sender],
+                    contextInfo: {
+                        mentionedJid: [m.sender],
+                        ...(thumbnail
+                            ? {
+                                  externalAdReply: {
+                                      title: botName,
+                                      body: `${sortedCategories.length} kategori · ${date}`,
+                                      mediaType: 1,
+                                      renderLargerThumbnail: true,
+                                      thumbnail,
+                                      sourceUrl: KANATA_SITE_URL,
+                                      mediaUrl: KANATA_SITE_URL,
+                                  },
+                              }
+                            : {}),
+                    },
                 },
                 { quoted: m }
             );
