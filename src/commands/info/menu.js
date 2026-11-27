@@ -11,7 +11,6 @@ const MAIN_MENU_IMAGE_PATH = fileURLToPath(
 const SUBMENU_IMAGE_PATH = fileURLToPath(
     new URL('../../assets/kanata-mascot-banner-v3.png', import.meta.url)
 );
-const KANATA_SITE_URL = 'https://kanata.irengcloud.com';
 let mainMenuThumbnailPromise;
 let submenuThumbnailPromise;
 
@@ -162,28 +161,13 @@ export default {
                 `└ Mulai dari \`${settings.prefix}menu rpg\``,
             ].join('\n');
 
+            // Image + caption, not text + externalAdReply: regular WhatsApp
+            // silently drops the ad-preview card (only WA Business shows it).
             return sock.sendMessage(
                 m.chat,
-                {
-                    text: menuText,
-                    mentions: [m.sender],
-                    contextInfo: {
-                        mentionedJid: [m.sender],
-                        ...(thumbnail
-                            ? {
-                                  externalAdReply: {
-                                      title: botName,
-                                      body: `${sortedCategories.length} kategori · ${date}`,
-                                      mediaType: 1,
-                                      renderLargerThumbnail: true,
-                                      thumbnail,
-                                      sourceUrl: KANATA_SITE_URL,
-                                      mediaUrl: KANATA_SITE_URL,
-                                  },
-                              }
-                            : {}),
-                    },
-                },
+                thumbnail
+                    ? { image: thumbnail, caption: menuText, mentions: [m.sender] }
+                    : { text: menuText, mentions: [m.sender] },
                 { quoted: m }
             );
         }
@@ -212,24 +196,9 @@ export default {
 
         await sock.sendMessage(
             m.chat,
-            {
-                text: menuText,
-                ...(submenuThumbnail
-                    ? {
-                          contextInfo: {
-                              externalAdReply: {
-                                  title: `${icon} MENU ${selectedCat.toUpperCase()}`,
-                                  body: `${botName} · ${categories[selectedCat].length} perintah`,
-                                  mediaType: 1,
-                                  renderLargerThumbnail: true,
-                                  thumbnail: submenuThumbnail,
-                                  sourceUrl: KANATA_SITE_URL,
-                                  mediaUrl: KANATA_SITE_URL,
-                              },
-                          },
-                      }
-                    : {}),
-            },
+            submenuThumbnail
+                ? { image: submenuThumbnail, caption: menuText }
+                : { text: menuText },
             { quoted: m }
         );
     },

@@ -33,25 +33,20 @@ describe('menu command', () => {
         commands.clear();
     });
 
-    test('sends the main menu as plain text with a banner', async () => {
-        const sock = { sendMessage: jest.fn().mockResolvedValue({ key: { id: 'text-id' } }) };
+    test('sends the main menu as a banner image with a text caption', async () => {
+        const sock = { sendMessage: jest.fn().mockResolvedValue({ key: { id: 'img-id' } }) };
 
         await menu.execute(sock, message, []);
 
         expect(sock.sendMessage).toHaveBeenCalledTimes(1);
         const content = sock.sendMessage.mock.calls[0][1];
         expect(content.interactiveMessage).toBeUndefined();
-        expect(content.text).toContain('*DIREKTORI MENU*');
-        expect(content.text).toContain('@628123');
-        expect(content.text).toContain('`.menu rpg`');
+        expect(content.contextInfo).toBeUndefined();
+        expect(content.image).toEqual(expect.any(Buffer));
+        expect(content.caption).toContain('*DIREKTORI MENU*');
+        expect(content.caption).toContain('@628123');
+        expect(content.caption).toContain('`.menu rpg`');
         expect(content.mentions).toEqual([message.sender]);
-        expect(content.contextInfo.mentionedJid).toEqual([message.sender]);
-        expect(content.contextInfo.externalAdReply).toMatchObject({
-            mediaType: 1,
-            renderLargerThumbnail: true,
-            thumbnail: expect.any(Buffer),
-            sourceUrl: 'https://kanata.irengcloud.com',
-        });
     });
 
     test('shows only primary command names in category details', async () => {
@@ -60,18 +55,12 @@ describe('menu command', () => {
         await menu.execute(sock, message, ['rpg']);
 
         const content = sock.sendMessage.mock.calls[0][1];
-        const text = content.text;
+        const text = content.caption;
+        expect(content.image).toEqual(expect.any(Buffer));
+        expect(content.contextInfo).toBeUndefined();
         expect(text).toContain('`.profil`');
+        expect(text).toContain('*RPG*');
         expect(text).not.toContain('ktp');
         expect(text).not.toContain('status');
-        expect(content.contextInfo.externalAdReply).toMatchObject({
-            title: '⚔ MENU RPG',
-            body: expect.stringContaining('1 perintah'),
-            mediaType: 1,
-            renderLargerThumbnail: true,
-            thumbnail: expect.any(Buffer),
-            sourceUrl: 'https://kanata.irengcloud.com',
-            mediaUrl: 'https://kanata.irengcloud.com',
-        });
     });
 });
