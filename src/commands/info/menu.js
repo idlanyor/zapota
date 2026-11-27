@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { commands } from '../../lib/commands.js';
 import { settings } from '../../config/settings.js';
+import { sendLinkPreviewText } from '../../wa/linkPreview.js';
 
 const MAIN_MENU_IMAGE_PATH = fileURLToPath(
     new URL('../../assets/kanata-mascot-banner-v4-clay.png', import.meta.url)
@@ -11,6 +12,7 @@ const MAIN_MENU_IMAGE_PATH = fileURLToPath(
 const SUBMENU_IMAGE_PATH = fileURLToPath(
     new URL('../../assets/kanata-mascot-banner-v3.png', import.meta.url)
 );
+const KANATA_SITE_URL = 'https://kanata.irengcloud.com';
 let mainMenuThumbnailPromise;
 let submenuThumbnailPromise;
 
@@ -33,6 +35,32 @@ const getMainMenuThumbnail = () => {
 const getSubmenuThumbnail = () => {
     submenuThumbnailPromise ??= prepareThumbnail(SUBMENU_IMAGE_PATH, 80);
     return submenuThumbnailPromise;
+};
+
+/**
+ * Menu as a link-preview text (the `.is` style, which regular WhatsApp shows).
+ * Falls back to banner image + caption, then plain text.
+ */
+const sendMenu = async (sock, m, { text, thumbnail, title, description, mentions = [] }) => {
+    if (thumbnail) {
+        try {
+            return await sendLinkPreviewText(sock, m, {
+                text: `${text}\n\n${KANATA_SITE_URL}`,
+                url: KANATA_SITE_URL,
+                title,
+                description,
+                image: thumbnail,
+                mentions,
+            });
+        } catch (err) {
+            console.error('Menu link preview failed, sending image instead:', err.message);
+        }
+    }
+    return sock.sendMessage(
+        m.chat,
+        thumbnail ? { image: thumbnail, caption: text, mentions } : { text, mentions },
+        { quoted: m }
+    );
 };
 
 // Category mapping for better organization
@@ -161,15 +189,13 @@ export default {
                 `└ Mulai dari \`${settings.prefix}menu rpg\``,
             ].join('\n');
 
-            // Image + caption, not text + externalAdReply: regular WhatsApp
-            // silently drops the ad-preview card (only WA Business shows it).
-            return sock.sendMessage(
-                m.chat,
-                thumbnail
-                    ? { image: thumbnail, caption: menuText, mentions: [m.sender] }
-                    : { text: menuText, mentions: [m.sender] },
-                { quoted: m }
-            );
+            return sendMenu(sock, m, {
+                text: menuText,
+                thumbnail,
+                title: botName,
+                description: `${sortedCategories.length} kategori · ${date}`,
+                mentions: [m.sender],
+            });
         }
 
         const selectedCat = sortedCategories.find((c) => c.toLowerCase() === inputCategory);
@@ -194,12 +220,11 @@ export default {
         ].join('\n');
         const submenuThumbnail = await getSubmenuThumbnail();
 
-        await sock.sendMessage(
-            m.chat,
-            submenuThumbnail
-                ? { image: submenuThumbnail, caption: menuText }
-                : { text: menuText },
-            { quoted: m }
-        );
+        await sendMenu(sock, m, {
+            text: menuText,
+            thumbnail: submenuThumbnail,
+            title: `${icon} MENU ${selectedCat.toUpperCase()}`,
+            description: `${botName} · ${categories[selectedCat].length} perintah`,
+        });
     },
 };
