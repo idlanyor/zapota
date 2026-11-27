@@ -42,7 +42,7 @@
       "deepseek",
       "dseeker"
     ],
-    "description": "Tanya DeepSeek AI dengan Web Search & Tool Suite IrengCloud (.ds <pertanyaan>)",
+    "description": "Tanya AI (model yang sama dengan .ai) plus Tool Suite IrengCloud (.ds <pertanyaan>)",
     "category": "AI",
     "guards": [],
     "buttonPrefix": "",
@@ -2403,6 +2403,22 @@
       "quotesticker"
     ],
     "description": "Buat stiker kutipan: reply pesan dengan .qc atau .qc <teks>",
+    "category": "Sticker",
+    "guards": [],
+    "buttonPrefix": "",
+    "hasHandleButton": false,
+    "hasHandleSession": false
+  },
+  {
+    "file": "src/commands/sticker/removebg.js",
+    "index": 0,
+    "name": "removebg",
+    "aliases": [
+      "nobg",
+      "rembg",
+      "hapusbg"
+    ],
+    "description": "Hapus background foto/stiker (AI lokal). Opsi: warna (merah/biru/..), s (stiker)",
     "category": "Sticker",
     "guards": [],
     "buttonPrefix": "",

@@ -9,6 +9,7 @@ import {
     routeActiveSession,
     pendingDeleteConfirmation,
     groupModeration,
+    modeGate,
     passiveHandlers,
     buttons,
     ignoreOwnMessages,
@@ -25,6 +26,7 @@ export const steps = [
     loadMessage,
     subBotGate,
     buildContext,
+    modeGate,
     // interceptors
     routeActiveSession,
     pendingDeleteConfirmation,

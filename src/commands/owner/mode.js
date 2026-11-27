@@ -23,7 +23,7 @@ export default {
         try {
             await updateBotSettings({ mode: newMode });
 
-            m.reply(` Berhasil mengubah mode bot menjadi: *${newMode.toUpperCase()}*`);
+            m.reply(`Berhasil mengubah mode bot menjadi: *${newMode.toUpperCase()}*`);
         } catch (err) {
             console.error(err);
             m.reply('Gagal mengubah mode bot.');

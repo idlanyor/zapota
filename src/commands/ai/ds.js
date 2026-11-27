@@ -1,4 +1,4 @@
-import { chatCompletion } from '../../services/deepseek.js';
+import { generateAIResponse } from '../../lib/ai.js';
 import axios from 'axios';
 import os from 'os';
 import { execSync } from 'child_process';
@@ -6,7 +6,6 @@ import { settings } from '../../config/settings.js';
 import { resolveLocationToAdm4, searchWilayah } from '../../services/wilayahResolver.js';
 import { env } from '../../config/env.js';
 
-const DEFAULT_MODEL = 'deepseek-chat-instant';
 const IRENG_BASE_URL = 'https://apiku.irengcloud.com';
 
 /**
@@ -629,61 +628,18 @@ async function executeIrengTool(name, args) {
     }
 }
 
-const DS_SESSION_TTL_MS = 30 * 60 * 1000; // 30 menit
-const MAX_DS_SESSION_MSGS = 20; // 10 pasang percakapan user-assistant
-const dsSessions = new Map();
-
-export const getDsSession = (chatId) => {
-    const s = dsSessions.get(chatId);
-    if (!s) return [];
-    if (Date.now() - s.timestamp > DS_SESSION_TTL_MS) {
-        dsSessions.delete(chatId);
-        return [];
-    }
-    return s.messages;
-};
-
-export const appendDsSession = (chatId, newMessages = []) => {
-    const current = getDsSession(chatId);
-    const updated = [...current, ...newMessages].slice(-MAX_DS_SESSION_MSGS);
-    dsSessions.set(chatId, {
-        messages: updated,
-        timestamp: Date.now(),
-    });
-};
-
-export const clearDsSession = (chatId) => {
-    dsSessions.delete(chatId);
-};
+/** IrengCloud tools in the agent's (Anthropic) tool format; host info is owner-only. */
+const irengAgentTools = (isOwner) =>
+    IRENG_TOOLS.filter((t) => isOwner || t.function?.name !== 'host_server_info').map((t) => ({
+        name: t.function.name,
+        description: t.function.description,
+        input_schema: t.function.parameters || { type: 'object', properties: {} },
+        run: (input) => executeIrengTool(t.function.name, input),
+    }));
 
 /**
- * Validasi apakah pengirim adalah owner dan pesan berada di private chat
- */
-function isOwnerPrivateChat(sock, m) {
-    if (m?.isGroup) return false;
-
-    const sender = m?.sender || '';
-    const cleanSender = sender.split('@')[0].split(':')[0];
-
-    const ownerJid = settings.ownerNumber || '';
-    const ownerLid = settings.ownerLid || '';
-    const cleanOwnerJid = ownerJid.split('@')[0].split(':')[0];
-    const cleanOwnerLid = ownerLid.split('@')[0].split(':')[0];
-
-    const botJid = sock?.user?.id || '';
-    const cleanBotJid = botJid.split('@')[0].split(':')[0];
-
-    return (
-        cleanSender === cleanOwnerJid ||
-        cleanSender === cleanOwnerLid ||
-        (cleanBotJid && cleanSender === cleanBotJid) ||
-        sender === ownerJid ||
-        sender === ownerLid
-    );
-}
-
-/**
- * Eksekusi prompt DeepSeek dengan memelihara session percakapan
+ * Answer a .ds / mention prompt with the same AI agent as .ai. Owner and
+ * regular users share the model; only the privileges (tools) differ.
  */
 export async function handleDsChat(sock, m, promptText) {
     const inputPrompt = (promptText || '').trim();
@@ -694,110 +650,33 @@ export async function handleDsChat(sock, m, promptText) {
     try {
         await m.react('⏳');
 
-        const progressMsg = await m.reply('🔍 Sedang memproses dengan DeepSeek AI...');
+        const progressMsg = await m.reply('Sedang berpikir...');
         progressKey = progressMsg?.key || null;
+        let lastEditAt = Date.now();
 
-        const isAuthorizedOwner = isOwnerPrivateChat(sock, m);
-
-        // Filter tools: tool sensitif seperti host_server_info hanya diizinkan untuk owner di private chat
-        const allowedTools = isAuthorizedOwner
-            ? IRENG_TOOLS
-            : IRENG_TOOLS.filter((t) => t.function?.name !== 'host_server_info');
-
-        const history = getDsSession(m.chat);
-        const systemPromptContent = isAuthorizedOwner
-            ? 'Kamu adalah asisten pintar WhatsApp yang terhubung dengan API IrengCloud dan tools server lokal. ' +
-              'Jika pengguna bertanya tentang kondisi server, status VPS/host, spesifikasi hardware, penggunaan CPU/RAM/disk, proses yang memakan resource banyak, atau diagnosa server, gunakan tool `host_server_info`. ' +
-              'Jika pengguna bertanya tentang hadits, gunakan tool `hadits_search` atau `hadits_detail`. ' +
-              'Hanya panggil tool yang terdaftar di daftar tools yang diberikan. ' +
-              'Jika tool tidak tersedia, berikan jawaban terbaikmu secara langsung.'
-            : 'Kamu adalah asisten pintar WhatsApp yang terhubung dengan API IrengCloud. ' +
-              'Jika pengguna bertanya tentang hadits, gunakan tool `hadits_search` atau `hadits_detail`. ' +
-              'Hanya panggil tool yang terdaftar di daftar tools yang diberikan. ' +
-              'Jika tool tidak tersedia, berikan jawaban terbaikmu secara langsung.';
-
-        const messages = [
-            {
-                role: 'system',
-                content: systemPromptContent,
-            },
-            ...history,
-            {
-                role: 'user',
-                content: inputPrompt,
-            },
-        ];
-
-        // Panggilan pertama ke DeepSeek
-        let response = await chatCompletion(
-            {
-                model: DEFAULT_MODEL,
-                messages: messages,
-                tools: allowedTools,
-            },
-            { timeout: 60000 }
-        );
-
-        // Loop interaksi tool call hingga menghasilkan jawaban final (maksimal 3 iterasi)
-        let iterations = 0;
-        const MAX_TOOL_ITERATIONS = 3;
-
-        while (
-            response.data?.choices?.[0]?.message?.tool_calls?.length > 0 &&
-            iterations < MAX_TOOL_ITERATIONS
-        ) {
-            iterations++;
-            const assistantMsg = response.data.choices[0].message;
-            messages.push(assistantMsg);
-
-            for (const toolCall of assistantMsg.tool_calls) {
-                const fnName = toolCall.function?.name;
-                let fnArgs = {};
+        const isOwner = Boolean(m.isOwner);
+        const rawAnswer = await generateAIResponse({
+            sock,
+            m,
+            prompt: inputPrompt,
+            chatId: m.chat,
+            isOwner,
+            extraTools: irengAgentTools(isOwner),
+            onTextDelta: async (partialText) => {
+                const now = Date.now();
+                if (!progressKey || now - lastEditAt < 1200 || !partialText.trim()) return;
                 try {
-                    fnArgs = JSON.parse(toolCall.function?.arguments || '{}');
-                } catch {}
-
-                let toolResult;
-                if (fnName === 'host_server_info' && !isAuthorizedOwner) {
-                    toolResult = JSON.stringify({
-                        error: 'Akses ditolak. Tool informasi server host hanya dapat diakses oleh Owner melalui Private Chat.',
+                    await sock.sendMessage(m.chat, {
+                        text: `${partialText.replace(/\*\*(.*?)\*\*/g, '*$1*')} ▒`,
+                        edit: progressKey,
                     });
-                } else {
-                    toolResult = await executeIrengTool(fnName, fnArgs);
-                }
+                    lastEditAt = now;
+                } catch {}
+            },
+        });
 
-                messages.push({
-                    role: 'tool',
-                    tool_call_id: toolCall.id,
-                    content: toolResult,
-                });
-            }
-
-            // Kirim kembali hasil tool ke DeepSeek
-            response = await chatCompletion(
-                {
-                    model: DEFAULT_MODEL,
-                    messages: messages,
-                    tools: allowedTools,
-                },
-                { timeout: 60000 }
-            );
-        }
-
-        const finalChoice = response.data?.choices?.[0];
-        const finalAssistantMsg = finalChoice?.message;
-        const rawAnswer = finalAssistantMsg?.content || '';
         const formattedAnswer = formatToWhatsApp(rawAnswer);
-
-        if (!formattedAnswer) {
-            throw new Error('Tidak ada jawaban dari DeepSeek API.');
-        }
-
-        // Simpan riwayat percakapan user & assistant ke session
-        appendDsSession(m.chat, [
-            { role: 'user', content: inputPrompt },
-            { role: 'assistant', content: rawAnswer },
-        ]);
+        if (!formattedAnswer) throw new Error('Tidak ada jawaban dari AI.');
 
         if (progressKey) {
             await sock.sendMessage(m.chat, {
@@ -834,14 +713,14 @@ export async function handleDsChat(sock, m, promptText) {
 export default {
     name: 'ds',
     aliases: ['deepseek', 'dseeker'],
-    description: 'Tanya DeepSeek AI dengan Web Search & Tool Suite IrengCloud (.ds <pertanyaan>)',
+    description: 'Tanya AI (model yang sama dengan .ai) plus Tool Suite IrengCloud (.ds <pertanyaan>)',
     category: 'AI',
     execute: async (sock, m, args, text) => {
         const inputPrompt = (text || m.quoted?.text || '').trim();
 
         if (!inputPrompt) {
             return m.reply(
-                `*DeepSeek AI + IrengCloud Tools*\n\n` +
+                `*AI + IrengCloud Tools*\n\n` +
                     `Format: *${settings.prefix}ds <pertanyaan>*\n` +
                     `Atau reply pesan bot / tag bot untuk ngobrol langsung bersambung!\n\n` +
                     `_Contoh:_\n` +

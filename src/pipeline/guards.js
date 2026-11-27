@@ -83,13 +83,17 @@ const mutedGroup = async (ctx) => {
     return isParticipantAdmin(participants, ctx.m.sender) ? null : SILENT;
 };
 
-/** Main bot's public/self/group mode. Sub-bots follow their tier instead. */
-const botMode = async ({ botSettings, isOwner, m, subBot }) => {
-    if (isOwner || subBot) return null;
-    if (botSettings?.mode === 'self') return SILENT;
-    if (botSettings?.mode === 'group' && !m.isGroup) return SILENT;
-    return null;
+/**
+ * Whether the main bot's public/self/group mode tells it to ignore this
+ * sender. Owners always pass; sub-bots follow their tier instead.
+ */
+export const isSilencedByMode = ({ botSettings, isOwner, m, subBot }) => {
+    if (isOwner || subBot) return false;
+    if (botSettings?.mode === 'self') return true;
+    return botSettings?.mode === 'group' && !m.isGroup;
 };
+
+const botMode = async (ctx) => (isSilencedByMode(ctx) ? SILENT : null);
 
 /** Commands switched off with `.toggle disable <cmd>` (owners can still use them). */
 const disabledCommand = async ({ botSettings, isOwner }, command) => {
