@@ -9,7 +9,7 @@ const handleDsChat = async (...args) => {
     return handler(...args);
 };
 
-/** Non-owners who @-mention or reply to the bot get a DeepSeek chat answer. */
+/** Non-owners who @-mention or reply to the bot get an answer from the same AI agent as .ai (no owner tools). */
 export const mentionChat = async (ctx, next) => {
     const { sock, m, isOwner } = ctx;
     if (m.body && !m.key.fromMe && !isOwner && isAddressedToBot(sock, m).addressed) {

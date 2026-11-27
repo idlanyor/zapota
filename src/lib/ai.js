@@ -465,6 +465,7 @@ export const generateAIResponse = async ({
     chatId = null,
     isOwner = false,
     onTextDelta = null,
+    extraTools = [],
 }) => {
     const history = chatId ? getChatHistory(chatId) : [];
     const userContent = [];
@@ -481,7 +482,14 @@ export const generateAIResponse = async ({
                 model: env.AI_AGENT_MODEL || 'Kanata',
                 max_tokens: 4096,
                 system: buildSystemInstruction(customSystemInstruction, isOwner, m),
-                tools: buildTools(isOwner),
+                tools: [
+                    ...buildTools(isOwner),
+                    ...extraTools.map(({ name, description, input_schema }) => ({
+                        name,
+                        description,
+                        input_schema,
+                    })),
+                ],
                 messages,
             },
             onTextDelta
@@ -505,7 +513,14 @@ export const generateAIResponse = async ({
 
         for (const toolUse of toolUses) {
             let result;
-            if (toolUse.name === 'run_bot_command') {
+            const extraTool = extraTools.find((tool) => tool.name === toolUse.name);
+            if (extraTool) {
+                try {
+                    result = await extraTool.run(toolUse.input || {});
+                } catch (e) {
+                    result = `Tool ${toolUse.name} gagal: ${e.message}`;
+                }
+            } else if (toolUse.name === 'run_bot_command') {
                 result = await executeBotCommand(
                     sock,
                     m,

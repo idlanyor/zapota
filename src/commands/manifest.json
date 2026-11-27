@@ -42,7 +42,7 @@
       "deepseek",
       "dseeker"
     ],
-    "description": "Tanya DeepSeek AI dengan Web Search & Tool Suite IrengCloud (.ds <pertanyaan>)",
+    "description": "Tanya AI (model yang sama dengan .ai) plus Tool Suite IrengCloud (.ds <pertanyaan>)",
     "category": "AI",
     "guards": [],
     "buttonPrefix": "",
