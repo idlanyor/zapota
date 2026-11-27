@@ -1,4 +1,5 @@
 import { generateAIResponse } from '../../lib/ai.js';
+import { sendAiRichReply, withTyping } from '../../wa/aiRich.js';
 import axios from 'axios';
 import os from 'os';
 import { execSync } from 'child_process';
@@ -7,100 +8,6 @@ import { resolveLocationToAdm4, searchWilayah } from '../../services/wilayahReso
 import { env } from '../../config/env.js';
 
 const IRENG_BASE_URL = 'https://apiku.irengcloud.com';
-
-/**
- * Format markdown standar & artifak AI ke tipografi WhatsApp
- */
-const formatToWhatsApp = (text = '') => {
-    if (!text) return '';
-
-    let res = text.trim();
-
-    // 1. Bersihkan prefix artifak deepseek search (cth: FINISHEDSEARCH)
-    res = res.replace(/^FINISHED\s*SEARCH\s*/i, '');
-
-    // 2. Bersihkan citation tags seperti [citation:1], [citation: 12]
-    res = res.replace(/\[citation:\s*\d+\]/gi, '');
-
-    // 3. Konversi format tabel markdown menjadi daftar poin terstruktur
-    const lines = res.split('\n');
-    const newLines = [];
-    let inTable = false;
-    let tableRows = [];
-
-    const flushTable = (rows) => {
-        if (!rows.length) return [];
-        const validRows = rows
-            .map((r) => r.trim())
-            .filter((r) => !/^\|?(\s*:?-+:?\s*\|?)+$/.test(r))
-            .map((r) => {
-                const parts = r.split('|').map((c) => c.trim());
-                if (parts[0] === '') parts.shift();
-                if (parts[parts.length - 1] === '') parts.pop();
-                return parts;
-            })
-            .filter((row) => row.length > 0);
-
-        if (validRows.length === 0) return [];
-        if (validRows.length === 1) return validRows[0].map((c) => `• ${c}`);
-
-        const header = validRows[0];
-        const body = validRows.slice(1);
-        const formatted = [];
-
-        for (const row of body) {
-            const rowFields = [];
-            row.forEach((col, idx) => {
-                const colLabel = header[idx] ? `*${header[idx]}*: ` : '';
-                rowFields.push(`  ${colLabel}${col}`);
-            });
-            formatted.push(`• ${rowFields.join('\n  ').trim()}`);
-        }
-        return formatted;
-    };
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
-            inTable = true;
-            tableRows.push(line);
-        } else {
-            if (inTable) {
-                newLines.push(...flushTable(tableRows));
-                tableRows = [];
-                inTable = false;
-            }
-            newLines.push(line);
-        }
-    }
-    if (inTable) {
-        newLines.push(...flushTable(tableRows));
-    }
-
-    res = newLines.join('\n');
-
-    // 4. Header Markdown (# Heading) -> Bold WhatsApp (*Heading*)
-    res = res.replace(/^#{1,6}\s*(.+)$/gm, '*$1*');
-
-    // 5. Bold: **text** atau __text__ -> *text*
-    res = res.replace(/\*\*(.*?)\*\*/g, '*$1*');
-    res = res.replace(/__(.*?)__/g, '*$1*');
-
-    // 6. Strikethrough: ~~text~~ -> ~text~
-    res = res.replace(/~~(.*?)~~/g, '~$1~');
-
-    // 7. Garis pemisah horizontal (--- atau ***) -> divider visual rapi
-    res = res.replace(/^[ \t]*[-*_]{3,}[ \t]*$/gm, '──────────────');
-
-    // 8. Bullet list: * item atau + item atau - item -> • item
-    res = res.replace(/^[ \t]*[*\-+]\s+/gm, '• ');
-
-    // 9. Rapikan spasi berlebih
-    res = res.replace(/[ \t]{2,}/g, ' ');
-    res = res.replace(/\n{3,}/g, '\n\n');
-
-    return res.trim();
-};
 
 /**
  * Definisi Tools IrengCloud API Suite untuk Function Calling
@@ -645,48 +552,24 @@ export async function handleDsChat(sock, m, promptText) {
     const inputPrompt = (promptText || '').trim();
     if (!inputPrompt) return;
 
-    let progressKey = null;
-
     try {
         await m.react('⏳');
 
-        const progressMsg = await m.reply('Sedang berpikir...');
-        progressKey = progressMsg?.key || null;
-        let lastEditAt = Date.now();
-
         const isOwner = Boolean(m.isOwner);
-        const rawAnswer = await generateAIResponse({
-            sock,
-            m,
-            prompt: inputPrompt,
-            chatId: m.chat,
-            isOwner,
-            extraTools: irengAgentTools(isOwner),
-            onTextDelta: async (partialText) => {
-                const now = Date.now();
-                if (!progressKey || now - lastEditAt < 1200 || !partialText.trim()) return;
-                try {
-                    await sock.sendMessage(m.chat, {
-                        text: `${partialText.replace(/\*\*(.*?)\*\*/g, '*$1*')} ▒`,
-                        edit: progressKey,
-                    });
-                    lastEditAt = now;
-                } catch {}
-            },
-        });
+        const answer = await withTyping(sock, m.chat, () =>
+            generateAIResponse({
+                sock,
+                m,
+                prompt: inputPrompt,
+                chatId: m.chat,
+                isOwner,
+                richOutput: true,
+                extraTools: irengAgentTools(isOwner),
+            })
+        );
+        if (!answer?.trim()) throw new Error('Tidak ada jawaban dari AI.');
 
-        const formattedAnswer = formatToWhatsApp(rawAnswer);
-        if (!formattedAnswer) throw new Error('Tidak ada jawaban dari AI.');
-
-        if (progressKey) {
-            await sock.sendMessage(m.chat, {
-                text: formattedAnswer,
-                edit: progressKey,
-            });
-        } else {
-            await m.reply(formattedAnswer);
-        }
-
+        await sendAiRichReply(sock, m, answer);
         await m.react('✅');
     } catch (error) {
         console.error('DS Command Error:', error?.response?.data || error.message);
@@ -697,16 +580,7 @@ export async function handleDsChat(sock, m, promptText) {
             error?.response?.data?.message ||
             error.message ||
             'Terjadi kesalahan saat memproses permintaan.';
-
-        const replyText = `❌ *Error*: ${errorMsg}`;
-
-        if (progressKey) {
-            await sock
-                .sendMessage(m.chat, { text: replyText, edit: progressKey })
-                .catch(() => m.reply(replyText));
-        } else {
-            await m.reply(replyText);
-        }
+        await m.reply(`❌ *Error*: ${errorMsg}`);
     }
 }
 

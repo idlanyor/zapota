@@ -146,33 +146,6 @@ export const sanitizeCustomNodes = (message, nodes) => {
     return kept.length > 0 ? kept : undefined;
 };
 
-const ensureAiRichTextEnvelope = (message, options = {}) => {
-    if (options?.raw || options?.rawMessage) return message;
-    const richResponse =
-        message?.richResponseMessage || message?.botForwardedMessage?.message?.richResponseMessage;
-
-    if (!richResponse || message?.conversation != null || richResponse?.unifiedResponse)
-        return message;
-
-    const fallbackText = (richResponse.submessages || [])
-        .flatMap((submessage) => {
-            if (submessage?.messageText) return [submessage.messageText];
-            const code = submessage?.codeMetadata?.codeBlocks
-                ?.map((block) => block.codeContent || '')
-                .join('');
-            return code
-                ? [`\`\`\`${submessage.codeMetadata.codeLanguage || ''}\n${code}\n\`\`\``]
-                : [];
-        })
-        .join('\n\n');
-
-    // zapo-js currently does not classify AI Rich / bot-forwarded payloads as
-    // text stanzas. The conversation fallback forces the correct stanza type;
-    // clients that support AI Rich render the richer field, while older clients
-    // still receive readable content instead of a blank message.
-    return { conversation: fallbackText || 'AI Rich response', ...message };
-};
-
 const baileysMessage = (event) => ({
     key: { ...event.key },
     message: event.message,
@@ -289,7 +262,10 @@ export const createZapoFacade = ({
             };
         },
         relayMessage: async (jid, message, options = {}) => {
-            const messageToSend = ensureAiRichTextEnvelope(message, options);
+            // AI Rich (botForwardedMessage.richResponseMessage) goes out as-is: zapo
+            // already sends it as a text stanza, and adding a `conversation`
+            // fallback next to it made phones drop the whole message.
+            const messageToSend = message;
             const result = await zapo.message.send(jid, messageToSend, {
                 id: options.messageId,
                 customNodes: sanitizeCustomNodes(

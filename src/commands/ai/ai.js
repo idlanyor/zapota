@@ -1,6 +1,7 @@
 import { downloadMediaBuffer } from '../../wa/helpers.js';
 import { settings } from '../../config/settings.js';
 import { generateAIResponse } from '../../lib/ai.js';
+import { sendAiRichReply, withTyping } from '../../wa/aiRich.js';
 
 export default {
     name: 'ai',
@@ -8,7 +9,6 @@ export default {
     description: 'AI Assistant (Claude-compatible) dengan tool command dan shell khusus Owner',
     category: 'AI',
     execute: async (sock, m, args, text) => {
-        let progressKey = null;
         try {
             const isQuoted = !!m.quoted;
             const msg = isQuoted ? m.quoted : m.msg;
@@ -53,48 +53,25 @@ Question: ${prompt}`
 
             if (!imageBuffer) await m.react('⏳');
 
-            const progressMessage = await m.reply('Sedang berpikir...');
-            progressKey = progressMessage?.key || null;
-            let lastEditAt = Date.now();
+            const response = await withTyping(sock, m.chat, () =>
+                generateAIResponse({
+                    sock,
+                    m,
+                    prompt,
+                    imageBuffer,
+                    imageMime,
+                    chatId: m.chat,
+                    isOwner: Boolean(m.isOwner),
+                    richOutput: true,
+                })
+            );
 
-            const response = await generateAIResponse({
-                sock,
-                m,
-                prompt,
-                imageBuffer,
-                imageMime,
-                chatId: m.chat,
-                isOwner: Boolean(m.isOwner),
-                onTextDelta: async (partialText) => {
-                    const now = Date.now();
-                    if (!progressKey || now - lastEditAt < 1200 || !partialText.trim()) return;
-                    try {
-                        await sock.sendMessage(m.chat, {
-                            text: `${partialText.replace(/\*\*(.*?)\*\*/g, '*$1*')} ▒`,
-                            edit: progressKey,
-                        });
-                        lastEditAt = now;
-                    } catch {}
-                },
-            });
-
-            if (progressKey) {
-                await sock.sendMessage(m.chat, { text: response, edit: progressKey });
-            } else {
-                await m.reply(response);
-            }
+            await sendAiRichReply(sock, m, response);
             await m.react('✅');
         } catch (error) {
             console.error('AI API Error:', error);
             await m.react('❌');
-            const errorText = `Error: ${error.message || 'Failed to process request'}`;
-            if (progressKey) {
-                await sock
-                    .sendMessage(m.chat, { text: errorText, edit: progressKey })
-                    .catch(() => m.reply(errorText));
-            } else {
-                await m.reply(errorText);
-            }
+            await m.reply(`Error: ${error.message || 'Failed to process request'}`);
         }
     },
 };
