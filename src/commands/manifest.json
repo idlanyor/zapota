@@ -2418,7 +2418,7 @@
       "rembg",
       "hapusbg"
     ],
-    "description": "Hapus background foto/stiker (AI lokal). Tambah \"png\" untuk file PNG",
+    "description": "Hapus background foto/stiker (AI lokal). Opsi: warna (merah/biru/..), s (stiker)",
     "category": "Sticker",
     "guards": [],
     "buttonPrefix": "",
