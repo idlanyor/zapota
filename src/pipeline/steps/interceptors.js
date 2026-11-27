@@ -16,6 +16,7 @@ import { handleButtons } from '../../handlers/buttonHandler.js';
 import { checkJoinGroup } from '../../middlewares/auth.js';
 import { handleDeleteServerConfirmation } from '../../middlewares/deleteServer.js';
 import { pendingServerDeletes } from '../../state/pendingServerDeletes.js';
+import { isSilencedByMode } from '../guards.js';
 
 /** Non-prefixed replies go to the command that owns the active session. */
 export const routeActiveSession = async (ctx, next) => {
@@ -45,6 +46,16 @@ export const groupModeration = async (ctx, next) => {
     const { sock, m, groupData, isOwner } = ctx;
     if (await handlePreProcessing(sock, m, groupData, isOwner)) return;
     await next();
+};
+
+/**
+ * Self/group mode: a sender the mode ignores gets nothing from the bot (no AI,
+ * game answers, buttons, AFK notices, join-group notice). Group moderation
+ * still runs so antilink/antitoxic keep protecting groups.
+ */
+export const modeGate = async (ctx, next) => {
+    if (!isSilencedByMode(ctx)) return next();
+    await groupModeration(ctx, async () => {});
 };
 
 /** Side effects that never stop the flow: AFK notices, poll votes. */

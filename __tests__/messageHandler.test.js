@@ -216,6 +216,83 @@ describe('messageHandler: permissions and modes', () => {
         expect(cmd.execute).toHaveBeenCalledTimes(1);
     });
 
+    describe('self/group mode silences every non-command path for non-owners', () => {
+        const mention = (chat) =>
+            raw({
+                chat,
+                message: {
+                    extendedTextMessage: {
+                        text: '@628999 halo',
+                        contextInfo: { mentionedJid: [BOT] },
+                    },
+                },
+            });
+
+        test('self: mention, auto-AI, AFK, buttons are skipped', async () => {
+            flow.getCachedSettings.mockResolvedValue({
+                mode: 'self',
+                owners: [],
+                autoAiPrivate: true,
+            });
+            const sock = makeSock();
+            await messageHandler(sock, mention(groupJid()));
+            await messageHandler(sock, raw({ text: 'halo bot' }));
+
+            expect(handleDsChat).not.toHaveBeenCalled();
+            expect(flow.handleAutoAiPrivate).not.toHaveBeenCalled();
+            expect(flow.handleAfk).not.toHaveBeenCalled();
+            expect(handleButtons).not.toHaveBeenCalled();
+            expect(sock.sendMessage).not.toHaveBeenCalled();
+        });
+
+        test('self: an active game session ignores non-owner answers', async () => {
+            flow.getCachedSettings.mockResolvedValue({ mode: 'self', owners: [] });
+            const g = groupJid();
+            const game = addCommand({ name: 'game', handleSession: jest.fn() });
+            sessionManager.sessions.set(g, {
+                data: { commandName: 'game' },
+                lastActivity: Date.now(),
+            });
+            await messageHandler(makeSock(), raw({ chat: g, text: 'jawaban' }));
+            expect(game.handleSession).not.toHaveBeenCalled();
+        });
+
+        test('self: group moderation still runs for non-owners', async () => {
+            flow.getCachedSettings.mockResolvedValue({ mode: 'self', owners: [] });
+            await messageHandler(makeSock(), raw({ chat: groupJid(), text: 'chat.whatsapp.com/x' }));
+            expect(flow.handlePreProcessing).toHaveBeenCalledTimes(1);
+        });
+
+        test('self: the owner still gets mention chat paths', async () => {
+            flow.getCachedSettings.mockResolvedValue({ mode: 'self', owners: [] });
+            await messageHandler(makeSock(), raw({ text: 'halo', chat: OWNER }));
+            expect(flow.handleAfk).toHaveBeenCalledTimes(1);
+        });
+
+        test('group: private mention reply is skipped, group mention answered', async () => {
+            flow.getCachedSettings.mockResolvedValue({ mode: 'group', owners: [] });
+            await messageHandler(
+                makeSock(),
+                raw({
+                    message: {
+                        extendedTextMessage: {
+                            text: 'halo',
+                            contextInfo: {
+                                stanzaId: 'Q',
+                                participant: BOT,
+                                quotedMessage: { conversation: 'x' },
+                            },
+                        },
+                    },
+                })
+            );
+            expect(handleDsChat).not.toHaveBeenCalled();
+
+            await messageHandler(makeSock(), mention(groupJid()));
+            expect(handleDsChat).toHaveBeenCalledTimes(1);
+        });
+    });
+
     test('fromMe messages are ignored in public mode', async () => {
         const cmd = addCommand({ name: 'ping' });
         await messageHandler(makeSock(), raw({ text: '.ping', fromMe: true }));
