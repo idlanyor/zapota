@@ -239,7 +239,11 @@ const commandCatalog = (isOwner) => {
         .join('\n');
 };
 
-const buildSystemInstruction = (customSystemInstruction, isOwner, m = null) => {
+const RICH_FORMAT_HINT = `Jawabanmu ditampilkan sebagai pesan AI Rich WhatsApp yang mendukung markdown: judul (### Judul), daftar (- item / 1. item), kutipan (> teks), garis (---), *tebal*, _miring_, \`kode\`, blok kode tiga backtick, TABEL markdown (| Kolom | Kolom |), tautan [teks](https://url) yang tampil sebagai teks yang bisa diklik (jangan tulis URL polos bila bisa dijadikan tautan), dan chip sumber: tulis [sumber](https://url) tepat setelah kalimat yang mengutip sumber itu. Pakai tabel untuk perbandingan, jadwal, atau data berkolom; pakai judul untuk jawaban panjang. Jangan gunakan markdown double-asterisk.`;
+
+const PLAIN_FORMAT_HINT = 'Gunakan format WhatsApp: *tebal*, _miring_, `kode`, dan blok kode tiga backtick. Jangan gunakan markdown double-asterisk.';
+
+const buildSystemInstruction = (customSystemInstruction, isOwner, m = null, richOutput = false) => {
     const persona = customSystemInstruction
         ? customSystemInstruction
         : `Kamu adalah KanataBot, asisten AI yang cerdas. Selalu jawab dalam Bahasa Indonesia kecuali diminta lain. Jangan gunakan emoji kecuali pengguna memintanya.`;
@@ -259,7 +263,7 @@ Waktu saat ini: ${new Date().toLocaleString('id-ID', {
         timeStyle: 'long',
     })}.
 
-Gunakan format WhatsApp: *tebal*, _miring_, \`kode\`, dan blok kode tiga backtick. Jangan gunakan markdown double-asterisk.
+${richOutput ? RICH_FORMAT_HINT : PLAIN_FORMAT_HINT}
 Kamu dapat menjalankan command bot yang relevan melalui run_bot_command. Gunakan nama command tanpa prefix dan jangan mengarang nama command.
 Setelah tool selesai, baca hasil tool secara harfiah. Jika hasil menyatakan media atau output sudah dikirim, katakan bahwa output sudah dikirim dan jangan menyebutnya masih diproses atau akan segera dikirim.
 ${isOwner ? `Pengguna ini adalah OWNER bot dan memiliki akses penuh ke fitur Self-Management (plugin_list, plugin_read, plugin_write, plugin_delete, plugin_toggle, plugin_test, pkg_install, pkg_uninstall, git_status, git_diff, git_commit, git_rollback) serta run_shell bila diperlukan.
@@ -466,6 +470,7 @@ export const generateAIResponse = async ({
     isOwner = false,
     onTextDelta = null,
     extraTools = [],
+    richOutput = false,
 }) => {
     const history = chatId ? getChatHistory(chatId) : [];
     const userContent = [];
@@ -481,7 +486,7 @@ export const generateAIResponse = async ({
             {
                 model: env.AI_AGENT_MODEL || 'Kanata',
                 max_tokens: 4096,
-                system: buildSystemInstruction(customSystemInstruction, isOwner, m),
+                system: buildSystemInstruction(customSystemInstruction, isOwner, m, richOutput),
                 tools: [
                     ...buildTools(isOwner),
                     ...extraTools.map(({ name, description, input_schema }) => ({
@@ -634,7 +639,7 @@ export const generateAIResponse = async ({
             const summaryRes = await createStreamingMessage({
                 model: env.AI_AGENT_MODEL || 'Kanata',
                 max_tokens: 4096,
-                system: buildSystemInstruction(customSystemInstruction, isOwner, m),
+                system: buildSystemInstruction(customSystemInstruction, isOwner, m, richOutput),
                 messages,
             });
             finalText = summaryRes.content
