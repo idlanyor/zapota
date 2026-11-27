@@ -136,7 +136,7 @@ describe('Zapo Baileys facade', () => {
         });
     });
 
-    test('forces AI Rich payloads onto a text stanza', async () => {
+    test('relays AI Rich payloads unchanged (no conversation fallback)', async () => {
         const { zapo, facade } = makeFacade();
         const message = {
             botForwardedMessage: {
@@ -153,16 +153,12 @@ describe('Zapo Baileys facade', () => {
             messageId: 'ai-rich-id',
         });
 
-        expect(zapo.message.send).toHaveBeenCalledWith(
-            'group@g.us',
-            { conversation: 'AI Rich', ...message },
-            {
-                id: 'ai-rich-id',
-                customNodes: undefined,
-                additionalAttributes: undefined,
-            }
-        );
-        expect(result.message.conversation).toBe('AI Rich');
+        expect(zapo.message.send).toHaveBeenCalledWith('group@g.us', message, {
+            id: 'ai-rich-id',
+            customNodes: undefined,
+            additionalAttributes: undefined,
+        });
+        expect(result.message.conversation).toBeUndefined();
     });
 
     test('uses protocol revoke target key', async () => {
