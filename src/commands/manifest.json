@@ -2995,21 +2995,6 @@
     "hasHandleSession": false
   },
   {
-    "file": "src/commands/utility/carousel.js",
-    "index": 0,
-    "name": "carousel",
-    "aliases": [
-      "testcarousel",
-      "cr"
-    ],
-    "description": "Tes fitur Meta AI Native Carousel (kartu video/reels swipe)",
-    "category": "Utility",
-    "guards": [],
-    "buttonPrefix": "",
-    "hasHandleButton": false,
-    "hasHandleSession": false
-  },
-  {
     "file": "src/commands/utility/deliver.js",
     "index": 0,
     "name": "deliver",
@@ -3125,18 +3110,6 @@
       "ptero"
     ],
     "description": "Pterodactyl VPS Store",
-    "category": "Utility",
-    "guards": [],
-    "buttonPrefix": "",
-    "hasHandleButton": false,
-    "hasHandleSession": false
-  },
-  {
-    "file": "src/commands/utility/testrich.js",
-    "index": 0,
-    "name": "testrich",
-    "aliases": [],
-    "description": "Explore AI Rich Responses (Table & Code)",
     "category": "Utility",
     "guards": [],
     "buttonPrefix": "",
